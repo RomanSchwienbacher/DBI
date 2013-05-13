@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <pthread.h>
-#include "bufman.h"
-#include "bufframe.h"
+#include "../buffer/bufman.h"
+#include "../buffer/bufframe.h"
 
 using namespace std;
 

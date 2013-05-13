@@ -9,9 +9,9 @@
 
 #include "mainTest.h"
 #include "gen.cpp"
-#include "gtest/gtest.h"
+#include "../gtest/gtest.h"
 #include <iostream>
-#include "sorter.h"
+#include "../sorting/sorter.h"
 #include "buffertest.cpp"
 #include <math.h>
 #include <iostream>
