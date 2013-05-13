@@ -93,11 +93,11 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 		fifoQ.remove(pageId);
 		lruQ.remove(pageId);
 
-		// unlock file access
-		syncLock.unlock();
-
 		// successful access - block frame
 		frame->lockFrame(exclusive);
+
+		// unlock file access
+		syncLock.unlock();
 
 		//cout << "Page " << pageId << " fixed successfully" << endl;
 
@@ -106,40 +106,42 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 		//cout << "pageId: " << pageId << " produced page miss. Try to reclaim. " << endl;
 
 		// try to reclaim a frame
-		frame = reclaimFrame();
+		BufferFrame& bframe = reclaimFrame();
 
-		if (frame != NULL) {
+		if (&bframe != NULL) {
 
 			//char* newBufferedData = (char *) operator new(pageSize);
 
 			//frame = new BufferFrame(pageId, newBufferedData);
 
 			// set page-id
-			frame->setPageId(pageId);
+			bframe.setPageId(pageId);
 
 			// set state to new
-			frame->setState(BufferFrame::STATE_NEW);
+			bframe.setState(BufferFrame::STATE_NEW);
 
 			// add to fifo queue, since it is a fresh page
-			frame->setWhichQ(BufferFrame::Q_FIFO);
+			bframe.setWhichQ(BufferFrame::Q_FIFO);
 
 			// load page data into frame
 			fsSource.seekg(pageId * pageSize);
-			if (fsSource.read((char *) frame->getData(), pageSize).fail()) {
+			if (fsSource.read((char *) bframe.getData(), pageSize).fail()) {
 				cerr << "Could not load page: " << pageId << " from file." << endl;
 			}
 			// insert frame into hashmap with new pageId
-			bufferFramesMap.insert(make_pair(pageId, frame));
+			bufferFramesMap.insert(make_pair(pageId, &bframe));
 
 			// make sure pageId is in no queue
 			fifoQ.remove(pageId);
 			lruQ.remove(pageId);
 
+			// lock frame access
+			bframe.lockFrame(exclusive);
+
 			// release file and hashmap access
 			syncLock.unlock();
 
-			// lock frame access
-			frame->lockFrame(exclusive);
+			return bframe;
 
 		} else {
 			// reclaimFrame() unsuccessful
@@ -163,11 +165,11 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 
 	//cout << "Try to unfix page " << frame.getPageId() << " dirty = " << isDirty << endl;
 
-	// synchronize access to bufferFramesMap
-	unique_lock<mutex> syncLock(*m);
-
 	// release the lock on the frame
 	frame.unlockFrame();
+
+	// synchronize access to bufferFramesMap
+	unique_lock<mutex> syncLock(*m);
 
 	// perform unfix page only if there is no thread waiting for the current frame (otherwise the next thread does the unfix progress)
 	if (frame.getAmountOfWaitingThreads() == 0) {
@@ -252,7 +254,7 @@ void BufferManager::writeBackToDisk(BufferFrame& frame) {
  *
  * @return: reclaimed buffer frame, null if no frame could be freed
  */
-BufferFrame* BufferManager::reclaimFrame() {
+BufferFrame& BufferManager::reclaimFrame() {
 
 	// oldPageId is the pageId of the page to be removed from memory
 	uint64_t oldPageId;
@@ -304,7 +306,7 @@ BufferFrame* BufferManager::reclaimFrame() {
 		}
 	}
 
-	return bufferFrame;
+	return *bufferFrame;
 
 }
 

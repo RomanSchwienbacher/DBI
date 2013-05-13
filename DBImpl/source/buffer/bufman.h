@@ -40,7 +40,7 @@ class BufferManager {
 	// mutual exclusion
 	mutex* m;
 
-	BufferFrame* reclaimFrame();
+	BufferFrame& reclaimFrame();
 
 	void writeBackToDisk(BufferFrame& frame);
 
