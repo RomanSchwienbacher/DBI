@@ -10,6 +10,9 @@
 
 class Segment{
 
+	uint64_t segId;
+	uint64_t size;
+
 	struct {
 		uint64_t min, max; // minimum and maximum pageId of extent
 	} extent;
@@ -20,11 +23,15 @@ class Segment{
 public:
 
 	Segment(uint64_t size);
+	Segment(uint64_t min, uint64_t max);
 
 	Segment& grow(uint64_t newSize);
 
 	// returns size in pages
 	uint64_t size();
+
+	uint64_t getId();
+	void setId(uint64_t segId);
 
 	// Iteration
 	char* nextPage();

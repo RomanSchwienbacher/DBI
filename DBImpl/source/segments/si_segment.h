@@ -10,9 +10,9 @@
 
 class SISegment : private Segment{
 
-	Segment& createSegment();
-	int dropSegment();
-	Segment& growSegment();
+	Segment& createSegment(uint64_t size);
+	int dropSegment(uint64_t segId);
+	Segment& growSegment(uint64_t segId, uint64_t newSize);
 	Segment& retrieveSegment(uint64_t segId);
 
 public:
