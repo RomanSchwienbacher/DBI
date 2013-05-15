@@ -9,7 +9,7 @@
 
 #include "mainTest.h"
 #include "gen.cpp"
-#include "../gtest/gtest.h"
+#include "../../testinglib/gtest/gtest.h"
 #include <iostream>
 #include "../sorting/sorter.h"
 #include "buffertest.cpp"
