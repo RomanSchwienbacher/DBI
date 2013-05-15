@@ -49,6 +49,37 @@ int Lock::requestReadLock() {
 }
 
 /*
+ * invokes a non-blocking read-lock request
+ */
+int Lock::tryReadLock() {
+
+	int ret;
+	unique_lock<mutex> readLock(*m);
+
+	if(writeLocked){
+		readLock.unlock();
+		ret = -1;
+	} else {
+
+		// in case of write lock is active, wait
+		while (writeLocked) {
+			condVar->wait(readLock);
+		}
+
+		--waitingThreads;
+
+		// increase read-locks
+		++readLocks;
+		writeLocked = false;
+		ret = 0;
+
+	}
+
+	return ret;
+
+}
+
+/*
  * invokes a write-lock request
  */
 int Lock::requestWriteLock() {
@@ -70,7 +101,35 @@ int Lock::requestWriteLock() {
 }
 
 /*
- * invokes a write-lock request
+ * invokes a non-blocking write-lock request
+ */
+int Lock::tryWriteLock() {
+
+	unique_lock<mutex> writeLock(*m);
+
+	int ret;
+
+	if((readLocks > 0 || writeLocked)){
+		ret = -1;
+	} else {
+		++waitingThreads;
+
+		// in case of active readLocks or one write lock wait
+		while (readLocks > 0 || writeLocked) {
+			condVar->wait(writeLock);
+		}
+
+		--waitingThreads;
+
+		writeLocked = true;
+		ret = 0;
+	}
+
+	return ret;
+}
+
+/*
+ * invokes an unlock request
  */
 int Lock::unlock() {
 

@@ -31,6 +31,8 @@ public:
 
 	int requestReadLock();
 	int requestWriteLock();
+	int tryReadLock();
+	int tryWriteLock();
 	int unlock();
 	int getWaitingThreads();
 

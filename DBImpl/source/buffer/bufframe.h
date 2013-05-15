@@ -27,6 +27,9 @@ class BufferFrame {
 
 public:
 
+	// intent to lock
+	int intent;
+
 	static const int STATE_CLEAN = 0;
 	static const int STATE_DIRTY = 1;
 	static const int STATE_NEW = 2;
@@ -50,6 +53,7 @@ public:
 	int getWhichQ();
 
 	int lockFrame(bool exclusive);
+	int tryLockFrame(bool exclusive);
 	int unlockFrame();
 
 	int getAmountOfWaitingThreads();

@@ -3,7 +3,7 @@ all: DBI
 
 # Tool invocations
 DBI: $(OBJS) $(USER_OBJS)
-	g++ -std=c++11 -pthread -o "dbi" ./buffer/bufframe.cpp ./buffer/bufman.cpp ./buffer/locker.cpp ./sorting/sorter.cpp ./testing/buffertest.cpp ./testing/mainTest.cpp ./gtest/gtest-all.cc
+	g++ -std=c++11 -pthread -g -O0 -o "dbi" ./buffer/bufframe.cpp ./buffer/bufman.cpp ./buffer/locker.cpp ./sorting/sorter.cpp ./testing/buffertest.cpp ./testing/mainTest.cpp ./gtest/gtest-all.cc
 
 # Other Targets
 clean:

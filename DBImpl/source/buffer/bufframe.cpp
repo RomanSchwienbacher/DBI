@@ -25,6 +25,7 @@ BufferFrame::BufferFrame(uint64_t pageNo, char* pageData) {
 	whichQ = Q_FIFO;
 	data = pageData;
 	locker = new Lock();
+	intent = 0;
 }
 
 /**
@@ -77,6 +78,26 @@ int BufferFrame::lockFrame(bool exclusive) {
 		ret = locker->requestWriteLock();
 	} else {
 		ret = locker->requestReadLock();
+	}
+
+	return ret;
+}
+
+/**
+ * tries to lock the buffer frame
+ *
+ * @param exclusive: if true, makes an exclusive (write) lock instead of shared (read) lock
+ *
+ * @return ret: 0 if lock succeeded; -1 if lock cannot be made
+ */
+int BufferFrame::tryLockFrame(bool exclusive) {
+
+	int ret = -1;
+
+	if (exclusive) {
+		ret = locker->tryWriteLock();
+	} else {
+		ret = locker->tryReadLock();
 	}
 
 	return ret;

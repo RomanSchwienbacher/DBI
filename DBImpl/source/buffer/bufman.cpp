@@ -76,72 +76,78 @@ BufferManager::BufferManager(const string& filename, uint64_t size) :
  */
 BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 
-	BufferFrame* frame;
-	// try to access page as if it were handled by buffer manager
-
 	// restrict access to hashmap to remove from queue before other threads can delete in reclaim attempt
 	unique_lock<mutex> syncLock(*m);
+
+	BufferFrame *frame;
 
 	if (bufferFramesMap.count(pageId) > 0) {
 
 		// pageId in memory - else go to catch (out of range exception)
 		frame = bufferFramesMap.at(pageId);
 
-		//cout << "In-Memory Page " << pageId << ", exclusive(" << exclusive << ")" << endl;
-
 		// remove from queues
-		fifoQ.remove(pageId);
+	    fifoQ.remove(pageId);
 		lruQ.remove(pageId);
 
-		// successful access - block frame
-		frame->lockFrame(exclusive);
+		int success = frame->tryLockFrame(exclusive);
 
-		// unlock file access
-		syncLock.unlock();
+		if(success == -1){
+			syncLock.unlock();
+			frame->lockFrame(exclusive);
+			syncLock.lock();
+		}
 
 		//cout << "Page " << pageId << " fixed successfully" << endl;
+
+		return *frame;
 
 	} else {
 		// pageId not in memory
 		//cout << "pageId: " << pageId << " produced page miss. Try to reclaim. " << endl;
 
 		// try to reclaim a frame
-		BufferFrame& bframe = reclaimFrame();
+		BufferFrame& frame = reclaimFrame();
 
-		if (&bframe != NULL) {
+		if (&frame != NULL) {
 
 			//char* newBufferedData = (char *) operator new(pageSize);
 
 			//frame = new BufferFrame(pageId, newBufferedData);
 
 			// set page-id
-			bframe.setPageId(pageId);
+			frame.setPageId(pageId);
 
 			// set state to new
-			bframe.setState(BufferFrame::STATE_NEW);
+			frame.setState(BufferFrame::STATE_NEW);
 
 			// add to fifo queue, since it is a fresh page
-			bframe.setWhichQ(BufferFrame::Q_FIFO);
+			frame.setWhichQ(BufferFrame::Q_FIFO);
 
 			// load page data into frame
 			fsSource.seekg(pageId * pageSize);
-			if (fsSource.read((char *) bframe.getData(), pageSize).fail()) {
+			if (fsSource.read((char *) frame.getData(), pageSize).fail()) {
 				cerr << "Could not load page: " << pageId << " from file." << endl;
 			}
 			// insert frame into hashmap with new pageId
-			bufferFramesMap.insert(make_pair(pageId, &bframe));
+			bufferFramesMap.insert(make_pair(pageId, &frame));
 
 			// make sure pageId is in no queue
 			fifoQ.remove(pageId);
 			lruQ.remove(pageId);
 
-			// lock frame access
-			bframe.lockFrame(exclusive);
+			int success = frame.tryLockFrame(exclusive);
+
+			if(success == -1){
+				syncLock.unlock();
+				frame.lockFrame(exclusive);
+				syncLock.lock();
+			}
 
 			// release file and hashmap access
 			syncLock.unlock();
 
-			return bframe;
+			return frame;
 
 		} else {
 			// reclaimFrame() unsuccessful
@@ -165,14 +171,11 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 
 	//cout << "Try to unfix page " << frame.getPageId() << " dirty = " << isDirty << endl;
 
-	// release the lock on the frame
-	frame.unlockFrame();
-
 	// synchronize access to bufferFramesMap
 	unique_lock<mutex> syncLock(*m);
 
 	// perform unfix page only if there is no thread waiting for the current frame (otherwise the next thread does the unfix progress)
-	if (frame.getAmountOfWaitingThreads() == 0) {
+	//if (frame.getAmountOfWaitingThreads() == 0) {
 
 		// check if buffer frames map contains frame
 		if (bufferFramesMap.count(frame.getPageId()) > 0) {
@@ -208,22 +211,22 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 				frame.setWhichQ(BufferFrame::Q_LRU);
 			}
 
-			// unlock access to bufferFramesMap
-			syncLock.unlock();
+			// release the lock on the frame
+			frame.unlockFrame();
 
 			//cout << "Page " << frame.getPageId() << " unfixed successfully" << endl;
 
 		} else {
 
 			cerr << "Buffer manager contains no frame with page-id " << frame.getPageId() << endl;
-
-			// unlock access to bufferFramesMap
-			syncLock.unlock();
 		}
-	} else {
+	//} else {
+	//	// unlock access to bufferFramesMap
+	//	syncLock.unlock();
+	//}
+
 		// unlock access to bufferFramesMap
 		syncLock.unlock();
-	}
 }
 
 /**
