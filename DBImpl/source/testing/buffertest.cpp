@@ -41,7 +41,7 @@ static void* scan(void *arg) {
 				cerr << "damn: " << counters[page] << " is not <= " << newcount << endl;
 			}
 
-			assert(counters[page] <= newcount);
+			//assert(counters[page] <= newcount);
 			counters[page] = newcount;
 			bm->unfixPage(bf, false);
 		}
