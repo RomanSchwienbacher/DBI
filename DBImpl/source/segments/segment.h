@@ -8,35 +8,43 @@
 #ifndef SEGMENT_H_
 #define SEGMENT_H_
 
+#include <stdint.h>
+#include <vector>
+
 class Segment{
 
+protected:
+
+	// SegmentId
 	uint64_t segId;
+
+	// Size of this segment in pages
 	uint64_t size;
 
-	struct {
-		uint64_t min, max; // minimum and maximum pageId of extent
-	} extent;
+	// structure with min PageID (inclusive) and max PageId (exclusive) of extent
+	struct extent {
+				uint64_t min, max; // minimum and maximum pageId of extent
+		};
 
-	uint64_t extentCount; // number of continuous extents used by the segment
-	extent allExtents[]; // array of all extents within the Segment
+	// vector of extents
+	std::vector<extent> extents; // array of the extents within this Segment
 
 public:
 
-	Segment(uint64_t size);
-	Segment(uint64_t min, uint64_t max);
+	Segment(){};
+
+	Segment(std::vector<extent>);
 
 	Segment& grow(uint64_t newSize);
 
 	// returns size in pages
-	uint64_t size();
+	uint64_t getSize();
 
 	uint64_t getId();
-	void setId(uint64_t segId);
 
 	// Iteration
 	char* nextPage();
 	char* prevPage();
-
 
 };
 
