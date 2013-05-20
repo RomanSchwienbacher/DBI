@@ -19,7 +19,7 @@ public:
 
 	FSISegment(uint64_t size, uint64_t segId, uint64_t maxPageId);
 
-	std::vector<Segment::extent> getFreePages(uint64_t size);
+	std::vector<Segment::extent> getFreeExtents(uint64_t size);
 
 };
 

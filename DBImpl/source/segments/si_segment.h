@@ -20,7 +20,7 @@ class SISegment : private Segment{
 	Segment& getSegment(uint64_t segId);
 
 	// mapping of all segments, key is segmentId
-	std::unordered_map<uint64_t, Segment> segMapping;
+	std::unordered_map<uint64_t, Segment*> segMapping;
 
 	// FSI Segment: here is where the information about free segments is kept
 	FSISegment *fsiSeg;

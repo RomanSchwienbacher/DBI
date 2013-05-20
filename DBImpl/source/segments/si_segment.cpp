@@ -5,6 +5,8 @@
  *      Author: dave
  */
 
+#include <utility>
+#include <vector>
 #include "si_segment.h"
 
 SISegment::SISegment(uint64_t maxPageId){
@@ -17,6 +19,11 @@ SISegment::SISegment(uint64_t maxPageId){
 
 uint64_t SISegment::createSegment(uint64_t size){
 
-	fsiSeg->getFreePages(size);
+	std::vector<Segment::extent> freeExtents;
+
+	freeExtents = fsiSeg->getFreeExtents(size);
+
+	Segment *seg = new Segment(freeExtents, currentId);
+	segMapping.insert(std::make_pair(currentId++, seg));
 
 }
