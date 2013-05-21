@@ -26,7 +26,7 @@ char** g_argv;
 
 TEST (ExternalSortTest, CompleteRun) {
 
-	// check input parameter
+	// check input parameters
 
 	unsigned n = atoi(g_argv[3]);
 	if (n == 0) {
