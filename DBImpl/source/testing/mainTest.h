@@ -14,5 +14,5 @@ class MainTest {
 public:
 };
 
-} /* namespace testing */
+}
 #endif /* MAINTEST_H_ */
