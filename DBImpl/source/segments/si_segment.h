@@ -14,11 +14,6 @@
 
 class SISegment : private Segment{
 
-	uint64_t createSegment(uint64_t size);
-	int dropSegment(uint64_t segId);
-	Segment& growSegment(uint64_t segId, uint64_t newSize);
-	Segment& getSegment(uint64_t segId);
-
 	// mapping of all segments, key is segmentId
 	std::unordered_map<uint64_t, Segment*> segMapping;
 
@@ -30,6 +25,11 @@ class SISegment : private Segment{
 
 public:
 	SISegment(uint64_t maxPageId);
+
+	uint64_t createSegment(uint64_t size);
+	void dropSegment(uint64_t segId);
+	uint64_t growSegment(uint64_t segId, uint64_t newSize);
+	Segment& getSegment(uint64_t segId);
 
 };
 

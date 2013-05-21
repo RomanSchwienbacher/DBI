@@ -12,14 +12,16 @@
 
 class FSISegment : private Segment{
 
-	std::vector<extent> freeExtents; // array of all free extents in db
+	// array of all free extents in db
+	std::vector<uint64_t> freeExtents;
 
 
 public:
 
 	FSISegment(uint64_t size, uint64_t segId, uint64_t maxPageId);
 
-	std::vector<Segment::extent> getFreeExtents(uint64_t size);
+	std::vector<uint64_t> getFreeExtents(uint64_t size);
+	void returnFreeExtents(std::vector<uint64_t> freedExtents);
 
 };
 
