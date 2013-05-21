@@ -1,7 +1,7 @@
 /*
  * mainTest.cpp
  *
- *	Purpose: Launches Unit and Integration Tests
+ *	Purpose: Launches Unit Tests and Integration Tests
  *
  *  @author DRomanAvid
  */
