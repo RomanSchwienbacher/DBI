@@ -3,8 +3,7 @@
  *
  *	Purpose: Launches Unit and Integration Tests
  *
- *  @author David Grotzky
- *  @author Roman Schwienbacher
+ *  @author DRomanAvid
  */
 
 #include "mainTest.h"
