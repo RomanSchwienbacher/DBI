@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include "../segments/record.h"
-#include "../segments/tid.h"
+#include "../segments/tid.cpp"
 #include "../segments/sp_segment.h"
 #include "../segments/si_segment.h"
 #include "../segments/fsi_segment.h"
@@ -18,9 +18,9 @@ using namespace std;
 
 namespace testing {
 
-uint64_t extractPage(TID tid) {
+static uint64_t extractPage(TID tid) {
 	//return tid >> 16;
-	return tid.getPageId();
+	return tid.pageId;
 }
 
 const unsigned initialSize = 100; // in (slotted) pages
@@ -52,12 +52,12 @@ static int launchSlottedtest(char** argv) {
 	const unsigned pageSize = atoi(argv[8]);
 
 	// Bookkeeping
-	unordered_map<TID, unsigned> values; // TID -> testData entry
+	unordered_map<TID, unsigned, TIDHash, TIDEq> values; // TID -> testData entry
 	unordered_map<unsigned, unsigned> usage; // pageID -> bytes used within this page
 
 	// Setting everything up
-	BufferManager bm("/tmp/db", 10ul * 1024ul * 1024ul); // bogus arguments
-	SegmentManager sm(bm);
+	BufferManager bm("/tmp/db.txt", 10ul * 1024ul * 1024ul); // bogus arguments
+	SegmentManager sm(&bm);
 	uint64_t spId = sm.createSegment(totalSize);
 	SPSegment& sp = (SPSegment&) (sm.getSegment(spId));
 	Random64 rnd;

@@ -1,23 +1,48 @@
 /*
  * tid.cpp
  *
- *	Represents a tuple-identifier, consists of a page ID and a slot ID
+ *	This TID uses 8 Bytes for page ID and 2 Bytes for slot ID
+ *	Therefore, a slotted page consists of 2¹⁶ slots and we may have a maximum of 2⁶⁴ pages
  *
  *  Created on: May 22, 2013
  *      Author: DRomanAvid
  */
 
-#include "tid.h"
+#ifndef TID_H_
+#define TID_H_
+#define __STDC_FORMAT_MACROS
 
-TID::TID(uint64_t pageId, uint16_t slotId) {
-	TID::pageId = pageId;
-	TID::slotId = slotId;
-}
+#include <stdint.h>
+#include <string>
+#include <inttypes.h>
 
-uint64_t TID::getPageId() {
-	return pageId;
-}
+using namespace std;
 
-TID::~TID() {
-}
+typedef struct {
 
+	// page ID (8 Bytes)
+	uint64_t pageId;
+
+	// slot ID (2 Bytes)
+	uint16_t slotId;
+
+} TID;
+
+typedef struct {
+	long operator()(const TID &k) const {
+
+		char hashChar[128];
+		sprintf(hashChar, "%" PRIu64 "%" PRIu16, &(k.pageId), &(k.slotId));
+
+		hash<string> hashFn;
+		return hashFn(hashChar);
+	}
+} TIDHash;
+
+typedef struct {
+	bool operator()(const TID &x, const TID &y) const {
+		return x.pageId == y.pageId && x.slotId == y.slotId;
+	}
+} TIDEq;
+
+#endif

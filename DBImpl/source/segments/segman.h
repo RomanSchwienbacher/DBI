@@ -9,14 +9,15 @@
 #define SEGMAN_H_
 
 #include "../buffer/bufman.h"
+#include "si_segment.h"
 
 class SegmentManager {
 
-	BufferManager& bm;
-	SISegment& segmentInventory;
+	BufferManager* bm;
+	SISegment* segmentInventory;
 
 public:
-	SegmentManager(BufferManager& bm);
+	SegmentManager(BufferManager* bm);
 
 	uint64_t createSegment(uint64_t size);
 	Segment& getSegment(uint64_t segId);

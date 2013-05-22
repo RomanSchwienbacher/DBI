@@ -9,7 +9,7 @@
 #define SP_SEGMENT_H_
 
 #include "segment.h"
-#include "tid.h"
+#include "tid.cpp"
 #include "record.h"
 
 class SPSegment: private Segment {
