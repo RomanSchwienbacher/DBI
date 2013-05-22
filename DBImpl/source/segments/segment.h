@@ -35,7 +35,7 @@ public:
 
 	Segment(uint64_t segId);
 
-	Segment(std::vector<uint64_t>, uint64_t segId);
+	Segment(std::vector<uint64_t> extents, uint64_t segId);
 
 	void grow(std::vector<uint64_t> addExtents);
 
