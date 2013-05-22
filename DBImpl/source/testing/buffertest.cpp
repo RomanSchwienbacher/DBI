@@ -140,16 +140,5 @@ static int launchBuffertest(char** argv) {
 }
 
 
-static int launchBuffertestMinimized(char** argv) {
-
-	bm = new BufferManager("/tmp/output.txt", 20);
-	BufferFrame& bf =  bm->fixPage(0, true);
-	bm->unfixPage(bf, true);
-
-	delete bm;
-	return 0;
-
-}
-
 }
 

@@ -17,6 +17,15 @@ class SPSegment: private Segment {
 
 public:
 	SPSegment();
+
+	TID insert(const Record& r);
+
+	bool remove(TID tid);
+
+	Record* lookup(TID tid);
+
+	bool update(TID tid, const Record& r);
+
 	virtual ~SPSegment();
 };
 

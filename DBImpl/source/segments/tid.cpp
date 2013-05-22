@@ -14,6 +14,10 @@ TID::TID(uint64_t pageId, uint16_t slotId) {
 	TID::slotId = slotId;
 }
 
+uint64_t TID::getPageId() {
+	return pageId;
+}
+
 TID::~TID() {
 }
 

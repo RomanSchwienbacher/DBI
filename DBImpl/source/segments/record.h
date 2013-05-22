@@ -8,18 +8,24 @@
 #ifndef RECORD_H_
 #define RECORD_H_
 
-#include <stdint.h>
+#include <string.h>
 
 class Record {
 
 	// the size of the data
-	uint64_t size;
+	unsigned len;
 
 	// the data pointer of the record
 	char * data;
 
 public:
-	Record(uint64_t size, char * data);
+
+	Record& operator=(Record& rhs) = delete;
+	Record(Record& t) = delete;
+	Record(Record&& t);
+	explicit Record(unsigned len, const char* const ptr);
+	const char* getData() const;
+	unsigned getLen() const;
 	virtual ~Record();
 };
 

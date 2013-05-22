@@ -24,6 +24,9 @@ class TID {
 
 public:
 	TID(uint64_t pageId, uint16_t slotId);
+
+	uint64_t getPageId();
+
 	virtual ~TID();
 };
 
