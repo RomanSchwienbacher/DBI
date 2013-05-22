@@ -12,6 +12,7 @@
 #define TID_H_
 #define __STDC_FORMAT_MACROS
 
+#include <iostream>
 #include <stdint.h>
 #include <string>
 #include <inttypes.h>
@@ -27,6 +28,8 @@ typedef struct {
 	uint16_t slotId;
 
 } TID;
+
+// hash and equal structs for hash-map key purpose
 
 typedef struct {
 	long operator()(const TID &k) const {

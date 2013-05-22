@@ -118,7 +118,15 @@ TEST (SlottedTest, CompleteRun) {
 }
 
 /*
- * launch all tests
+ * launch all tests, possible args
+ * /tmp/input.txt
+ * /tmp/output.txt
+ * 1
+ * /tmp/db.txt
+ * 512
+ * 128
+ * 7
+ * 20
  */
 int main(int argc, char **argv) {
 
