@@ -85,10 +85,10 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 
 	if (bufferFramesMap.count(pageId) > 0) {
 
-		// pageId in memory - else go to catch (out of range exception)
+		// pageId in memory
 		frame = bufferFramesMap.at(pageId);
 
-		if(frame->getWhichQ() == BufferFrame::Q_FIFO){
+		if (frame->getWhichQ() == BufferFrame::Q_FIFO) {
 			fifoQ.remove(pageId);
 		} else if (frame->getWhichQ() == BufferFrame::Q_LRU) {
 			lruQ.remove(pageId);
@@ -99,7 +99,7 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 		// try to lock the frame
 		int success = frame->tryLockFrame(exclusive);
 
-		if(success == -1){
+		if (success == -1) {
 			frame->intent++;
 			//unlock mutex to get around deadlock situation
 			bufman_mutex.unlock();
@@ -143,7 +143,7 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 			// try to lock the frame
 			int success = frame.tryLockFrame(exclusive);
 
-			if(success == -1){
+			if (success == -1) {
 				frame.intent++;
 				//unlock mutex to get around deadlock situation
 				bufman_mutex.unlock();
@@ -186,49 +186,49 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 	//unique_lock<mutex> syncLock(*m);
 	bufman_mutex.lock();
 
-		// check if buffer frames map contains frame
-		if (bufferFramesMap.count(frame.getPageId()) > 0) {
+	// check if buffer frames map contains frame
+	if (bufferFramesMap.count(frame.getPageId()) > 0) {
 
-			// set state
-			if (isDirty) {
-				frame.setState(BufferFrame::STATE_DIRTY);
-				// write frame-page back to disk
-				writeBackToDisk(frame);
-				fsSource.flush();
-
-			} else {
-				frame.setState(BufferFrame::STATE_CLEAN);
-			}
-
-			// put unfixed page back into queue depending on where it was before
-			if (frame.getWhichQ() == BufferFrame::Q_FIFO) {
-				/*
-				 * first load -> fifo queue (as seen in constructor and fixPage)
-				 * first usage -> fifo queue but set up for lru next time
-				 * nth usage -> lru queue
-				 */
-				//fifoQ.remove(frame.getPageId()); // be sure that FIFO queue does not contain page-id
-				fifoQ.push_back(frame.getPageId()); // goes to FIFO queue one more time
-
-				frame.setWhichQ(BufferFrame::Q_LRU); // next unfix it will move to lru
-			} else if (frame.getWhichQ() == BufferFrame::Q_LRU){
-
-				//lruQ.remove(frame.getPageId());
-				lruQ.push_back(frame.getPageId());
-			} else {
-				cerr << "*** error: queue of frame undetermined at unfix ***" << endl;
-			}
-
-			// release the lock on the frame
-			frame.unlockFrame();
-
-			//cout << "Page " << frame.getPageId() << " unfixed successfully" << endl;
+		// set state
+		if (isDirty) {
+			frame.setState(BufferFrame::STATE_DIRTY);
+			// write frame-page back to disk
+			writeBackToDisk(frame);
+			fsSource.flush();
 
 		} else {
-
-			cerr << "Buffer manager contains no frame with page-id " << frame.getPageId() << endl;
+			frame.setState(BufferFrame::STATE_CLEAN);
 		}
-		bufman_mutex.unlock();
+
+		// put unfixed page back into queue depending on where it was before
+		if (frame.getWhichQ() == BufferFrame::Q_FIFO) {
+			/*
+			 * first load -> fifo queue (as seen in constructor and fixPage)
+			 * first usage -> fifo queue but set up for lru next time
+			 * nth usage -> lru queue
+			 */
+			//fifoQ.remove(frame.getPageId()); // be sure that FIFO queue does not contain page-id
+			fifoQ.push_back(frame.getPageId()); // goes to FIFO queue one more time
+
+			frame.setWhichQ(BufferFrame::Q_LRU); // next unfix it will move to lru
+		} else if (frame.getWhichQ() == BufferFrame::Q_LRU) {
+
+			//lruQ.remove(frame.getPageId());
+			lruQ.push_back(frame.getPageId());
+		} else {
+			cerr << "*** error: queue of frame undetermined at unfix ***" << endl;
+		}
+
+		// release the lock on the frame
+		frame.unlockFrame();
+
+		//cout << "Page " << frame.getPageId() << " unfixed successfully" << endl;
+
+	} else {
+
+		cerr << "Buffer manager contains no frame with page-id " << frame.getPageId() << endl;
+	}
+	bufman_mutex.unlock();
 }
 
 /**
@@ -269,30 +269,28 @@ BufferFrame& BufferManager::reclaimFrame() {
 	BufferFrame *bufferFrame;
 	bufferFrame = NULL;
 
-
-	while(!frameToReplaceAvailable){
+	while (!frameToReplaceAvailable) {
 		if (fifoQ.size() > 0) {
 
-				// try to free a frame from the fifo queue
-				oldPageId = fifoQ.front();
-				fifoQ.pop_front();
-				bufferFrame = bufferFramesMap.at(oldPageId);
-				if(bufferFrame->intent == 0){
-					frameToReplaceAvailable = true;
-				}
-
-			} else if (lruQ.size() > 0) {
-
-				// try to free a frame from the lru queue
-				oldPageId = lruQ.front();
-				lruQ.pop_front();
-				bufferFrame = bufferFramesMap.at(oldPageId);
-				if(bufferFrame->intent == 0){
-					frameToReplaceAvailable = true;
-				}
+			// try to free a frame from the fifo queue
+			oldPageId = fifoQ.front();
+			fifoQ.pop_front();
+			bufferFrame = bufferFramesMap.at(oldPageId);
+			if (bufferFrame->intent == 0) {
+				frameToReplaceAvailable = true;
 			}
-	}
 
+		} else if (lruQ.size() > 0) {
+
+			// try to free a frame from the lru queue
+			oldPageId = lruQ.front();
+			lruQ.pop_front();
+			bufferFrame = bufferFramesMap.at(oldPageId);
+			if (bufferFrame->intent == 0) {
+				frameToReplaceAvailable = true;
+			}
+		}
+	}
 
 	if (frameToReplaceAvailable) {
 
