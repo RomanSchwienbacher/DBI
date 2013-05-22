@@ -11,9 +11,14 @@
 #include "segment.h"
 #include "tid.cpp"
 #include "record.h"
+#include "slottedpage.h"
+
+using namespace std;
 
 class SPSegment: private Segment {
 
+	// managed slotted pages by segment
+	vector<SlottedPage*> slottedPages;
 
 public:
 	SPSegment();
