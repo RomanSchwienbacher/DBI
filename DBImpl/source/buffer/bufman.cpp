@@ -88,14 +88,6 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 		// pageId in memory
 		frame = bufferFramesMap.at(pageId);
 
-		if (frame->getWhichQ() == BufferFrame::Q_FIFO) {
-			fifoQ.remove(pageId);
-		} else if (frame->getWhichQ() == BufferFrame::Q_LRU) {
-			lruQ.remove(pageId);
-		} else {
-			cerr << "*** current queue of buffer frame could not be determined ***" << endl;
-		}
-
 		// try to lock the frame
 		int success = frame->tryLockFrame(exclusive);
 
@@ -107,6 +99,10 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 			bufman_mutex.lock();
 			frame->intent--;
 		}
+
+		// remove pageID out of queues
+		fifoQ.remove(pageId);
+		lruQ.remove(pageId);
 
 		//cout << "Page " << pageId << " fixed successfully" << endl;
 
@@ -134,6 +130,7 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 				bufman_mutex.lock();
 				frame.intent--;
 			}
+
 
 			// set page-id
 			frame.setPageId(pageId);
@@ -194,11 +191,13 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 			frame.setState(BufferFrame::STATE_DIRTY);
 			// write frame-page back to disk
 			writeBackToDisk(frame);
-			fsSource.flush();
-
 		} else {
 			frame.setState(BufferFrame::STATE_CLEAN);
 		}
+
+		// remove pageID out of queues
+		fifoQ.remove(frame.getPageId());
+		lruQ.remove(frame.getPageId());
 
 		// put unfixed page back into queue depending on where it was before
 		if (frame.getWhichQ() == BufferFrame::Q_FIFO) {
@@ -207,13 +206,9 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 			 * first usage -> fifo queue but set up for lru next time
 			 * nth usage -> lru queue
 			 */
-			fifoQ.remove(frame.getPageId()); // be sure that FIFO queue does not contain page-id
 			fifoQ.push_back(frame.getPageId()); // goes to FIFO queue one more time
-
 			frame.setWhichQ(BufferFrame::Q_LRU); // next unfix it will move to lru
 		} else if (frame.getWhichQ() == BufferFrame::Q_LRU) {
-
-			lruQ.remove(frame.getPageId());
 			lruQ.push_back(frame.getPageId());
 		} else {
 			cerr << "*** error: queue of frame undetermined at unfix ***" << endl;
@@ -248,6 +243,8 @@ void BufferManager::writeBackToDisk(BufferFrame& frame) {
 			throw runtime_error("cannot write file");
 		}
 
+		fsSource.flush();
+
 	} catch (exception& e) {
 		cerr << "An exception occurred while writing data back to disk: " << e.what() << endl;
 	}
@@ -276,7 +273,6 @@ BufferFrame& BufferManager::reclaimFrame() {
 			oldPageId = fifoQ.front();
 			bufferFrame = bufferFramesMap.at(oldPageId);
 			if (bufferFrame->intent == 0) {
-				fifoQ.pop_front();
 				frameToReplaceAvailable = true;
 			}
 
@@ -286,7 +282,6 @@ BufferFrame& BufferManager::reclaimFrame() {
 			oldPageId = lruQ.front();
 			bufferFrame = bufferFramesMap.at(oldPageId);
 			if (bufferFrame->intent == 0) {
-				lruQ.pop_front();
 				frameToReplaceAvailable = true;
 			}
 		}
@@ -299,10 +294,13 @@ BufferFrame& BufferManager::reclaimFrame() {
 			// get framepointer and then remove oldPageId reference from hashmap
 			bufferFrame = bufferFramesMap.at(oldPageId);
 
+			// remove old page id from queue
+			fifoQ.remove(oldPageId);
+			lruQ.remove(oldPageId);
+
 			// if dirty write back to disk before erasing
 			//if (bufferFrame->getState() == BufferFrame::STATE_DIRTY) { CAUSES TONS OF DAMN ERRORS
 			writeBackToDisk(*bufferFrame);
-			fsSource.flush();
 			//}
 
 			// remove frame from frames-map
@@ -329,7 +327,6 @@ BufferManager::~BufferManager() {
 
 			// write dirty pages back to disk
 			writeBackToDisk(*(it->second));
-			fsSource.flush();
 		}
 
 		// delete buffer frames
