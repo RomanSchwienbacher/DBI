@@ -25,6 +25,8 @@ class BufferFrame {
 	// *data points to the buffered page in virtual memory
 	char *data;
 
+	pthread_rwlock_t testlock;
+
 public:
 
 	// intent to lock

@@ -112,7 +112,7 @@ TEST (BufferTest, CompleteRun) {
 }
 
 TEST (SlottedTest, CompleteRun) {
-	ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
+	//ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
 }
 
 }
@@ -144,4 +144,3 @@ int main(int argc, char **argv) {
 
 	return RUN_ALL_TESTS();
 }
-

@@ -25,6 +25,7 @@ BufferFrame::BufferFrame(uint64_t pageNo, char* pageData) {
 	whichQ = Q_FIFO;
 	data = pageData;
 	locker = new Lock();
+	pthread_rwlock_init(&testlock, NULL);
 	intent = 0;
 }
 
@@ -75,9 +76,11 @@ int BufferFrame::lockFrame(bool exclusive) {
 	int ret = 0;
 
 	if (exclusive) {
-		ret = locker->requestWriteLock();
+		//ret = locker->requestWriteLock();
+		ret = pthread_rwlock_wrlock(&testlock);
 	} else {
-		ret = locker->requestReadLock();
+		//ret = locker->requestReadLock();
+		ret = pthread_rwlock_rdlock(&testlock);
 	}
 
 	return ret;
@@ -95,9 +98,11 @@ int BufferFrame::tryLockFrame(bool exclusive) {
 	int ret = -1;
 
 	if (exclusive) {
-		ret = locker->tryWriteLock();
+		//ret = locker->tryWriteLock();
+		ret = pthread_rwlock_trywrlock(&testlock);
 	} else {
-		ret = locker->tryReadLock();
+		//ret = locker->tryReadLock();
+		ret = pthread_rwlock_tryrdlock(&testlock);
 	}
 
 	return ret;
@@ -110,7 +115,8 @@ int BufferFrame::tryLockFrame(bool exclusive) {
  */
 int BufferFrame::unlockFrame() {
 
-	return locker->unlock();
+	//return locker->unlock();
+	return pthread_rwlock_unlock(&testlock);
 }
 
 /**
