@@ -35,6 +35,7 @@ typedef struct {
 	long operator()(const TID &k) const {
 
 		// FACKEN UND KICKEN
+		// JETZ ABA LOS!
 
 		char hashChar[128];
 		sprintf(hashChar, "%" PRIu64 "%" PRIu16, &(k.pageId), &(k.slotId));
