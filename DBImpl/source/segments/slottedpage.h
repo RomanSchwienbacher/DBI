@@ -31,7 +31,7 @@ typedef struct {
 
 class SlottedPage {
 
-	// header of slotted page
+	// header for slotted page
 	Header* header;
 	// corresponding slots
 	vector<Slot*> slots;

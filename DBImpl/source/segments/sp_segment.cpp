@@ -12,8 +12,7 @@
 
 using namespace std;
 
-// TODO initialize parent segment properly
-SPSegment::SPSegment() : Segment(0) {
+SPSegment::SPSegment(uint64_t segId) : Segment(segId) {
 }
 
 /**

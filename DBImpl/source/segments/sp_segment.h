@@ -21,7 +21,7 @@ class SPSegment: private Segment {
 	vector<SlottedPage*> slottedPages;
 
 public:
-	SPSegment();
+	SPSegment(uint64_t segId);
 
 	TID insert(const Record& r);
 
