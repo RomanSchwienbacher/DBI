@@ -24,12 +24,21 @@ protected:
 	// list of extents
 	std::vector<uint64_t> extents;
 
+	// list of extent lengths
+	std::vector<uint64_t> extentLengths;
+
+	// list of all pageIds
+	std::vector<uint64_t> allPages;
+
 	// calculate the size in pages from the extent vector
 	uint64_t calculateSize(std::vector<uint64_t> extents);
 
 	// merge extents
 	std::vector<uint64_t> mergeExtents(std::vector<uint64_t> extents1,
 			std::vector<uint64_t> extents2);
+
+	// expand extents to list all pageIds
+	void expandExtents(std::vector<uint64_t> extents);
 
 public:
 
@@ -49,6 +58,8 @@ public:
 	// Iteration
 	char* nextPage();
 	char* prevPage();
+
+	uint64_t at(uint64_t pos);
 
 };
 

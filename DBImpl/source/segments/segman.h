@@ -21,8 +21,10 @@ public:
 
 	uint64_t createSegment(uint64_t size);
 	Segment& getSegment(uint64_t segId);
+	void dropSegment(uint64_t segId);
+	uint64_t growSegment(uint64_t segId, uint64_t newSize);
 
-	virtual ~SegmentManager();
+	~SegmentManager();
 };
 
 #endif

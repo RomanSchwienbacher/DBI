@@ -25,6 +25,14 @@ Segment& SegmentManager::getSegment(uint64_t segId) {
 	return segmentInventory->getSegment(segId);
 }
 
+void SegmentManager::dropSegment(uint64_t segId){
+	segmentInventory->dropSegment(segId);
+}
+
+uint64_t SegmentManager::growSegment(uint64_t segId, uint64_t newSize){
+	return segmentInventory->growSegment(segId, newSize);
+}
+
 SegmentManager::~SegmentManager() {
 }
 
