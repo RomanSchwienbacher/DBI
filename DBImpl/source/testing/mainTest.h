@@ -2,7 +2,7 @@
  * mainTest.h
  *
  *  Created on: Apr 29, 2013
- *      Author: roman
+ *      Author: DRomanAvid
  */
 
 #ifndef MAINTEST_H_
@@ -14,5 +14,5 @@ class MainTest {
 public:
 };
 
-} /* namespace testing */
+}
 #endif /* MAINTEST_H_ */

@@ -3,16 +3,16 @@
  *
  *	Purpose: Launches Unit and Integration Tests
  *
- *  @author David Grotzky
- *  @author Roman Schwienbacher
+ *  @author DRomanAvid
  */
 
 #include "mainTest.h"
 #include "gen.cpp"
-#include "gtest/gtest.h"
+#include "../../testinglib/gtest/gtest.h"
 #include <iostream>
-#include "sorter.h"
+#include "../sorting/sorter.h"
 #include "buffertest.cpp"
+#include "slottedtest.cpp"
 #include <math.h>
 #include <iostream>
 
@@ -111,16 +111,28 @@ TEST (BufferTest, CompleteRun) {
 	ASSERT_EQ(testing::launchBuffertest(g_argv), 0);
 }
 
+TEST (SlottedTest, CompleteRun) {
+	ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
+}
+
 }
 
 /*
- * launch all tests
+ * launch all tests, possible args
+ * /tmp/input.txt
+ * /tmp/output.txt
+ * 1
+ * /tmp/db.txt
+ * 512
+ * 128
+ * 7
+ * 20
  */
 int main(int argc, char **argv) {
 
 	// check input parameter
-	if (argc < 8) {
-		cerr << "usage of whole test: " << argv[0] << " <sort_inputFile> <sort_outputFile> <sort_memoryBufferInMB> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads>" << endl;
+	if (argc < 9) {
+		cerr << "usage of whole test: " << argv[0] << " <sort_inputFile> <sort_outputFile> <sort_memoryBufferInMB> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads> <slot_pageSize>" << endl;
 		exit(0);
 	}
 

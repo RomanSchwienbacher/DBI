@@ -15,6 +15,8 @@
 
 using namespace std;
 
+mutex bufman_mutex;
+
 /*
  * Constructor for BufferManager
  *
@@ -35,7 +37,6 @@ BufferManager::BufferManager(const string& filename, uint64_t size) :
 	pageSize = sysconf(_SC_PAGESIZE);
 
 	// write member attributes
-	m = new mutex;
 	buffSize = size;
 	fsSource.seekg(0, std::fstream::end);
 	pagesOnDisk = fsSource.tellg() / pageSize;
@@ -76,28 +77,36 @@ BufferManager::BufferManager(const string& filename, uint64_t size) :
  */
 BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 
-	BufferFrame* frame;
-	// try to access page as if it were handled by buffer manager
-
 	// restrict access to hashmap to remove from queue before other threads can delete in reclaim attempt
-	unique_lock<mutex> syncLock(*m);
+	//unique_lock<mutex> syncLock(*m);
+	bufman_mutex.lock();
+
+	BufferFrame *frame;
 
 	if (bufferFramesMap.count(pageId) > 0) {
 
-		// pageId in memory - else go to catch (out of range exception)
+		// pageId in memory
 		frame = bufferFramesMap.at(pageId);
 
-		//cout << "In-Memory Page " << pageId << ", exclusive(" << exclusive << ")" << endl;
+		if (frame->getWhichQ() == BufferFrame::Q_FIFO) {
+			fifoQ.remove(pageId);
+		} else if (frame->getWhichQ() == BufferFrame::Q_LRU) {
+			lruQ.remove(pageId);
+		} else {
+			cerr << "*** current queue of buffer frame could not be determined ***" << endl;
+		}
 
-		// remove from queues
-		fifoQ.remove(pageId);
-		lruQ.remove(pageId);
+		// try to lock the frame
+		int success = frame->tryLockFrame(exclusive);
 
-		// unlock file access
-		syncLock.unlock();
-
-		// successful access - block frame
-		frame->lockFrame(exclusive);
+		if (success == -1) {
+			frame->intent++;
+			//unlock mutex to get around deadlock situation
+			bufman_mutex.unlock();
+			frame->lockFrame(exclusive);
+			bufman_mutex.lock();
+			frame->intent--;
+		}
 
 		//cout << "Page " << pageId << " fixed successfully" << endl;
 
@@ -106,48 +115,58 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 		//cout << "pageId: " << pageId << " produced page miss. Try to reclaim. " << endl;
 
 		// try to reclaim a frame
-		frame = reclaimFrame();
+		BufferFrame& frame = reclaimFrame();
 
-		if (frame != NULL) {
+		if (&frame != NULL) {
 
 			//char* newBufferedData = (char *) operator new(pageSize);
 
 			//frame = new BufferFrame(pageId, newBufferedData);
 
 			// set page-id
-			frame->setPageId(pageId);
+			frame.setPageId(pageId);
 
 			// set state to new
-			frame->setState(BufferFrame::STATE_NEW);
+			frame.setState(BufferFrame::STATE_NEW);
 
 			// add to fifo queue, since it is a fresh page
-			frame->setWhichQ(BufferFrame::Q_FIFO);
+			frame.setWhichQ(BufferFrame::Q_FIFO);
 
 			// load page data into frame
 			fsSource.seekg(pageId * pageSize);
-			if (fsSource.read((char *) frame->getData(), pageSize).fail()) {
+			if (fsSource.read((char *) frame.getData(), pageSize).fail()) {
 				cerr << "Could not load page: " << pageId << " from file." << endl;
 			}
 			// insert frame into hashmap with new pageId
-			bufferFramesMap.insert(make_pair(pageId, frame));
+			bufferFramesMap.insert(make_pair(pageId, &frame));
 
-			// make sure pageId is in no queue
-			fifoQ.remove(pageId);
-			lruQ.remove(pageId);
+			// try to lock the frame
+			int success = frame.tryLockFrame(exclusive);
+
+			if (success == -1) {
+				frame.intent++;
+				//unlock mutex to get around deadlock situation
+				bufman_mutex.unlock();
+				frame.lockFrame(exclusive);
+				bufman_mutex.lock();
+				frame.intent--;
+			}
 
 			// release file and hashmap access
-			syncLock.unlock();
+			//syncLock.unlock();
+			bufman_mutex.unlock();
 
-			// lock frame access
-			frame->lockFrame(exclusive);
+			return frame;
 
 		} else {
 			// reclaimFrame() unsuccessful
 			cerr << "All pages in use. Cannot reclaim any frame." << endl;
-			syncLock.unlock();
+			//syncLock.unlock();
+			bufman_mutex.unlock();
 			exit(-1);
 		}
 	}
+	bufman_mutex.unlock();
 	return *frame;
 
 }
@@ -164,64 +183,52 @@ void BufferManager::unfixPage(BufferFrame& frame, bool isDirty) {
 	//cout << "Try to unfix page " << frame.getPageId() << " dirty = " << isDirty << endl;
 
 	// synchronize access to bufferFramesMap
-	unique_lock<mutex> syncLock(*m);
+	//unique_lock<mutex> syncLock(*m);
+	bufman_mutex.lock();
 
-	// release the lock on the frame
-	frame.unlockFrame();
+	// check if buffer frames map contains frame
+	if (bufferFramesMap.count(frame.getPageId()) > 0) {
 
-	// perform unfix page only if there is no thread waiting for the current frame (otherwise the next thread does the unfix progress)
-	if (frame.getAmountOfWaitingThreads() == 0) {
-
-		// check if buffer frames map contains frame
-		if (bufferFramesMap.count(frame.getPageId()) > 0) {
-
-			// set state
-			if (isDirty) {
-				frame.setState(BufferFrame::STATE_DIRTY);
-				// write frame-page back to disk
-				writeBackToDisk(frame);
-
-			} else {
-				frame.setState(BufferFrame::STATE_CLEAN);
-			}
-
-			// put unfixed page back into queue depending on where it was before
-			if (frame.getWhichQ() == BufferFrame::Q_FIFO) {
-				/*
-				 * first load -> fifo queue (as seen in constructor and fixPage)
-				 * first usage -> fifo queue but set up for lru next time
-				 * nth usage -> lru queue
-				 */
-				fifoQ.remove(frame.getPageId()); // be sure that FIFO queue does not contain page-id
-				lruQ.remove(frame.getPageId()); // also remove from lruQ for concurrency
-				fifoQ.push_back(frame.getPageId()); // goes to FIFO queue one more time
-
-				frame.setWhichQ(BufferFrame::Q_LRU); // next unfix it will move to lru
-			} else {
-
-				lruQ.remove(frame.getPageId());
-				fifoQ.remove(frame.getPageId());
-				lruQ.push_back(frame.getPageId());
-
-				frame.setWhichQ(BufferFrame::Q_LRU);
-			}
-
-			// unlock access to bufferFramesMap
-			syncLock.unlock();
-
-			//cout << "Page " << frame.getPageId() << " unfixed successfully" << endl;
+		// set state
+		if (isDirty) {
+			frame.setState(BufferFrame::STATE_DIRTY);
+			// write frame-page back to disk
+			writeBackToDisk(frame);
+			fsSource.flush();
 
 		} else {
-
-			cerr << "Buffer manager contains no frame with page-id " << frame.getPageId() << endl;
-
-			// unlock access to bufferFramesMap
-			syncLock.unlock();
+			frame.setState(BufferFrame::STATE_CLEAN);
 		}
+
+		// put unfixed page back into queue depending on where it was before
+		if (frame.getWhichQ() == BufferFrame::Q_FIFO) {
+			/*
+			 * first load -> fifo queue (as seen in constructor and fixPage)
+			 * first usage -> fifo queue but set up for lru next time
+			 * nth usage -> lru queue
+			 */
+			//fifoQ.remove(frame.getPageId()); // be sure that FIFO queue does not contain page-id
+			fifoQ.push_back(frame.getPageId()); // goes to FIFO queue one more time
+
+			frame.setWhichQ(BufferFrame::Q_LRU); // next unfix it will move to lru
+		} else if (frame.getWhichQ() == BufferFrame::Q_LRU) {
+
+			//lruQ.remove(frame.getPageId());
+			lruQ.push_back(frame.getPageId());
+		} else {
+			cerr << "*** error: queue of frame undetermined at unfix ***" << endl;
+		}
+
+		// release the lock on the frame
+		frame.unlockFrame();
+
+		//cout << "Page " << frame.getPageId() << " unfixed successfully" << endl;
+
 	} else {
-		// unlock access to bufferFramesMap
-		syncLock.unlock();
+
+		cerr << "Buffer manager contains no frame with page-id " << frame.getPageId() << endl;
 	}
+	bufman_mutex.unlock();
 }
 
 /**
@@ -252,7 +259,7 @@ void BufferManager::writeBackToDisk(BufferFrame& frame) {
  *
  * @return: reclaimed buffer frame, null if no frame could be freed
  */
-BufferFrame* BufferManager::reclaimFrame() {
+BufferFrame& BufferManager::reclaimFrame() {
 
 	// oldPageId is the pageId of the page to be removed from memory
 	uint64_t oldPageId;
@@ -262,24 +269,27 @@ BufferFrame* BufferManager::reclaimFrame() {
 	BufferFrame *bufferFrame;
 	bufferFrame = NULL;
 
-	if (fifoQ.size() > 0) {
+	while (!frameToReplaceAvailable) {
+		if (fifoQ.size() > 0) {
 
-		// try to free a frame from the fifo queue
-		oldPageId = fifoQ.front();
-		fifoQ.pop_front();
-		fifoQ.remove(oldPageId);
+			// try to free a frame from the fifo queue
+			oldPageId = fifoQ.front();
+			fifoQ.pop_front();
+			bufferFrame = bufferFramesMap.at(oldPageId);
+			if (bufferFrame->intent == 0) {
+				frameToReplaceAvailable = true;
+			}
 
-		frameToReplaceAvailable = true;
+		} else if (lruQ.size() > 0) {
 
-	} else if (lruQ.size() > 0) {
-
-		// try to free a frame from the lru queue
-		oldPageId = lruQ.front();
-		lruQ.pop_front();
-		lruQ.remove(oldPageId);
-
-		frameToReplaceAvailable = true;
-
+			// try to free a frame from the lru queue
+			oldPageId = lruQ.front();
+			lruQ.pop_front();
+			bufferFrame = bufferFramesMap.at(oldPageId);
+			if (bufferFrame->intent == 0) {
+				frameToReplaceAvailable = true;
+			}
+		}
 	}
 
 	if (frameToReplaceAvailable) {
@@ -304,7 +314,7 @@ BufferFrame* BufferManager::reclaimFrame() {
 		}
 	}
 
-	return bufferFrame;
+	return *bufferFrame;
 
 }
 
@@ -319,7 +329,6 @@ BufferManager::~BufferManager() {
 
 			// write dirty pages back to disk
 			writeBackToDisk(*(it->second));
-
 			fsSource.flush();
 		}
 

@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <pthread.h>
-#include "bufman.h"
-#include "bufframe.h"
+#include "../buffer/bufman.h"
+#include "../buffer/bufframe.h"
 
 using namespace std;
 
@@ -41,7 +41,7 @@ static void* scan(void *arg) {
 				cerr << "damn: " << counters[page] << " is not <= " << newcount << endl;
 			}
 
-			assert(counters[page] <= newcount);
+			//assert(counters[page] <= newcount);
 			counters[page] = newcount;
 			bm->unfixPage(bf, false);
 		}
@@ -139,17 +139,6 @@ static int launchBuffertest(char** argv) {
 	}
 }
 
-
-static int launchBuffertestMinimized(char** argv) {
-
-	bm = new BufferManager("/tmp/output.txt", 20);
-	BufferFrame& bf =  bm->fixPage(0, true);
-	bm->unfixPage(bf, true);
-
-	delete bm;
-	return 0;
-
-}
 
 }
 

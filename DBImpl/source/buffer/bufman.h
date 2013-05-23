@@ -37,10 +37,7 @@ class BufferManager {
 	 */
 	char *bufferedData;
 
-	// mutual exclusion
-	mutex* m;
-
-	BufferFrame* reclaimFrame();
+	BufferFrame& reclaimFrame();
 
 	void writeBackToDisk(BufferFrame& frame);
 

@@ -14,6 +14,7 @@
 
 using namespace std;
 
+
 /**
  * Constructor - initializes attributes
  */
@@ -49,6 +50,37 @@ int Lock::requestReadLock() {
 }
 
 /*
+ * invokes a non-blocking read-lock request
+ */
+int Lock::tryReadLock() {
+
+	int ret;
+	unique_lock<mutex> readLock(*m);
+
+	if(writeLocked){
+		readLock.unlock();
+		ret = -1;
+	} else {
+
+		// in case of write lock is active, wait
+		while (writeLocked) {
+			condVar->wait(readLock);
+		}
+
+		--waitingThreads;
+
+		// increase read-locks
+		++readLocks;
+		writeLocked = false;
+		ret = 0;
+
+	}
+
+	return ret;
+
+}
+
+/*
  * invokes a write-lock request
  */
 int Lock::requestWriteLock() {
@@ -70,7 +102,35 @@ int Lock::requestWriteLock() {
 }
 
 /*
- * invokes a write-lock request
+ * invokes a non-blocking write-lock request
+ */
+int Lock::tryWriteLock() {
+
+	unique_lock<mutex> writeLock(*m);
+
+	int ret;
+
+	if((readLocks > 0 || writeLocked)){
+		ret = -1;
+	} else {
+		++waitingThreads;
+
+		// in case of active readLocks or one write lock wait
+		while (readLocks > 0 || writeLocked) {
+			condVar->wait(writeLock);
+		}
+
+		--waitingThreads;
+
+		writeLocked = true;
+		ret = 0;
+	}
+
+	return ret;
+}
+
+/*
+ * invokes an unlock request
  */
 int Lock::unlock() {
 
@@ -96,64 +156,3 @@ int Lock::getWaitingThreads() {
 Lock::~Lock() {
 
 }
-
-/*
-int main(int argc, char **argv) {
-
-	Lock myLock;
-
-	std::thread thread1([&]() {
-
-		cout << "thread1 launched" << endl;
-
-		cout << "thread1 requestsReadLock" << endl;
-		myLock.requestReadLock();
-		cout << "thread1 has ReadLock" << endl;
-		this_thread::sleep_for(chrono::seconds(4));
-		myLock.unlock();
-		cout << "thread1 leaves ReadLock" << endl;
-
-	});
-
-	std::thread thread2([&]() {
-
-		cout << "thread2 launched" << endl;
-
-		this_thread::sleep_for(chrono::seconds(1));
-
-		cout << "thread2 requestsReadLock" << endl;
-		myLock.requestReadLock();
-		cout << "thread2 has ReadLock" << endl;
-		this_thread::sleep_for(chrono::seconds(2));
-		myLock.unlock();
-		cout << "thread2 leaves ReadLock" << endl;
-		this_thread::sleep_for(chrono::seconds(3));
-
-		cout << "thread2 requestsReadLock" << endl;
-		myLock.requestReadLock();
-		cout << "thread2 has ReadLock" << endl;
-		myLock.unlock();
-		cout << "thread2 leaves ReadLock" << endl;
-
-	});
-
-	std::thread thread3([&]() {
-
-		cout << "thread3 launched" << endl;
-
-		this_thread::sleep_for(chrono::seconds(2));
-
-		cout << "thread3 requestsWriteLock" << endl;
-		myLock.requestWriteLock();
-		cout << "thread3 has WriteLock" << endl;
-		this_thread::sleep_for(chrono::seconds(4));
-		myLock.unlock();
-		cout << "thread3 leaves WriteLock" << endl;
-
-	});
-
-	thread1.join();
-	thread2.join();
-	thread3.join();
-}
-*/
