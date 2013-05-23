@@ -9,6 +9,7 @@
 #define SLOTTEDPAGE_H_
 
 #include "record.h"
+#include <vector>
 #include <inttypes.h>
 
 using namespace std;
