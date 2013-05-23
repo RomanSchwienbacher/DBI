@@ -98,6 +98,8 @@ uint64_t SISegment::growSegment(uint64_t segId, uint64_t newSize){
 	std::vector<uint64_t> addExtents = fsiSeg->getFreeExtents(newSize - seg.getSize());
 
 	seg.grow(addExtents);
+
+	return seg.getSize();
 }
 
 /**

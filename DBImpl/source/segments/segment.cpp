@@ -17,14 +17,32 @@ Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
 
 	Segment::segId = segId;
 	Segment::extents = extents;
-
 	size = calculateSize(extents);
+	//Segment::expandExtents(extents);
+}
+
+void Segment::expandExtents(std::vector<uint64_t> extents){
+
+	allPages.clear();
+
+	uint64_t pageId;
+
+	uint64_t diff;
+	for(int i = 1; i < extents.size(); i+=2){
+		pageId = extents.at(i-1);
+		diff = extents.at(i+1) - extents.at(i);
+
+		while(0 < diff--){
+			allPages.push_back(pageId++);
+		}
+	}
 }
 
 void Segment::grow(std::vector<uint64_t> addExtents) {
 
 	extents = mergeExtents(extents, addExtents);
 	size = calculateSize(extents);
+	//expandExtents(extents);
 
 }
 
@@ -32,8 +50,10 @@ uint64_t Segment::calculateSize(std::vector<uint64_t> extents) {
 
 	uint64_t ret = 0;
 
+	extentLengths.clear();
 	for (int i = 0; i < extents.size(); i += 2) {
 		ret += (extents.at(i + 1) - extents.at(i));
+		extentLengths.push_back((extents.at(i+1) - extents.at(i)));
 	}
 
 	return ret;
@@ -60,6 +80,27 @@ std::vector<uint64_t> Segment::mergeExtents(std::vector<uint64_t> extents1,
 	}
 
 	return mergedExtents;
+}
+
+uint64_t Segment::at(uint64_t pos){
+
+	uint64_t ret;
+
+	if(pos >= size){
+		return -1;
+	}
+
+//	return allPages.at(pos);
+
+	for(int i = 0; i < extentLengths.size(); ++i){
+		pos -= extentLengths.at(i);
+		if(pos <=0){
+			ret = extents.at((2 * (i+1)) - 1) + pos - 1;
+			break;
+		}
+	}
+
+	return ret;
 }
 
 uint64_t Segment::getSize(){
