@@ -28,7 +28,7 @@ public:
 
 	bool remove(TID tid);
 
-	Record* lookup(TID tid);
+	const Record* lookup(TID tid);
 
 	bool update(TID tid, const Record& r);
 

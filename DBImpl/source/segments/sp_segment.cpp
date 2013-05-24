@@ -23,7 +23,7 @@ SPSegment::SPSegment(uint64_t segId) :
  *
  * @param r: the record
  *
- * @return ret: TID identifying the location where r was stored
+ * @return rtrn: TID identifying the location where r was stored
  */
 TID SPSegment::insert(const Record& r) {
 }
@@ -33,7 +33,7 @@ TID SPSegment::insert(const Record& r) {
  *
  * @param tid: the tuple ID
  *
- * @return ret: whether successfully or not
+ * @return rtrn: whether successfully or not
  */
 bool SPSegment::remove(TID tid) {
 
@@ -54,7 +54,7 @@ bool SPSegment::remove(TID tid) {
 		}
 
 	} catch (const invalid_argument& e) {
-		cerr << "Invalid argument: " << e.what() << endl;
+		cerr << "Invalid argument @remove segment: " << e.what() << endl;
 		rtrn = false;
 	}
 
@@ -66,9 +66,35 @@ bool SPSegment::remove(TID tid) {
  *
  * @param tid: the tuple ID
  *
- * @return ret: the record
+ * @return rtrn: the record
  */
-Record* SPSegment::lookup(TID tid) {
+const Record* SPSegment::lookup(TID tid) {
+
+	const Record* rtrn;
+
+	try {
+
+		if (tid.pageId >= 0 && tid.slotId >= 0) {
+
+			if (slottedPagesMap.count(tid.pageId) > 0) {
+
+				SlottedPage* sp = slottedPagesMap.at(tid.pageId);
+				rtrn = sp->lookupRecord(tid.slotId);
+
+			} else {
+				throw invalid_argument("No page found by given tid");
+			}
+
+		} else {
+			throw invalid_argument("Given tid is invalid");
+		}
+
+	} catch (const invalid_argument& e) {
+		cerr << "Invalid argument @lookup segment: " << e.what() << endl;
+		rtrn = NULL;
+	}
+
+	return rtrn;
 }
 
 /**
@@ -77,10 +103,34 @@ Record* SPSegment::lookup(TID tid) {
  * @param tid: the tuple ID
  * @param r: the record
  *
- * @return ret: whether successfully or not
+ * @return rtrn: whether successfully or not
  */
 bool SPSegment::update(TID tid, const Record& r) {
-	return false;
+
+	bool rtrn = true;
+
+	try {
+
+		if (tid.pageId >= 0 && tid.slotId >= 0) {
+
+			if (slottedPagesMap.count(tid.pageId) > 0) {
+
+				SlottedPage* sp = slottedPagesMap.at(tid.pageId);
+				sp->updateRecord(tid.slotId, r);
+			} else {
+				throw invalid_argument("No page found by given tid");
+			}
+
+		} else {
+			throw invalid_argument("Given tid is invalid");
+		}
+
+	} catch (const invalid_argument& e) {
+		cerr << "Invalid argument @lookup segment: " << e.what() << endl;
+		rtrn = false;
+	}
+
+	return rtrn;
 }
 
 SPSegment::~SPSegment() {

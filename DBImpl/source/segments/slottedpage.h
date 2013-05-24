@@ -30,12 +30,14 @@ class SlottedPage {
 	// header for slotted page
 	Header* header;
 	// corresponding records map
-	unordered_map<uint16_t, Record*> recordsMap;
+	unordered_map<uint16_t, const Record*> recordsMap;
 
 public:
 	SlottedPage();
 
 	void removeRecord(uint16_t slotId);
+	const Record* lookupRecord(uint16_t slotId);
+	void updateRecord(uint16_t slotId, const Record& r);
 
 	virtual ~SlottedPage();
 };

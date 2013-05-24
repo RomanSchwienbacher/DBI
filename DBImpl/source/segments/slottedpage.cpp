@@ -5,6 +5,7 @@
  *      Author: roman
  */
 
+#include <stdexcept>
 #include "slottedpage.h"
 
 SlottedPage::SlottedPage() {
@@ -14,15 +15,13 @@ SlottedPage::SlottedPage() {
 /**
  * Deletes the record pointed to by tid and updates the page header accordingly
  *
- * @param tid: the tuple ID
- *
- * @return ret: whether successfully or not
+ * @param slotId: the slot ID
  */
 void SlottedPage::removeRecord(uint16_t slotId) {
 
 	if (recordsMap.count(slotId) > 0) {
 
-		Record* recordToDelete = recordsMap.at(slotId);
+		const Record* recordToDelete = recordsMap.at(slotId);
 		recordsMap.erase(slotId);
 
 		if (header->dataStart == slotId) {
@@ -49,6 +48,49 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 		--(header->slotCount);
 
 		delete recordToDelete;
+	}
+}
+
+/**
+ * Returns a pointer or reference to the readonly record associated with tid
+ *
+ * @param slotId: the slot ID
+ *
+ * @return rtrn: the record
+ */
+const Record* SlottedPage::lookupRecord(uint16_t slotId) {
+
+	const Record* rtrn;
+
+	if (recordsMap.count(slotId) > 0) {
+		rtrn = recordsMap.at(slotId);
+	} else {
+		throw invalid_argument("No record found by given slotId");
+	}
+
+	return rtrn;
+}
+
+/**
+ * Updates the record pointed to by tid with the content of record r
+ *
+ * @param slotId: the slot ID
+ * @param r: the record
+ *
+ */
+void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
+
+	if (recordsMap.count(slotId) > 0) {
+
+		const Record* recordToReplace = recordsMap.at(slotId);
+		recordsMap[slotId] = &r;
+
+		header->freeSpace += recordToReplace->getLen() - r.getLen();
+
+		delete recordToReplace;
+
+	} else {
+		throw invalid_argument("No record found by given slotId");
 	}
 }
 
