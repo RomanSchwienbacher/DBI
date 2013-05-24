@@ -9,10 +9,12 @@
 
 #include "sp_segment.h"
 #include "fsi_segment.h"
+#include <stdexcept>
 
 using namespace std;
 
-SPSegment::SPSegment(uint64_t segId) : Segment(segId) {
+SPSegment::SPSegment(uint64_t segId) :
+		Segment(segId) {
 }
 
 /**
@@ -27,14 +29,36 @@ TID SPSegment::insert(const Record& r) {
 }
 
 /**
- * Deletes the record pointed to by tid and updates the page header accordingly
+ * Deletes the record pointed to by tid
  *
  * @param tid: the tuple ID
  *
  * @return ret: whether successfully or not
  */
 bool SPSegment::remove(TID tid) {
-	return false;
+
+	bool rtrn = true;
+
+	try {
+
+		if (tid.pageId >= 0 && tid.slotId >= 0) {
+
+			if (slottedPagesMap.count(tid.pageId) > 0) {
+
+				SlottedPage* sp = slottedPagesMap.at(tid.pageId);
+				sp->removeRecord(tid.slotId);
+			}
+
+		} else {
+			throw invalid_argument("Given tid is invalid");
+		}
+
+	} catch (const invalid_argument& e) {
+		cerr << "Invalid argument: " << e.what() << endl;
+		rtrn = false;
+	}
+
+	return rtrn;
 }
 
 /**

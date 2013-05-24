@@ -9,7 +9,7 @@
 #define SLOTTEDPAGE_H_
 
 #include "record.h"
-#include <vector>
+#include <unordered_map>
 #include <inttypes.h>
 
 using namespace std;
@@ -24,25 +24,18 @@ typedef struct {
 
 } Header;
 
-typedef struct {
-	uint16_t offset;
-	uint16_t length;
-} Slot;
 
 class SlottedPage {
 
 	// header for slotted page
 	Header* header;
-	// corresponding slots
-	vector<Slot*> slots;
-	// corresponding records
-	vector<Record*> records;
-
+	// corresponding records map
+	unordered_map<uint16_t, Record*> recordsMap;
 
 public:
 	SlottedPage();
 
-
+	void removeRecord(uint16_t slotId);
 
 	virtual ~SlottedPage();
 };
