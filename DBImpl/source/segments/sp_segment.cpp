@@ -26,6 +26,30 @@ SPSegment::SPSegment(uint64_t segId) :
  * @return rtrn: TID identifying the location where r was stored
  */
 TID SPSegment::insert(const Record& r) {
+
+	TID rtrn;
+
+	SlottedPage* spHolder = NULL;
+
+	for (auto it = slottedPagesMap.begin(); it != slottedPagesMap.end(); ++it) {
+
+		if (it->second->getFreeSpace() >= r.getLen()) {
+			spHolder = it->second;
+		}
+	}
+
+	// page found to hold record
+	if (spHolder != NULL) {
+
+
+
+	}
+	// no page found to hold record, so increase the segment
+	else {
+
+	}
+
+	return rtrn;
 }
 
 /**

@@ -39,6 +39,8 @@ public:
 	const Record* lookupRecord(uint16_t slotId);
 	void updateRecord(uint16_t slotId, const Record& r);
 
+	uint64_t getFreeSpace();
+
 	virtual ~SlottedPage();
 };
 

@@ -94,6 +94,13 @@ void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
 	}
 }
 
+/**
+ * @return the free space of the current slotted page
+ */
+uint64_t SlottedPage::getFreeSpace() {
+	return header->freeSpace;
+}
+
 SlottedPage::~SlottedPage() {
 }
 
