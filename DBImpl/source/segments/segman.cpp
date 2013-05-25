@@ -8,6 +8,7 @@
  */
 
 #include "segman.h"
+#include <iostream>
 
 SegmentManager::SegmentManager(BufferManager* bm) {
 
