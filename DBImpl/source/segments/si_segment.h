@@ -17,20 +17,12 @@ class SISegment : private Segment{
 	// mapping of all segments, key is segmentId
 	std::unordered_map<uint64_t, Segment*> segMapping;
 
-	// FSI Segment: here is where the information about free segments is kept
-	FSISegment *fsiSeg;
-
-	// id counter used for creating segment IDs
-	uint64_t currentId = 0;
-
 public:
 	SISegment(uint64_t maxPageId);
 
-	uint64_t createSegment(uint64_t size);
-	void dropSegment(uint64_t segId);
-	uint64_t growSegment(uint64_t segId, uint64_t newSize);
-	Segment& getSegment(uint64_t segId);
-
+	void addToMap(std::pair<uint64_t, Segment*> segment);
+	Segment* retrieveFromMap(uint64_t segId);
+	void removeFromMap(uint64_t segId);
 };
 
 

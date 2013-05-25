@@ -14,7 +14,13 @@
 class SegmentManager {
 
 	BufferManager* bm;
-	SISegment* segmentInventory;
+	SISegment *segmentInventory;
+
+	// FSI Segment: here is where the information about free segments is kept
+	FSISegment *freeSegmentInventory;
+
+	// id counter used for creating segment IDs
+	uint64_t currentId = 0;
 
 public:
 	SegmentManager(BufferManager* bm);

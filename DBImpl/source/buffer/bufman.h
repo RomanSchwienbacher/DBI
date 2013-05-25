@@ -48,6 +48,8 @@ public:
 
 	void unfixPage(BufferFrame& frame, bool isDirty);
 
+	uint64_t getPagesOnDisk();
+
 	~BufferManager();
 
 };

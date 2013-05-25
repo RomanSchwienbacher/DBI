@@ -12,6 +12,7 @@ FSISegment::FSISegment(uint64_t size, uint64_t segId, uint64_t maxPageId) : Segm
 
 	FSISegment::size = size;
 
+	//TODO: +1 must be changed if si segment > 1 page
 	uint64_t endOfFSI = size +1;
 
 	// internal record of how many extents the FSI segment spans
