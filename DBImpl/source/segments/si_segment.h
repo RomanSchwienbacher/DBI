@@ -18,7 +18,7 @@ class SISegment : private Segment{
 	std::unordered_map<uint64_t, Segment*> segMapping;
 
 public:
-	SISegment(uint64_t maxPageId);
+	SISegment(std::vector<uint64_t> extents, uint64_t segId);
 
 	void addToMap(std::pair<uint64_t, Segment*> segment);
 	Segment* retrieveFromMap(uint64_t segId);

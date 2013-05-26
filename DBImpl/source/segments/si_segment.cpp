@@ -11,13 +11,11 @@
 #include <iostream>
 #include "si_segment.h"
 
-SISegment::SISegment(uint64_t segId) :
-		Segment(segId) {
-
-//TODO: Aufgabe 3
-	extents.push_back(0);
-	extents.push_back(1);
-
+SISegment::SISegment(std::vector<uint64_t> extents, uint64_t segId) : Segment(extents, segId) {
+		
+		
+	// TODO: retrieve segment Mapping from disk
+	// or let it be handed by parameter from segman
 }
 
 /**

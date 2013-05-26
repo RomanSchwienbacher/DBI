@@ -46,7 +46,7 @@ protected:
 
 public:
 
-	Segment(uint64_t segId);
+	Segment(std::vector<uint64_t> extents, uint64_t segId);
 
 	Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm);
 

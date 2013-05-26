@@ -8,11 +8,23 @@
 #include <algorithm>
 #include "segment.h"
 
-Segment::Segment(uint64_t segId) {
+/**
+ * Constructor for Segment Inventory and Free Segment Inventory
+ * @param extents: extents used for the segment
+ * @param segId: id of the segment
+*/
+Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
 	Segment::segId = segId;
-	size = 1;
+	Segment::extents = extents
+	size = calculateSize(extents);
 }
 
+/**
+ * Constructor for Regular segments
+ * @param extents: extents used for the segment
+ * @param segId: id of the segment
+ * @param bm: buffer manager for writing to disk
+*/
 Segment::Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm) {
 
 	Segment::segId = segId;

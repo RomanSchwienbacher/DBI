@@ -8,16 +8,10 @@
 #include "fsi_segment.h"
 
 
-FSISegment::FSISegment(uint64_t size, uint64_t segId, uint64_t maxPageId) : Segment(segId){
-
-	FSISegment::size = size;
+FSISegment::FSISegment(std::vector<uint64_t> extents, uint64_t segId, uint64_t maxPageId) : Segment(extents, segId){
 
 	//TODO: +1 must be changed if si segment > 1 page
 	uint64_t endOfFSI = size +1;
-
-	// internal record of how many extents the FSI segment spans
-	extents.push_back(1);
-	extents.push_back(endOfFSI);
 
 	// record of all free extents in DB
 	freeExtents.push_back(endOfFSI);

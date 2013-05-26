@@ -16,11 +16,20 @@ SegmentManager::SegmentManager(BufferManager* bm) {
 
 	currentId = 0;
 
+	//TODO: accept si and fsi sizes for extent creation
+
 	// create SISegment
-	segmentInventory = new SISegment(currentId++);
+	std::vector<uint64_t> siExtents;
+	siExtents.push_back(0);
+	siExtents.push_back(1);
+	segmentInventory = new SISegment(siExtents, currentId++);
 
 	// create FSISegment and increment currentId to 2
-	freeSegmentInventory = new FSISegment(1, currentId++, bm->getPagesOnDisk());
+	std::vector<uint64_t> fsiExtents;
+	fsiExtents.push_back(1);
+	fsiExtents.push_back(2);
+	
+	freeSegmentInventory = new FSISegment(fsiExtents, currentId++, bm->getPagesOnDisk());
 
 }
 

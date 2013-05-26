@@ -8,6 +8,7 @@
 #ifndef FSI_SEGMENT_H_
 #define FSI_SEGMENT_H_
 
+#include <vector>
 #include "segment.h"
 
 class FSISegment : private Segment{
@@ -18,7 +19,7 @@ class FSISegment : private Segment{
 
 public:
 
-	FSISegment(uint64_t size, uint64_t segId, uint64_t maxPageId);
+	FSISegment(std::vector<uint64_t> extents, uint64_t segId, uint64_t maxPageId);
 
 	std::vector<uint64_t> getFreeExtents(uint64_t size);
 	void returnFreeExtents(std::vector<uint64_t> freedExtents);
