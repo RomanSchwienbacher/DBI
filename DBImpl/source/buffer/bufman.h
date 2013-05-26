@@ -50,6 +50,8 @@ public:
 
 	uint64_t getPagesOnDisk();
 
+	int getPageSize();
+
 	~BufferManager();
 
 };

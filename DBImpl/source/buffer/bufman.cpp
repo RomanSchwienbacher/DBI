@@ -320,6 +320,14 @@ BufferFrame& BufferManager::reclaimFrame() {
 
 }
 
+uint64_t BufferManager::getPagesOnDisk(){
+	return pagesOnDisk;
+}
+
+int BufferManager::getPageSize() {
+	return pageSize;
+}
+
 /**
  * Destructor of the Buffer Manager
  */
@@ -340,8 +348,4 @@ BufferManager::~BufferManager() {
 	// close file stream to source file
 	fsSource.close();
 
-}
-
-uint64_t BufferManager::getPagesOnDisk(){
-	return pagesOnDisk;
 }

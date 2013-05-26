@@ -16,17 +16,21 @@ using namespace std;
 
 SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) : Segment(freeExtents, segId, bm) {
 
-	// hier gehts los
-
-	// free extents sind die extents die mir zur verfügung stehen
-
-	// mit get size slottet pages initialisier
-	for (int i=0; i < getSize(); i++) {
+	for (unsigned i=0; i < getSize(); i++) {
 
 		uint64_t pageId = at(i);
 		BufferFrame frame = bm->fixPage(pageId, true);
 
-		// berechne mit sizeof header größe und materialized map größe und schreibe in header die infos
+		SlottedPage* sp = new SlottedPage();
+
+
+
+		// free extents sind die extents die mir zur verfügung stehen
+
+				// mit get size slottet pages initialisier
+				// berechne mit sizeof header größe und materialized map größe und schreibe in header die infos
+
+		slottedPagesMap[pageId] = sp;
 
 	}
 }

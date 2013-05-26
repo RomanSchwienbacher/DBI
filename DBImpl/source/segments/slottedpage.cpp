@@ -9,7 +9,7 @@
 #include "slottedpage.h"
 
 SlottedPage::SlottedPage() {
-
+	header = {0,0,0,0,0};
 }
 
 /**
@@ -24,7 +24,7 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 		const Record* recordToDelete = recordsMap.at(slotId);
 		recordsMap.erase(slotId);
 
-		if (header->dataStart == slotId) {
+		if (header.dataStart == slotId) {
 
 			bool smallestSlotFound = false;
 			uint16_t smallestSlot = 0;
@@ -37,15 +37,15 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 				}
 			}
 
-			header->dataStart = smallestSlot;
+			header.dataStart = smallestSlot;
 		}
 
-		if (header->firstFreeSlot > slotId) {
-			header->firstFreeSlot = slotId;
+		if (header.firstFreeSlot > slotId) {
+			header.firstFreeSlot = slotId;
 		}
 
-		header->freeSpace += recordToDelete->getLen();
-		--(header->slotCount);
+		header.freeSpace += recordToDelete->getLen();
+		--(header.slotCount);
 
 		delete recordToDelete;
 	}
@@ -85,7 +85,7 @@ void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
 		const Record* recordToReplace = recordsMap.at(slotId);
 		recordsMap[slotId] = &r;
 
-		header->freeSpace += recordToReplace->getLen() - r.getLen();
+		header.freeSpace += recordToReplace->getLen() - r.getLen();
 
 		delete recordToReplace;
 
@@ -98,7 +98,7 @@ void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
  * @return the free space of the current slotted page
  */
 uint64_t SlottedPage::getFreeSpace() {
-	return header->freeSpace;
+	return header.freeSpace;
 }
 
 SlottedPage::~SlottedPage() {

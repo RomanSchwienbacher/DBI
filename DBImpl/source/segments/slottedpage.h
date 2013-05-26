@@ -28,7 +28,7 @@ typedef struct {
 class SlottedPage {
 
 	// header for slotted page
-	Header* header;
+	Header header;
 	// corresponding records map
 	unordered_map<uint16_t, const Record*> recordsMap;
 
