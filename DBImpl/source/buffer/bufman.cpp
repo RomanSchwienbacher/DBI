@@ -341,3 +341,7 @@ BufferManager::~BufferManager() {
 	fsSource.close();
 
 }
+
+uint64_t BufferManager::getPagesOnDisk(){
+	return pagesOnDisk;
+}

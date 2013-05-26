@@ -50,7 +50,7 @@ public:
 
 	Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm);
 
-	void grow(std::vector<uint64_t> addExtents);
+	std::vector<uint64_t> grow(std::vector<uint64_t> addExtents);
 
 	// returns size in pages
 	uint64_t getSize();

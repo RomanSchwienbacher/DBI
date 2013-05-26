@@ -39,11 +39,12 @@ void Segment::expandExtents(std::vector<uint64_t> extents){
 	}
 }
 
-void Segment::grow(std::vector<uint64_t> addExtents) {
+std::vector<uint64_t> Segment::grow(std::vector<uint64_t> addExtents) {
 
 	extents = mergeExtents(extents, addExtents);
 	size = calculateSize(extents);
-	//expandExtents(extents);
+
+	return addExtents;
 
 }
 
