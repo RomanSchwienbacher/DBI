@@ -9,7 +9,25 @@
 #include "slottedpage.h"
 
 SlottedPage::SlottedPage() {
-	header = {0,0,0,0,0};
+	*header = {0,0,0,0};
+}
+
+/**
+ * Inserts a record into slotted page
+ *
+ * @param r: the record
+ *
+ * @return slotId: slot id where r was stored
+ */
+uint16_t SlottedPage::insertRecord(const Record& r) {
+
+	uint16_t slotId = createFirstFreeSlot();
+	recordsMap[slotId] = &r;
+
+	recalculateDataStart();
+	header->freeSpace -= r.getLen();
+
+	return slotId;
 }
 
 /**
@@ -24,28 +42,12 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 		const Record* recordToDelete = recordsMap.at(slotId);
 		recordsMap.erase(slotId);
 
-		if (header.dataStart == slotId) {
-
-			bool smallestSlotFound = false;
-			uint16_t smallestSlot = 0;
-
-			for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
-
-				if (!smallestSlotFound || it->first < smallestSlot) {
-					smallestSlot = it->first;
-					smallestSlotFound = true;
-				}
-			}
-
-			header.dataStart = smallestSlot;
+		if (header->dataStart == slotId) {
+			recalculateDataStart();
 		}
 
-		if (header.firstFreeSlot > slotId) {
-			header.firstFreeSlot = slotId;
-		}
-
-		header.freeSpace += recordToDelete->getLen();
-		--(header.slotCount);
+		header->freeSpace += recordToDelete->getLen();
+		--(header->slotCount);
 
 		delete recordToDelete;
 	}
@@ -85,7 +87,7 @@ void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
 		const Record* recordToReplace = recordsMap.at(slotId);
 		recordsMap[slotId] = &r;
 
-		header.freeSpace += recordToReplace->getLen() - r.getLen();
+		header->freeSpace += recordToReplace->getLen() - r.getLen();
 
 		delete recordToReplace;
 
@@ -95,10 +97,75 @@ void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
 }
 
 /**
- * @return the free space of the current slotted page
+ * @return the header
+ */
+Header* SlottedPage::getHeader() {
+	return header;
+}
+
+/**
+ * @return the free space
  */
 uint64_t SlottedPage::getFreeSpace() {
-	return header.freeSpace;
+	return header->freeSpace;
+}
+
+/**
+ * @return the first free slot (first sequential number which isn't mapped or append slot at the and
+ */
+uint16_t SlottedPage::createFirstFreeSlot() {
+
+	uint16_t rtrn = 0;
+
+	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
+
+		if (it->first != rtrn) {
+			break;
+		}
+		++rtrn;
+	}
+
+	(header->slotCount)++;
+
+	return rtrn;
+}
+
+void SlottedPage::recalculateDataStart() {
+
+	bool smallestSlotFound = false;
+	uint16_t smallestSlot = 0;
+
+	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
+
+		if (!smallestSlotFound || it->first < smallestSlot) {
+			smallestSlot = it->first;
+			smallestSlotFound = true;
+		}
+	}
+
+	header->dataStart = smallestSlot;
+
+}
+
+/**
+ * @return the serialized records map
+ */
+string SlottedPage::getSerializedRecordsMap() {
+
+	string rtrn = string("");
+
+	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
+
+	}
+
+	return rtrn;
+}
+
+/**
+ * @return whether or not the current slotted is empty
+ */
+bool SlottedPage::isEmpty() {
+	return header->slotCount == 0;
 }
 
 SlottedPage::~SlottedPage() {

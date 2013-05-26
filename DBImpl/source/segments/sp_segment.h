@@ -8,7 +8,7 @@
 #ifndef SP_SEGMENT_H_
 #define SP_SEGMENT_H_
 
-#include <unordered_map>
+#include <map>
 #include "segment.h"
 #include "tid.cpp"
 #include "record.h"
@@ -19,7 +19,7 @@ using namespace std;
 class SPSegment: public Segment {
 
 	// managed slotted pages identified by page-id
-	unordered_map<uint64_t, SlottedPage*> slottedPagesMap;
+	map<uint64_t, SlottedPage*> spMap;
 
 public:
 	SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm);
@@ -31,6 +31,8 @@ public:
 	const Record* lookup(TID tid);
 
 	bool update(TID tid, const Record& r);
+
+	bool writeToFrame(SlottedPage* sp, uint64_t pageId);
 
 	virtual ~SPSegment();
 };

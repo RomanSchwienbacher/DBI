@@ -9,8 +9,9 @@
 #define SLOTTEDPAGE_H_
 
 #include "record.h"
-#include <unordered_map>
+#include <map>
 #include <inttypes.h>
+#include <string>
 
 using namespace std;
 
@@ -18,7 +19,6 @@ typedef struct {
 
 	uint64_t LSN;
 	uint16_t slotCount;
-	uint16_t firstFreeSlot;
 	uint16_t dataStart;
 	uint64_t freeSpace;
 
@@ -28,18 +28,28 @@ typedef struct {
 class SlottedPage {
 
 	// header for slotted page
-	Header header;
+	Header* header;
 	// corresponding records map
-	unordered_map<uint16_t, const Record*> recordsMap;
+	map<uint16_t, const Record*> recordsMap;
+
+	uint16_t createFirstFreeSlot();
+	void recalculateDataStart();
 
 public:
 	SlottedPage();
 
+	uint16_t insertRecord(const Record& r);
 	void removeRecord(uint16_t slotId);
 	const Record* lookupRecord(uint16_t slotId);
 	void updateRecord(uint16_t slotId, const Record& r);
 
+	Header* getHeader();
+
 	uint64_t getFreeSpace();
+
+	string getSerializedRecordsMap();
+
+	bool isEmpty();
 
 	virtual ~SlottedPage();
 };

@@ -14,24 +14,25 @@
 
 using namespace std;
 
-SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) : Segment(freeExtents, segId, bm) {
+/**
+ * Constructor: initializes slotted pages
+ */
+SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) :
+		Segment(freeExtents, segId, bm) {
 
-	for (unsigned i=0; i < getSize(); i++) {
-
-		uint64_t pageId = at(i);
-		BufferFrame frame = bm->fixPage(pageId, true);
+	for (unsigned i = 0; i < getSize(); i++) {
 
 		SlottedPage* sp = new SlottedPage();
+		sp->getHeader()->freeSpace = bm->getPageSize() - sizeof(sp->getHeader()); // TODO materialized empty map evtl noch berücksichtigen
 
+		uint64_t pageId = at(i);
 
-
-		// free extents sind die extents die mir zur verfügung stehen
-
-				// mit get size slottet pages initialisier
-				// berechne mit sizeof header größe und materialized map größe und schreibe in header die infos
-
-		slottedPagesMap[pageId] = sp;
-
+		// write slottet page to disk
+		if (writeToFrame(sp, pageId)) {
+			spMap[pageId] = sp;
+		} else {
+			cerr << "Cannot write frame into slotted page" << endl;
+		}
 	}
 }
 
@@ -45,36 +46,55 @@ SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager
  */
 TID SPSegment::insert(const Record& r) {
 
-	// sofort über bm (complete slotted page) persistent schreiben (get bm page by pageId)
-
 	TID rtrn;
 
 	SlottedPage* spHolder = NULL;
 
-	for (auto it = slottedPagesMap.begin(); it != slottedPagesMap.end(); ++it) {
+	// try to find slotted page which can hold record
+	for (auto it = spMap.begin(); it != spMap.end(); ++it) {
 
 		if (it->second->getFreeSpace() >= r.getLen()) {
 			spHolder = it->second;
+			rtrn.pageId = it->first;
 		}
 	}
 
-	// page found to hold record
+	// page to hold record found
 	if (spHolder != NULL) {
 
+		// insert record into slotted page
+		rtrn.slotId = spHolder->insertRecord(r);
 
-
+		// write changes back to disk
+		if (!writeToFrame(spHolder, rtrn.pageId)) {
+			cerr << "Cannot write frame into slotted page" << endl;
+		}
 	}
 	// no page found to hold record, so increase the segment
 	else {
+
+		// FIXME just need one more page
+		vector<uint64_t> neededExtents;
+		neededExtents.push_back(getSize() + 1);
+		neededExtents.push_back(getSize());
+
 		// beim grow die neue größe in pages insgesamt mitgeben
+		vector<uint64_t> newExtents = grow(neededExtents);
 
-		// vom grow bekomm ich den vektor mit den neu verfügbaren extents
+		// create new slotted page
+		SlottedPage* sp = new SlottedPage();
+		sp->getHeader()->freeSpace = bm->getPageSize() - sizeof(sp->getHeader()); // TODO materialized empty map evtl noch berücksichtigen
 
-		// z.b. rückgabe vektor [4,6,8,9] sind sortiert und gemerged (von ungerade bis ausschließlich)
+		rtrn.pageId = newExtents.front();
+		// insert record into slotted page
+		rtrn.slotId = sp->insertRecord(r);
 
-		// über buffermanager in dem fall für 4,5,8 -> 3 neue slotted pages  über buffer manager anlegen
-
-		// records dann in erste slotted page schreiben
+		// write changes back to disk
+		if (writeToFrame(sp, rtrn.pageId)) {
+			spMap[rtrn.pageId] = sp;
+		} else {
+			cerr << "Cannot write frame into slotted page" << endl;
+		}
 	}
 
 	return rtrn;
@@ -89,18 +109,21 @@ TID SPSegment::insert(const Record& r) {
  */
 bool SPSegment::remove(TID tid) {
 
-	// sofort über bm (complete slotted page) persistent schreiben (get bm page by pageId)
-
 	bool rtrn = true;
 
 	try {
 
 		if (tid.pageId >= 0 && tid.slotId >= 0) {
 
-			if (slottedPagesMap.count(tid.pageId) > 0) {
+			if (spMap.count(tid.pageId) > 0) {
 
-				SlottedPage* sp = slottedPagesMap.at(tid.pageId);
+				SlottedPage* sp = spMap.at(tid.pageId);
 				sp->removeRecord(tid.slotId);
+
+				// write changes back to disk
+				if (!writeToFrame(sp, tid.pageId)) {
+					cerr << "Cannot write frame into slotted page" << endl;
+				}
 			}
 
 		} else {
@@ -130,9 +153,9 @@ const Record* SPSegment::lookup(TID tid) {
 
 		if (tid.pageId >= 0 && tid.slotId >= 0) {
 
-			if (slottedPagesMap.count(tid.pageId) > 0) {
+			if (spMap.count(tid.pageId) > 0) {
 
-				SlottedPage* sp = slottedPagesMap.at(tid.pageId);
+				SlottedPage* sp = spMap.at(tid.pageId);
 				rtrn = sp->lookupRecord(tid.slotId);
 
 			} else {
@@ -161,18 +184,22 @@ const Record* SPSegment::lookup(TID tid) {
  */
 bool SPSegment::update(TID tid, const Record& r) {
 
-	// write persistent (complete slotted page) to db (get bm page by pageId)
-
 	bool rtrn = true;
 
 	try {
 
 		if (tid.pageId >= 0 && tid.slotId >= 0) {
 
-			if (slottedPagesMap.count(tid.pageId) > 0) {
+			if (spMap.count(tid.pageId) > 0) {
 
-				SlottedPage* sp = slottedPagesMap.at(tid.pageId);
+				SlottedPage* sp = spMap.at(tid.pageId);
 				sp->updateRecord(tid.slotId, r);
+
+				// write changes back to disk
+				if (!writeToFrame(sp, tid.pageId)) {
+					cerr << "Cannot write frame into slotted page" << endl;
+				}
+
 			} else {
 				throw invalid_argument("No page found by given tid");
 			}
@@ -185,6 +212,38 @@ bool SPSegment::update(TID tid, const Record& r) {
 		cerr << "Invalid argument @lookup segment: " << e.what() << endl;
 		rtrn = false;
 	}
+
+	return rtrn;
+}
+
+/**
+ * Writes a slotted page into a given buffer-frame
+ *
+ * @param sp: the slotted page
+ * @param pageId: the page id
+ *
+ * @return rtrn: whether successfully or not
+ */
+bool SPSegment::writeToFrame(SlottedPage* sp, uint64_t pageId) {
+
+	bool rtrn = true;
+
+	BufferFrame frame = bm->fixPage(pageId, true);
+
+	try {
+
+		// TODO go on here
+
+		// 1st step: serialize
+
+		// 2nd step: write to disk
+
+	} catch (exception& e) {
+		cerr << "An exception occurred while writing slotted page to frame: " << e.what() << endl;
+		rtrn = false;
+	}
+
+	bm->unfixPage(frame, true);
 
 	return rtrn;
 }
