@@ -111,7 +111,7 @@ uint64_t SlottedPage::getFreeSpace() {
 }
 
 /**
- * @return the first free slot (first sequential number which isn't mapped or append slot at the and
+ * @return the first free slot (first sequential number which isn't mapped or append slot at the and)
  */
 uint16_t SlottedPage::createFirstFreeSlot() {
 
@@ -130,6 +130,9 @@ uint16_t SlottedPage::createFirstFreeSlot() {
 	return rtrn;
 }
 
+/**
+ * updates header by dataStart value (calculate smallest slotId which points to a record)
+ */
 void SlottedPage::recalculateDataStart() {
 
 	bool smallestSlotFound = false;
@@ -151,6 +154,8 @@ void SlottedPage::recalculateDataStart() {
  * @return the serialized records map
  */
 string SlottedPage::getSerializedRecordsMap() {
+
+	// TODO go on here
 
 	string rtrn = string("");
 
