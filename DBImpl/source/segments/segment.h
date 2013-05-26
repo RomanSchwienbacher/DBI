@@ -8,6 +8,7 @@
 #ifndef SEGMENT_H_
 #define SEGMENT_H_
 
+#include "../buffer/bufman.h"
 #include <stdint.h>
 #include <vector>
 
@@ -40,11 +41,14 @@ protected:
 	// expand extents to list all pageIds
 	void expandExtents(std::vector<uint64_t> extents);
 
+	// pointer to the buffer manager of the db system
+	BufferManager * bm;
+
 public:
 
 	Segment(uint64_t segId);
 
-	Segment(std::vector<uint64_t> extents, uint64_t segId);
+	Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm);
 
 	void grow(std::vector<uint64_t> addExtents);
 

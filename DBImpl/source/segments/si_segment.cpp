@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "si_segment.h"
+#include "sp_segment.h"
 
 SISegment::SISegment(uint64_t maxPageId) : Segment(0){
 
@@ -32,7 +33,7 @@ SISegment::SISegment(uint64_t maxPageId) : Segment(0){
 
 uint64_t SISegment::createSegment(uint64_t size){
 
-	int ret;
+	uint64_t ret;
 
 	std::vector<uint64_t> freeExtents;
 
@@ -40,12 +41,13 @@ uint64_t SISegment::createSegment(uint64_t size){
 
 	// getFreeExtents returns size 0 if not enough free extents exist
 	if(freeExtents.size() == 0){
-		ret = -1;
+		exit(-1);
 	} else{
 		ret = currentId;
 	}
 
-	Segment* seg = new Segment(freeExtents, currentId);
+	// TODO consider different segment types for init
+	Segment* seg = new SPSegment(freeExtents, currentId, bm);
 	segMapping.insert(std::make_pair(currentId++, seg));
 
 	return ret;

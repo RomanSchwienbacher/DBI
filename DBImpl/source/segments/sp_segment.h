@@ -16,13 +16,13 @@
 
 using namespace std;
 
-class SPSegment: private Segment {
+class SPSegment: public Segment {
 
 	// managed slotted pages identified by page-id
 	unordered_map<uint64_t, SlottedPage*> slottedPagesMap;
 
 public:
-	SPSegment(uint64_t segId);
+	SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm);
 
 	TID insert(const Record& r);
 

@@ -100,6 +100,10 @@ BufferFrame& BufferManager::fixPage(uint64_t pageId, bool exclusive) {
 			frame->intent--;
 		}
 
+		if (pageId != frame->getPageId()) {
+			cerr << "mega bullshit level, geht gornich, ne steife brise watt?" << endl;
+		}
+
 		// remove pageID out of queues
 		fifoQ.remove(pageId);
 		lruQ.remove(pageId);

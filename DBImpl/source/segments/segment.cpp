@@ -13,10 +13,11 @@ Segment::Segment(uint64_t segId) {
 	size = 1;
 }
 
-Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
+Segment::Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm) {
 
 	Segment::segId = segId;
 	Segment::extents = extents;
+	Segment::bm = bm;
 	size = calculateSize(extents);
 	//Segment::expandExtents(extents);
 }

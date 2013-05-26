@@ -9,12 +9,26 @@
 
 #include "sp_segment.h"
 #include "fsi_segment.h"
+#include "../buffer/bufframe.h"
 #include <stdexcept>
 
 using namespace std;
 
-SPSegment::SPSegment(uint64_t segId) :
-		Segment(segId) {
+SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) : Segment(freeExtents, segId, bm) {
+
+	// hier gehts los
+
+	// free extents sind die extents die mir zur verfügung stehen
+
+	// mit get size slottet pages initialisier
+	for (int i=0; i < getSize(); i++) {
+
+		uint64_t pageId = at(i);
+		BufferFrame frame = bm->fixPage(pageId, true);
+
+		// berechne mit sizeof header größe und materialized map größe und schreibe in header die infos
+
+	}
 }
 
 /**
@@ -26,6 +40,8 @@ SPSegment::SPSegment(uint64_t segId) :
  * @return rtrn: TID identifying the location where r was stored
  */
 TID SPSegment::insert(const Record& r) {
+
+	// sofort über bm (complete slotted page) persistent schreiben (get bm page by pageId)
 
 	TID rtrn;
 
@@ -46,7 +62,15 @@ TID SPSegment::insert(const Record& r) {
 	}
 	// no page found to hold record, so increase the segment
 	else {
+		// beim grow die neue größe in pages insgesamt mitgeben
 
+		// vom grow bekomm ich den vektor mit den neu verfügbaren extents
+
+		// z.b. rückgabe vektor [4,6,8,9] sind sortiert und gemerged (von ungerade bis ausschließlich)
+
+		// über buffermanager in dem fall für 4,5,8 -> 3 neue slotted pages  über buffer manager anlegen
+
+		// records dann in erste slotted page schreiben
 	}
 
 	return rtrn;
@@ -60,6 +84,8 @@ TID SPSegment::insert(const Record& r) {
  * @return rtrn: whether successfully or not
  */
 bool SPSegment::remove(TID tid) {
+
+	// sofort über bm (complete slotted page) persistent schreiben (get bm page by pageId)
 
 	bool rtrn = true;
 
@@ -130,6 +156,8 @@ const Record* SPSegment::lookup(TID tid) {
  * @return rtrn: whether successfully or not
  */
 bool SPSegment::update(TID tid, const Record& r) {
+
+	// write persistent (complete slotted page) to db (get bm page by pageId)
 
 	bool rtrn = true;
 
