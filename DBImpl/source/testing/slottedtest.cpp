@@ -71,6 +71,7 @@ static int launchSlottedtest(char** argv) {
 		// Check that there is space available for 's'
 		bool full = true;
 		for (unsigned p = 0; p < initialSize; ++p) {
+			// TODO: initialize *usage???
 			if (usage[p] < loadFactor * pageSize) {
 				full = false;
 				break;
@@ -81,7 +82,11 @@ static int launchSlottedtest(char** argv) {
 
 		// Insert record
 		TID tid = sp.insert(Record(s.size(), s.c_str()));
+
+		// TODO: insert TID into values hashmap????
 		assert(values.find(tid) == values.end()); // TIDs should not be overwritten
+
+		// TODO: find out what this does
 		values[tid] = r;
 		unsigned pageId = extractPage(tid); // extract the pageId from the TID
 		assert(pageId < initialSize); // pageId should be within [0, initialSize)
