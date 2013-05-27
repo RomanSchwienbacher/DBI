@@ -7,7 +7,9 @@
  *      Author: DRomanAvid
  */
 
+#include <cstring>
 #include <iostream>
+#include <sstream>
 #include "sp_segment.h"
 #include "fsi_segment.h"
 #include "../buffer/bufframe.h"
@@ -24,7 +26,7 @@ SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager
 	for (unsigned i = 0; i < getSize(); i++) {
 
 		SlottedPage* sp = new SlottedPage();
-		sp->getHeader()->freeSpace = bm->getPageSize() - sizeof(sp->getHeader()); // TODO materialized empty map evtl noch berücksichtigen
+		sp->getHeader()->freeSpace = bm->getPageSize() - sizeof(Header);
 
 		uint64_t pageId = at(i);
 
@@ -74,17 +76,17 @@ TID SPSegment::insert(const Record& r) {
 	// no page found to hold record, so increase the segment
 	else {
 
-		// FIXME just need one more page
+		// just need one more page
 		vector<uint64_t> neededExtents;
 		neededExtents.push_back(getSize() + 1);
 		neededExtents.push_back(getSize());
 
-		// beim grow die neue größe in pages insgesamt mitgeben
+		// grow by needed extents
 		vector<uint64_t> newExtents = grow(neededExtents);
 
 		// create new slotted page
 		SlottedPage* sp = new SlottedPage();
-		sp->getHeader()->freeSpace = bm->getPageSize() - sizeof(sp->getHeader()); // TODO materialized empty map evtl noch berücksichtigen
+		sp->getHeader()->freeSpace = bm->getPageSize() - sizeof(Header);
 
 		rtrn.pageId = newExtents.front();
 		// insert record into slotted page
@@ -233,18 +235,18 @@ bool SPSegment::writeToFrame(SlottedPage* sp, uint64_t pageId) {
 
 	try {
 
-		// TODO go on here
-
 		// 1st step: serialize
+		char* spSer = sp->getSerialized();
 
-		// 2nd step: write to disk
+		// 2nd step: write into frame data pointer
+		memcpy(frame.getData(), spSer, bm->getPageSize());
 
 	} catch (exception& e) {
 		cerr << "An exception occurred while writing slotted page to frame: " << e.what() << endl;
 		rtrn = false;
 	}
 
-	bm->unfixPage(frame, true);
+	bm->unfixPage(frame, rtrn);
 
 	return rtrn;
 }
