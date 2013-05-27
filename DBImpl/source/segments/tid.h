@@ -35,7 +35,7 @@ typedef struct {
 	long operator()(const TID &k) const {
 
 		char buf[128];
-		sprintf(buf, "%" PRIu64 "%" PRIu16, k.pageId, k.slotId);
+		//sprintf(buf, "%" PRIu64 "%" PRIu16, k.pageId, k.slotId);
 
 		hash<string> hashFn;
 		return hashFn(buf);

@@ -10,7 +10,7 @@
 
 #include <map>
 #include "segment.h"
-#include "tid.cpp"
+#include "tid.h"
 #include "record.h"
 #include "slottedpage.h"
 
@@ -20,6 +20,7 @@ class SPSegment: public Segment {
 
 	// managed slotted pages identified by page-id
 	map<uint64_t, SlottedPage*> spMap;
+
 
 public:
 	SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm);

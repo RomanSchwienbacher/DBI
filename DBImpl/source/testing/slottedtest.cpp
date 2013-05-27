@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include "../segments/record.h"
-#include "../segments/tid.cpp"
+#include "../segments/tid.h"
 #include "../segments/sp_segment.h"
 #include "../segments/si_segment.h"
 #include "../segments/fsi_segment.h"
