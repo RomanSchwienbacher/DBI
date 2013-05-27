@@ -48,6 +48,7 @@ public:
 	uint16_t getFreeSpace();
 
 	char* getSerialized();
+	static SlottedPage* getDeserialized(char* spPointer);
 
 	bool isEmpty();
 

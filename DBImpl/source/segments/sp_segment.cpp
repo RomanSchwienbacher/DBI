@@ -56,7 +56,7 @@ TID SPSegment::insert(const Record& r) {
 	// try to find slotted page which can hold record
 	for (auto it = spMap.begin(); it != spMap.end(); ++it) {
 
-		if (it->second->getFreeSpace() >= r.getLen()) {
+		if (it->second->getFreeSpace() >= (r.getLen() + (2 * sizeof(uint16_t)))) {
 			spHolder = it->second;
 			rtrn.pageId = it->first;
 		}
@@ -252,5 +252,9 @@ bool SPSegment::writeToFrame(SlottedPage* sp, uint64_t pageId) {
 }
 
 SPSegment::~SPSegment() {
+	// delete slotted pages
+	for (auto it = spMap.begin(); it != spMap.end(); ++it) {
+		delete (it->second);
+	}
 }
 

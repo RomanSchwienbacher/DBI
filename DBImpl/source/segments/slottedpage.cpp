@@ -179,6 +179,23 @@ char* SlottedPage::getSerialized() {
 }
 
 /**
+ * Factory: Parses a slotted page instance by given pointer
+ *
+ * @param spPointer: the pointer
+ *
+ * @return rtrn: slotted page instance
+ */
+static SlottedPage* getDeserialized(char* spPointer) {
+
+	SlottedPage* rtrn = new SlottedPage();
+
+	//rtrn->header = (Header)
+
+
+	return rtrn;
+}
+
+/**
  * @return whether or not the current slotted is empty
  */
 bool SlottedPage::isEmpty() {
@@ -186,5 +203,12 @@ bool SlottedPage::isEmpty() {
 }
 
 SlottedPage::~SlottedPage() {
+
+	// delete header & records
+	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
+		delete (it->second);
+	}
+
+	delete header;
 }
 
