@@ -35,6 +35,8 @@ public:
 
 	bool writeToFrame(SlottedPage* sp, uint64_t pageId);
 
+	SlottedPage* readFromFrame(uint64_t pageId);
+
 	virtual ~SPSegment();
 };
 

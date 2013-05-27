@@ -152,6 +152,20 @@ void SlottedPage::recalculateDataStart() {
 }
 
 /**
+ * @return whether or not the current slotted is empty
+ */
+bool SlottedPage::isEmpty() {
+	return header->slotCount == 0;
+}
+
+/**
+ * @return current records map
+ */
+map<uint16_t, const Record*> SlottedPage::getRecordsMap() {
+	return recordsMap;
+}
+
+/**
  * @return the serialized object (header;[SlotId;RecordLength;Record;]*)
  */
 char* SlottedPage::getSerialized() {
@@ -179,27 +193,38 @@ char* SlottedPage::getSerialized() {
 }
 
 /**
- * Factory: Parses a slotted page instance by given pointer
+ * Factory: Parses a slotted page instance by a given pointer
  *
  * @param spPointer: the pointer
  *
  * @return rtrn: slotted page instance
  */
-static SlottedPage* getDeserialized(char* spPointer) {
+SlottedPage* SlottedPage::getDeserialized(char* spPointer) {
 
 	SlottedPage* rtrn = new SlottedPage();
+	int offset = 0;
 
-	//rtrn->header = (Header)
+	// deserialize header
+	memcpy(rtrn->getHeader() + offset, spPointer, sizeof(Header));
+	offset += sizeof(Header);
 
+	// deserialize slots and records
+	for (int i = 0; i < rtrn->getHeader()->slotCount; i++) {
+
+		uint16_t slotId;
+		memcpy(&slotId, spPointer + offset, sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+
+		uint16_t length;
+		memcpy(&length, spPointer + offset, sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+
+		Record* record = new Record(length, spPointer + offset);
+
+		rtrn->getRecordsMap().insert(make_pair(slotId, record));
+	}
 
 	return rtrn;
-}
-
-/**
- * @return whether or not the current slotted is empty
- */
-bool SlottedPage::isEmpty() {
-	return header->slotCount == 0;
 }
 
 SlottedPage::~SlottedPage() {

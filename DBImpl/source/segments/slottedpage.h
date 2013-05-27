@@ -52,6 +52,8 @@ public:
 
 	bool isEmpty();
 
+	map<uint16_t, const Record*> getRecordsMap();
+
 	virtual ~SlottedPage();
 };
 

@@ -251,8 +251,39 @@ bool SPSegment::writeToFrame(SlottedPage* sp, uint64_t pageId) {
 	return rtrn;
 }
 
+/**
+ * Reads a slotted page from buffer-frame by pageId and manages sp-map
+ *
+ * @param pageId: the page id
+ *
+ * @return rtrn: SlottedPage
+ */
+SlottedPage* SPSegment::readFromFrame(uint64_t pageId) {
+
+	SlottedPage* rtrn = NULL;
+
+	BufferFrame frame = bm->fixPage(pageId, false);
+
+	try {
+
+		// 1st step: deserialize
+		rtrn = SlottedPage::getDeserialized((char*) frame.getData());
+
+		// 2nd step: update sp-map
+		spMap[pageId] = rtrn;
+
+	} catch (exception& e) {
+		cerr << "An exception occurred while reading slotted page from frame: " << e.what() << endl;
+		rtrn = NULL;
+	}
+
+	bm->unfixPage(frame, false);
+
+	return rtrn;
+}
+
 SPSegment::~SPSegment() {
-	// delete slotted pages
+// delete slotted pages
 	for (auto it = spMap.begin(); it != spMap.end(); ++it) {
 		delete (it->second);
 	}
