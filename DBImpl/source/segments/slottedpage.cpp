@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <unistd.h>
+#include <iostream>
 #include "slottedpage.h"
 
 SlottedPage::SlottedPage() {
@@ -24,7 +25,8 @@ SlottedPage::SlottedPage() {
 uint16_t SlottedPage::insertRecord(const Record& r) {
 
 	uint16_t slotId = createFirstFreeSlot();
-	recordsMap[slotId] = &r;
+	//recordsMap[slotId] = &r;
+	recordsMap.insert(make_pair(slotId, &r));
 
 	recalculateDataStart();
 	header->freeSpace -= r.getLen();
@@ -174,8 +176,8 @@ char* SlottedPage::getSerialized() {
 	char* rtrn = new char[sysconf(_SC_PAGESIZE)];
 	int offset = 0;
 
-	// serialize header
-	memcpy(rtrn + offset, &header, sizeof(Header));
+	// serialize header (Dave: removed & before header)
+	memcpy(rtrn + offset, header, sizeof(Header));
 	offset += sizeof(Header);
 
 	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
@@ -185,10 +187,15 @@ char* SlottedPage::getSerialized() {
 		// serialize length
 		memcpy(rtrn + offset, &(it->second->len), sizeof(uint16_t));
 		offset += sizeof(uint16_t);
-		// serialize record
-		memcpy(rtrn + offset, &it->second, it->second->getLen());
+		// serialize record data
+		memcpy(rtrn + offset, it->second->getData(), it->second->getLen());
 		offset += it->second->getLen();
+
 	}
+
+//	if(recordsMap.size() == 11){
+//			cout << "Something bad will happen here." << endl;
+//	}
 
 	return rtrn;
 }

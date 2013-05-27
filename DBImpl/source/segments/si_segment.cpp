@@ -13,7 +13,13 @@
 
 SISegment::SISegment(std::vector<uint64_t> extents, uint64_t segId) : Segment(extents, segId) {
 		
-		
+	// DEBUG
+		std::cout << "SISegment extents: "<< std::endl;
+		for(int i = 0; i < extents.size(); ++i){
+			std::cout << "value: " << i << ": " << extents.at(i) << std::endl;
+		}
+
+
 	// TODO: retrieve segment Mapping from disk
 	// or let it be handed by parameter from segman
 }

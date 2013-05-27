@@ -105,20 +105,22 @@ uint64_t Segment::at(uint64_t pos){
 	}
 
 	uint64_t offset = 0;
-	int extent = 0;
-	uint64_t range = 0;
+	int currentExt = 0;
+	uint64_t extRange = 0;
+	uint64_t prevExtRange = 0;
 
 	for(int i = 0; i < extentLengths.size(); ++i){
-		range += extentLengths.at(i);
+		prevExtRange = extRange;
+		extRange += extentLengths.at(i);
 
-		if(pos < range){
-			extent = i;
-			offset = range - (pos + 2);
+		if(pos < extRange){
+			currentExt = i;
+			offset = pos - prevExtRange;
 			break;
 		}
 	}
 
-	ret = extents.at(extent * 2) + offset;
+	ret = extents.at(currentExt * 2) + offset;
 
 	return ret;
 }

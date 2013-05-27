@@ -18,6 +18,16 @@ FSISegment::FSISegment(std::vector<uint64_t> extents, uint64_t segId, uint64_t m
 	freeExtents.push_back(endOfFSI);
 	freeExtents.push_back(maxPageId +1);
 
+	// DEBUG
+	std::cout << "FSISegment extents: "<< std::endl;
+	for(int i = 0; i < extents.size(); ++i){
+		std::cout << "value: " << i << ": " << extents.at(i) << std::endl;
+	}
+	std::cout << "FSISegment FREE extents: "<< std::endl;
+		for(int i = 0; i < freeExtents.size(); ++i){
+			std::cout << "value: " << i << ": " << freeExtents.at(i) << std::endl;
+		}
+
 }
 
 /**
@@ -31,11 +41,11 @@ FSISegment::FSISegment(std::vector<uint64_t> extents, uint64_t segId, uint64_t m
 std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 
 	std::vector<uint64_t> ret;
+	std::vector<uint64_t> newFreeExtents;
 	uint64_t neededPages = size;
 	uint64_t max = 0;
 	uint64_t min = 0;
 
-	std::cout << "FSISegment::getFreeExtents(): freeExtents.size() = " << freeExtents.size() << std::endl;
 	// iterate through free extents
 	for(int i = 0; i< freeExtents.size(); i+=2){
 
@@ -51,15 +61,11 @@ std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 			ret.push_back(min);
 			ret.push_back(neededMax);
 
-			// remove free extent
-			freeExtents.erase(freeExtents.begin() + i);
-			freeExtents.erase(freeExtents.begin() + i);
-
 			// place rest of extent back into freeExtents
 			if(oldMax != neededMax){
 
-				freeExtents.insert(freeExtents.begin() + i, neededMax);
-				freeExtents.insert(freeExtents.begin() + i, oldMax);
+				newFreeExtents.push_back(neededMax);
+				newFreeExtents.push_back(oldMax);
 			}
 
 			neededPages = 0;
@@ -71,10 +77,6 @@ std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 			ret.push_back(min);
 			ret.push_back(max);
 
-			// remove free extent
-			freeExtents.erase(freeExtents.begin() + i);
-			freeExtents.erase(freeExtents.begin() + i +1);
-
 			neededPages -= (max - min);
 		}
 	}
@@ -82,6 +84,8 @@ std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 	if(neededPages != 0){
 		ret.clear();
 	}
+
+	freeExtents = newFreeExtents;
 
 	return ret;
 

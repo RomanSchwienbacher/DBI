@@ -37,6 +37,12 @@ SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager
 			cerr << "Cannot write frame into slotted page" << endl;
 		}
 	}
+
+	// DEBUG
+		std::cout << "SPSegment extents: "<< std::endl;
+		for(int i = 0; i < extents.size(); ++i){
+			std::cout << "value: " << i << ": " << extents.at(i) << std::endl;
+		}
 }
 
 /**
@@ -252,6 +258,7 @@ bool SPSegment::writeToFrame(SlottedPage* sp, uint64_t pageId) {
 
 		// 2nd step: write into frame data pointer
 		memcpy(frame.getData(), spSer, bm->getPageSize());
+
 
 	} catch (exception& e) {
 		cerr << "An exception occurred while writing slotted page to frame: " << e.what() << endl;
