@@ -157,13 +157,24 @@ const Record* SPSegment::lookup(TID tid) {
 
 		if (tid.pageId >= 0 && tid.slotId >= 0) {
 
+			// read slotted page out of memory map
 			if (spMap.count(tid.pageId) > 0) {
 
 				SlottedPage* sp = spMap.at(tid.pageId);
 				rtrn = sp->lookupRecord(tid.slotId);
 
-			} else {
-				throw invalid_argument("No page found by given tid");
+			}
+			// if not available read from frame
+			else {
+
+				// writes frame into map too
+				SlottedPage* sp = readFromFrame(tid.pageId);
+
+				if (sp != NULL) {
+					rtrn = sp->lookupRecord(tid.slotId);
+				} else {
+					throw invalid_argument("No page found by given tid");
+				}
 			}
 
 		} else {
