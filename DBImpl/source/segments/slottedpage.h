@@ -15,20 +15,20 @@
 
 using namespace std;
 
-typedef struct {
+typedef struct Header{
 
 	uint32_t LSN;
 	uint16_t slotCount;
 	uint16_t dataStart;
 	uint16_t freeSpace;
 
-} Header;
+};
 
 
 class SlottedPage {
 
 	// header for slotted page
-	Header* header;
+	Header *header;
 	// corresponding records map
 	map<uint16_t, const Record*> recordsMap;
 

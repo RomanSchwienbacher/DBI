@@ -59,6 +59,7 @@ TID SPSegment::insert(const Record& r) {
 		if (it->second->getFreeSpace() >= (r.getLen() + (2 * sizeof(uint16_t)))) {
 			spHolder = it->second;
 			rtrn.pageId = it->first;
+			break;
 		}
 	}
 

@@ -8,6 +8,7 @@
  */
 
 #include "segman.h"
+#include "sp_segment.h"
 #include <iostream>
 
 SegmentManager::SegmentManager(BufferManager* bm) {
@@ -54,7 +55,8 @@ uint64_t SegmentManager::createSegment(uint64_t size){
 		ret = currentId;
 	}
 
-	Segment* seg = new Segment(freeExtents, currentId, bm);
+	// TODO: make this work for all Segments, maybe pass type of segment via param?
+	Segment* seg = new SPSegment(freeExtents, currentId, bm);
 	segmentInventory->addToMap(std::make_pair(currentId++, seg));
 
 	return ret;

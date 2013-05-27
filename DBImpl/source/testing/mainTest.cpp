@@ -108,11 +108,11 @@ TEST (ExternalSortTest, CompleteRun) {
 }
 
 TEST (BufferTest, CompleteRun) {
-	ASSERT_EQ(testing::launchBuffertest(g_argv), 0);
+	//ASSERT_EQ(testing::launchBuffertest(g_argv), 0);
 }
 
 TEST (SlottedTest, CompleteRun) {
-	//ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
+	ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
 }
 
 }

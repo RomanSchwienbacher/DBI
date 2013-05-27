@@ -56,13 +56,18 @@ static int launchSlottedtest(char** argv) {
 	unordered_map<unsigned, unsigned> usage; // pageID -> bytes used within this page
 
 	// Setting everything up
-	BufferManager bm("/tmp/db.txt", 10ul * 1024ul * 1024ul); // bogus arguments
+	// changed second param to number of frames and not bytes
+	BufferManager bm("/tmp/db.txt", 25600ul); // bogus arguments
+	cout << "Buffer Manager initialized. " << endl;
 	SegmentManager sm(&bm);
+	cout << "Segment Manager initialized. " << endl;
 	uint64_t spId = sm.createSegment(totalSize);
+	cout << "Segment created. " << endl;
 	SPSegment& sp = (SPSegment&) (sm.getSegment(spId));
 	Random64 rnd;
 
 	// Insert some records
+	cout << "Starting insertion of max: " << maxInserts << " records..." << endl;
 	for (unsigned i = 0; i < maxInserts; ++i) {
 		// Select string/record to insert
 		uint64_t r = rnd.next() % testData.size();
@@ -91,9 +96,12 @@ static int launchSlottedtest(char** argv) {
 		unsigned pageId = extractPage(tid); // extract the pageId from the TID
 		assert(pageId < initialSize); // pageId should be within [0, initialSize)
 		usage[pageId] += s.size();
+
+		cout << "Used pageId: " << pageId << " for record insertion" << endl;
 	}
 
 	// Lookup & delete some records
+	cout << "Starting deletion of max: " << maxDeletes << " records..." << endl;
 	for (unsigned i = 0; i < maxDeletes; ++i) {
 		// Select operation
 		bool del = rnd.next() % 10 == 0;
