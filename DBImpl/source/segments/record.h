@@ -13,13 +13,13 @@
 
 class Record {
 
-	// the size of the data
-	uint16_t len;
-
 	// the data pointer of the record
 	char * data;
 
 public:
+
+	// the size of the data
+	uint16_t len;
 
 	Record& operator=(Record& rhs) = delete;
 	Record(Record& t) = delete;

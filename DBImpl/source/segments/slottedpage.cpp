@@ -168,7 +168,7 @@ char* SlottedPage::getSerialized() {
 		memcpy(rtrn + offset, &(it->first), sizeof(uint16_t));
 		offset += sizeof(uint16_t);
 		// serialize length
-		//memcpy(rtrn + offset, &(it->second->getLen()), sizeof(uint16_t));
+		memcpy(rtrn + offset, &(it->second->len), sizeof(uint16_t));
 		offset += sizeof(uint16_t);
 		// serialize record
 		memcpy(rtrn + offset, &it->second, it->second->getLen());
