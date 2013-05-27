@@ -15,7 +15,7 @@
 */
 Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
 	Segment::segId = segId;
-	Segment::extents = extents
+	Segment::extents = extents;
 	size = calculateSize(extents);
 }
 
