@@ -7,6 +7,7 @@
  *      Author: DRomanAvid
  */
 
+#include <iostream>
 #include "sp_segment.h"
 #include "fsi_segment.h"
 #include "../buffer/bufframe.h"

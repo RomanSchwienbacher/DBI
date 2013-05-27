@@ -9,11 +9,12 @@
 #define RECORD_H_
 
 #include <string.h>
+#include <inttypes.h>
 
 class Record {
 
 	// the size of the data
-	unsigned len;
+	uint16_t len;
 
 	// the data pointer of the record
 	char * data;
@@ -23,9 +24,9 @@ public:
 	Record& operator=(Record& rhs) = delete;
 	Record(Record& t) = delete;
 	Record(Record&& t);
-	explicit Record(unsigned len, const char* const ptr);
+	explicit Record(uint16_t len, const char* const ptr);
 	const char* getData() const;
-	unsigned getLen() const;
+	uint16_t getLen() const;
 	virtual ~Record();
 };
 

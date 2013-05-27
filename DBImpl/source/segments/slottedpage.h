@@ -11,16 +11,16 @@
 #include "record.h"
 #include <map>
 #include <inttypes.h>
-#include <string>
+#include <cstring>
 
 using namespace std;
 
 typedef struct {
 
-	uint64_t LSN;
+	uint32_t LSN;
 	uint16_t slotCount;
 	uint16_t dataStart;
-	uint64_t freeSpace;
+	uint16_t freeSpace;
 
 } Header;
 
@@ -45,9 +45,9 @@ public:
 
 	Header* getHeader();
 
-	uint64_t getFreeSpace();
+	uint16_t getFreeSpace();
 
-	string getSerializedRecordsMap();
+	char* getSerialized();
 
 	bool isEmpty();
 

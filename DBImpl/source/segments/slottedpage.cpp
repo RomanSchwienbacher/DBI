@@ -6,6 +6,7 @@
  */
 
 #include <stdexcept>
+#include <unistd.h>
 #include "slottedpage.h"
 
 SlottedPage::SlottedPage() {
@@ -106,7 +107,7 @@ Header* SlottedPage::getHeader() {
 /**
  * @return the free space
  */
-uint64_t SlottedPage::getFreeSpace() {
+uint16_t SlottedPage::getFreeSpace() {
 	return header->freeSpace;
 }
 
@@ -151,16 +152,27 @@ void SlottedPage::recalculateDataStart() {
 }
 
 /**
- * @return the serialized records map
+ * @return the serialized object (header;[SlotId;RecordLength;Record;]*)
  */
-string SlottedPage::getSerializedRecordsMap() {
+char* SlottedPage::getSerialized() {
 
-	// TODO go on here
+	char* rtrn = new char[sysconf(_SC_PAGESIZE)];
+	int offset = 0;
 
-	string rtrn = string("");
+	// serialize header
+	memcpy(rtrn + offset, &header, sizeof(Header));
+	offset += sizeof(Header);
 
 	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
-
+		// serialize slot
+		memcpy(rtrn + offset, &(it->first), sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+		// serialize length
+		memcpy(rtrn + offset, &(it->second->len), sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+		// serialize record
+		memcpy(rtrn + offset, &it->second, it->second->len);
+		offset += it->second->len;
 	}
 
 	return rtrn;
