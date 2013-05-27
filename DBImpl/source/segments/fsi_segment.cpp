@@ -5,6 +5,7 @@
  *      Author: dave
  */
 
+#include <iostream>
 #include "fsi_segment.h"
 
 
@@ -34,6 +35,7 @@ std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 	uint64_t max = 0;
 	uint64_t min = 0;
 
+	std::cout << "FSISegment::getFreeExtents(): freeExtents.size() = " << freeExtents.size() << std::endl;
 	// iterate through free extents
 	for(int i = 0; i< freeExtents.size(); i+=2){
 
@@ -51,13 +53,13 @@ std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 
 			// remove free extent
 			freeExtents.erase(freeExtents.begin() + i);
-			freeExtents.erase(freeExtents.begin() + i + 1);
+			freeExtents.erase(freeExtents.begin() + i);
 
 			// place rest of extent back into freeExtents
 			if(oldMax != neededMax){
 
 				freeExtents.insert(freeExtents.begin() + i, neededMax);
-				freeExtents.insert(freeExtents.begin() + i +1, oldMax);
+				freeExtents.insert(freeExtents.begin() + i, oldMax);
 			}
 
 			neededPages = 0;

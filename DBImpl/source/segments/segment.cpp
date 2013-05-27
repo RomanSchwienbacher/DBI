@@ -104,15 +104,21 @@ uint64_t Segment::at(uint64_t pos){
 		return -1;
 	}
 
-//	return allPages.at(pos);
+	uint64_t offset = 0;
+	int extent = 0;
+	uint64_t range = 0;
 
 	for(int i = 0; i < extentLengths.size(); ++i){
-		pos -= extentLengths.at(i);
-		if(pos <=0){
-			ret = extents.at((2 * (i+1)) - 1) + pos - 1;
+		range += extentLengths.at(i);
+
+		if(pos < range){
+			extent = i;
+			offset = range - (pos + 2);
 			break;
 		}
 	}
+
+	ret = extents.at(extent * 2) + offset;
 
 	return ret;
 }

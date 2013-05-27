@@ -10,6 +10,7 @@
 #include "slottedpage.h"
 
 SlottedPage::SlottedPage() {
+	header = (Header *) operator new(sizeof(Header));
 	*header = {0,0,0,0};
 }
 
