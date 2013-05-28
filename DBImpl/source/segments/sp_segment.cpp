@@ -59,10 +59,14 @@ TID SPSegment::insert(const Record& r) {
 
 	SlottedPage* spHolder = NULL;
 
+	// instantiate new record pointer by given r
+	Record* newRec = new Record(r.getLen(), r.getData());
+
 	// try to find slotted page which can hold record
 	for (auto it = spMap.begin(); it != spMap.end(); ++it) {
 
-		if (it->second->getFreeSpace() >= (r.getLen() + (2 * sizeof(uint16_t)))) {
+		if (it->second->getFreeSpace() >= (newRec->getLen() + (2 * sizeof(uint16_t)))) {
+
 			spHolder = it->second;
 			rtrn.pageId = it->first;
 			break;
@@ -73,7 +77,7 @@ TID SPSegment::insert(const Record& r) {
 	if (spHolder != NULL) {
 
 		// insert record into slotted page
-		rtrn.slotId = spHolder->insertRecord(r);
+		rtrn.slotId = spHolder->insertRecord(*newRec);
 
 		// write changes back to disk
 		if (!writeToFrame(spHolder, rtrn.pageId)) {
@@ -97,7 +101,7 @@ TID SPSegment::insert(const Record& r) {
 
 		rtrn.pageId = newExtents.front();
 		// insert record into slotted page
-		rtrn.slotId = sp->insertRecord(r);
+		rtrn.slotId = sp->insertRecord(*newRec);
 
 		// write changes back to disk
 		if (writeToFrame(sp, rtrn.pageId)) {

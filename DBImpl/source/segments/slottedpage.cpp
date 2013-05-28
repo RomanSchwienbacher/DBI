@@ -25,11 +25,10 @@ SlottedPage::SlottedPage() {
 uint16_t SlottedPage::insertRecord(const Record& r) {
 
 	uint16_t slotId = createFirstFreeSlot();
-	//recordsMap.insert(make_pair(slotId, &r));
-	recordsMap[slotId] = &r;
+	recordsMap.insert(make_pair(slotId, &r));
 
 	recalculateDataStart();
-	header->freeSpace-= r.getLen();
+	header->freeSpace-= r.getLen() + (2 * sizeof(uint16_t));
 
 	return slotId;
 }
@@ -180,10 +179,6 @@ char* SlottedPage::getSerialized() {
 	memcpy(rtrn + offset, header, sizeof(Header));
 	offset += sizeof(Header);
 
-	if (recordsMap.size() == 11) {
-		cout << "SlottedPage::getSerialized() - recordsMap" << endl;
-	}
-
 	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
 		// serialize slot
 		memcpy(rtrn + offset, &(it->first), sizeof(uint16_t));
@@ -194,12 +189,6 @@ char* SlottedPage::getSerialized() {
 		// serialize record data
 		memcpy(rtrn + offset, it->second->getData(), it->second->getLen());
 		offset += it->second->getLen();
-
-		// DEBUG
-		if (offset >= 4096){
-			cerr << "SlottedPage::getSerialized() memcpy out of range - offset: " << offset <<endl;
-		}
-
 	}
 
 	return rtrn;
