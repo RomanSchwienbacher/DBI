@@ -87,8 +87,6 @@ std::vector<uint64_t> Segment::mergeExtents(std::vector<uint64_t> extents1,
 	std::vector<uint64_t> mergedExtents;
 	mergedExtents.push_back(extents1.at(0));
 
-	std::cerr << "extents1 size: " << extents1.size() << std::endl;
-
 	// merge neighboring extents
 	for (int i = 1; i < extents1.size(); i += 2) {
 		if (i+1 == extents1.size()){
