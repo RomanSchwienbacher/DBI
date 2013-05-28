@@ -32,7 +32,7 @@ SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager
 
 		// write slottet page to disk
 		if (writeToFrame(sp, pageId)) {
-			spMap[pageId] = sp;
+			spMap.insert(make_pair(pageId, sp));
 		} else {
 			cerr << "Cannot write frame into slotted page" << endl;
 		}

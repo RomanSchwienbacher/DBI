@@ -94,10 +94,12 @@ static int launchSlottedtest(char** argv) {
 		// TODO: find out what this does
 		values[tid] = r;
 		unsigned pageId = extractPage(tid); // extract the pageId from the TID
+		/*
 		if (pageId >= initialSize) {
 			cerr << "OOPS: pageId " << pageId << " is not < initialSize " << initialSize << endl;
 		}
 		assert(pageId < initialSize); // pageId should be within [0, initialSize)
+		*/
 		usage[pageId] += s.size();
 
 	}
