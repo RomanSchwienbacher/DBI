@@ -49,7 +49,7 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 			recalculateDataStart();
 		}
 
-		header->freeSpace += recordToDelete->getLen();
+		header->freeSpace += recordToDelete->getLen() + (2 * sizeof(uint16_t));
 		--(header->slotCount);
 
 		delete recordToDelete;
