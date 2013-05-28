@@ -176,7 +176,7 @@ char* SlottedPage::getSerialized() {
 	char* rtrn = new char[sysconf(_SC_PAGESIZE)];
 	int offset = 0;
 
-	// serialize header (Dave: removed & before header)
+	// serialize header
 	memcpy(rtrn + offset, header, sizeof(Header));
 	offset += sizeof(Header);
 
