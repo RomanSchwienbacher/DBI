@@ -57,7 +57,7 @@ static int launchSlottedtest(char** argv) {
 
 	// Setting everything up
 	// changed second param to number of frames and not bytes
-	BufferManager bm("/tmp/db.txt", 25600ul); // bogus arguments
+	BufferManager bm(argv[4], 25600ul); // bogus arguments
 	cout << "Buffer Manager initialized. " << endl;
 	SegmentManager sm(&bm);
 	cout << "Segment Manager initialized. " << endl;
