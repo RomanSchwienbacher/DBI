@@ -89,8 +89,10 @@ TID SPSegment::insert(const Record& r) {
 
 		// just need one more page
 		vector<uint64_t> neededExtents;
-		neededExtents.push_back(getSize() + 1);
-		neededExtents.push_back(getSize());
+
+		// TODO: get correct free extents
+		neededExtents.push_back(extents.back());
+		neededExtents.push_back(extents.back() + 1);
 
 		// grow by needed extents
 		vector<uint64_t> newExtents = grow(neededExtents);
