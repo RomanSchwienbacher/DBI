@@ -15,14 +15,14 @@
 
 using namespace std;
 
-typedef struct Header{
+typedef struct{
 
 	uint32_t LSN;
 	uint16_t slotCount;
 	uint16_t dataStart;
 	uint16_t freeSpace;
 
-};
+} Header;
 
 
 class SlottedPage {
