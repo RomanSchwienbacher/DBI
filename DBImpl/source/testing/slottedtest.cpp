@@ -88,16 +88,15 @@ static int launchSlottedtest(char** argv) {
 		// Insert record
 		TID tid = sp.insert(Record(s.size(), s.c_str()));
 
-		if(tid.pageId == 2 && tid.slotId == 10){
-					cout << "Something bad will happen next round." << endl;
-		}
-
 		// TODO: insert TID into values hashmap????
 		assert(values.find(tid) == values.end()); // TIDs should not be overwritten
 
 		// TODO: find out what this does
 		values[tid] = r;
 		unsigned pageId = extractPage(tid); // extract the pageId from the TID
+		if (pageId >= initialSize) {
+			cerr << "OOPS: pageId " << pageId << " is not < initialSize " << initialSize << endl;
+		}
 		assert(pageId < initialSize); // pageId should be within [0, initialSize)
 		usage[pageId] += s.size();
 
