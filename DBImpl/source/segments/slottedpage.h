@@ -30,7 +30,7 @@ class SlottedPage {
 	// header for slotted page
 	Header *header;
 	// corresponding records map
-	map<uint16_t, const Record*> recordsMap;
+	map<uint16_t, Record*> recordsMap;
 
 	uint16_t createFirstFreeSlot();
 	void recalculateDataStart();
@@ -38,10 +38,10 @@ class SlottedPage {
 public:
 	SlottedPage();
 
-	uint16_t insertRecord(const Record& r);
+	uint16_t insertRecord(Record& r);
 	void removeRecord(uint16_t slotId);
-	const Record* lookupRecord(uint16_t slotId);
-	void updateRecord(uint16_t slotId, const Record& r);
+	Record* lookupRecord(uint16_t slotId);
+	void updateRecord(uint16_t slotId, Record& r);
 
 	Header* getHeader();
 
@@ -52,7 +52,7 @@ public:
 
 	bool isEmpty();
 
-	map<uint16_t, const Record*> getRecordsMap();
+	map<uint16_t, Record*> getRecordsMap();
 
 	virtual ~SlottedPage();
 };

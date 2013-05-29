@@ -10,23 +10,31 @@
 
 #include <string.h>
 #include <inttypes.h>
+#include "tid.h"
 
 class Record {
+
+public:
+
+	bool dataRecord;
 
 	// the data pointer of the record
 	char * data;
 
-public:
-
 	// the size of the data
 	uint16_t len;
+
+	// the redirection (if it is not a data record)
+	TID redirection;
 
 	Record& operator=(Record& rhs) = delete;
 	Record(Record& t) = delete;
 	Record(Record&& t);
-	explicit Record(uint16_t len, const char* const ptr);
-	const char* getData() const;
-	uint16_t getLen() const;
+	Record(uint16_t len, const char* ptr);
+	char* getData();
+	uint16_t getLen();
+	bool isDataRecord();
+	void setDataRecord(bool dataRecord);
 	virtual ~Record();
 };
 

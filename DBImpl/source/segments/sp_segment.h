@@ -25,13 +25,13 @@ class SPSegment: public Segment {
 public:
 	SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm);
 
-	TID insert(const Record& r);
+	TID insert(Record& r);
 
 	bool remove(TID tid);
 
-	const Record* lookup(TID tid);
+	Record* lookup(TID tid);
 
-	bool update(TID tid, const Record& r);
+	bool update(TID tid, Record& r);
 
 	bool writeToFrame(SlottedPage* sp, uint64_t pageId);
 

@@ -22,13 +22,13 @@ SlottedPage::SlottedPage() {
  *
  * @return slotId: slot id where r was stored
  */
-uint16_t SlottedPage::insertRecord(const Record& r) {
+uint16_t SlottedPage::insertRecord(Record& r) {
 
 	uint16_t slotId = createFirstFreeSlot();
 	recordsMap.insert(make_pair(slotId, &r));
 
 	recalculateDataStart();
-	header->freeSpace-= r.getLen() + (2 * sizeof(uint16_t));
+	header->freeSpace -= r.getLen() + (2 * sizeof(uint16_t)) + sizeof(bool);
 
 	return slotId;
 }
@@ -42,14 +42,20 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 
 	if (recordsMap.count(slotId) > 0) {
 
-		const Record* recordToDelete = recordsMap.at(slotId);
+		Record* recordToDelete = recordsMap.at(slotId);
 		recordsMap.erase(slotId);
 
 		if (header->dataStart == slotId) {
 			recalculateDataStart();
 		}
 
-		header->freeSpace += recordToDelete->getLen() + (2 * sizeof(uint16_t));
+		// distinguish between data records and redirections
+		if (recordToDelete->isDataRecord()) {
+			header->freeSpace += recordToDelete->getLen() + (2 * sizeof(uint16_t)) + sizeof(bool);
+		} else {
+			header->freeSpace += sizeof(TID) + sizeof(uint16_t) + sizeof(bool);
+		}
+
 		--(header->slotCount);
 	}
 }
@@ -61,9 +67,9 @@ void SlottedPage::removeRecord(uint16_t slotId) {
  *
  * @return rtrn: the record
  */
-const Record* SlottedPage::lookupRecord(uint16_t slotId) {
+Record* SlottedPage::lookupRecord(uint16_t slotId) {
 
-	const Record* rtrn;
+	Record* rtrn;
 
 	if (recordsMap.count(slotId) > 0) {
 		rtrn = recordsMap.at(slotId);
@@ -81,14 +87,27 @@ const Record* SlottedPage::lookupRecord(uint16_t slotId) {
  * @param r: the record
  *
  */
-void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
+void SlottedPage::updateRecord(uint16_t slotId, Record& r) {
 
 	if (recordsMap.count(slotId) > 0) {
 
-		const Record* recordToReplace = recordsMap.at(slotId);
+		Record* recordToReplace = recordsMap.at(slotId);
 		recordsMap[slotId] = &r;
 
-		header->freeSpace += recordToReplace->getLen() - r.getLen();
+		// distinguish between data records and redirections
+		if (recordToReplace->isDataRecord() && r.isDataRecord()) {
+
+			header->freeSpace += recordToReplace->getLen() - r.getLen();
+
+		} else if (recordToReplace->isDataRecord() && !r.isDataRecord()) {
+
+			header->freeSpace += (recordToReplace->getLen() + sizeof(uint16_t)) - sizeof(TID);
+
+		} else if (!recordToReplace->isDataRecord() && !r.isDataRecord()) {
+
+			// size does not change when redirection gets updated by another redirection
+
+		}
 
 	} else {
 		throw invalid_argument("No record found by given slotId");
@@ -159,12 +178,12 @@ bool SlottedPage::isEmpty() {
 /**
  * @return current records map
  */
-map<uint16_t, const Record*> SlottedPage::getRecordsMap() {
+map<uint16_t, Record*> SlottedPage::getRecordsMap() {
 	return recordsMap;
 }
 
 /**
- * @return the serialized object (header;[SlotId;RecordLength;Record;]*)
+ * @return the serialized object (header;([SlotId;Type;RecordLength;Record;]|[SlotId;Type;TID;])*)
  */
 char* SlottedPage::getSerialized() {
 
@@ -176,15 +195,30 @@ char* SlottedPage::getSerialized() {
 	offset += sizeof(Header);
 
 	for (auto it = recordsMap.begin(); it != recordsMap.end(); ++it) {
+
 		// serialize slot
 		memcpy(rtrn + offset, &(it->first), sizeof(uint16_t));
 		offset += sizeof(uint16_t);
-		// serialize length
-		memcpy(rtrn + offset, &(it->second->len), sizeof(uint16_t));
-		offset += sizeof(uint16_t);
-		// serialize record data
-		memcpy(rtrn + offset, it->second->getData(), it->second->getLen());
-		offset += it->second->getLen();
+
+		// serialize type
+		memcpy(rtrn + offset, &(it->second->dataRecord), sizeof(bool));
+		offset += sizeof(bool);
+
+		if (it->second->isDataRecord()) {
+
+			// serialize length
+			memcpy(rtrn + offset, &(it->second->len), sizeof(uint16_t));
+			offset += sizeof(uint16_t);
+
+			// serialize record data
+			memcpy(rtrn + offset, it->second->getData(), it->second->getLen());
+			offset += it->second->getLen();
+
+		} else {
+			// serialize pointer TID
+			memcpy(rtrn + offset, &(it->second->redirection), sizeof(TID));
+			offset += sizeof(TID);
+		}
 	}
 
 	if (offset > sysconf(_SC_PAGESIZE)) {
@@ -217,11 +251,31 @@ SlottedPage* SlottedPage::getDeserialized(char* spPointer) {
 		memcpy(&slotId, spPointer + offset, sizeof(uint16_t));
 		offset += sizeof(uint16_t);
 
-		uint16_t length;
-		memcpy(&length, spPointer + offset, sizeof(uint16_t));
-		offset += sizeof(uint16_t);
+		bool dataRecord;
+		memcpy(&dataRecord, spPointer + offset, sizeof(bool));
+		offset += sizeof(bool);
 
-		Record* record = new Record(length, spPointer + offset);
+		Record* record;
+
+		if (dataRecord == true) {
+
+			uint16_t length;
+			memcpy(&length, spPointer + offset, sizeof(uint16_t));
+			offset += sizeof(uint16_t);
+
+			record = new Record(length, spPointer + offset);
+
+		} else {
+
+			TID tid;
+			memcpy(&tid, spPointer + offset, sizeof(TID));
+			offset += sizeof(TID);
+
+			record = new Record(0, 0);
+			record->redirection = tid;
+		}
+
+		record->dataRecord = dataRecord;
 
 		rtrn->getRecordsMap().insert(make_pair(slotId, record));
 	}

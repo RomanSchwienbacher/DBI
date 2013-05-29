@@ -76,7 +76,7 @@ static int launchSlottedtest(char** argv) {
 
 		// Select string/record to insert
 		uint64_t r = rnd.next() % testData.size();
-		const string s = testData[r];
+		string s = testData[r];
 
 		// Check that there is space available for 's'
 		bool full = true;
@@ -98,9 +98,10 @@ static int launchSlottedtest(char** argv) {
 
 		// TODO: find out what this does
 		values[tid] = r;
-		unsigned pageId = extractPage(tid); // extract the pageId from the TID
+
 
 		/*
+		 * unsigned pageId = extractPage(tid); // extract the pageId from the TID
 		if (pageId >= initialSize) {
 			cerr << "OOPS: pageId " << pageId << " is not < initialSize " << initialSize << endl;
 		}
@@ -122,7 +123,7 @@ static int launchSlottedtest(char** argv) {
 		unsigned len = value.size();
 
 		// Lookup
-		const Record& rec = *(sp.lookup(tid));
+		Record& rec = *(sp.lookup(tid));
 		assert(rec.getLen() == len);
 		assert(memcmp(rec.getData(), value.c_str(), len) == 0);
 
@@ -137,7 +138,10 @@ static int launchSlottedtest(char** argv) {
 	cout << "Starting update of max: " << maxDeletes << " records..." << endl;
 	for (unsigned i = 0; i < maxUpdates; ++i) {
 		// Select victim
-		TID tid = values.begin()->first;
+		//TID tid = values.begin()->first;
+		TID tid = TID();
+		tid.pageId = 40;
+		tid.slotId = 1;
 
 		// Select new string/record
 		uint64_t r = rnd.next() % testData.size();
@@ -153,10 +157,10 @@ static int launchSlottedtest(char** argv) {
 	for (auto p : values) {
 		TID tid = p.first;
 		const std::string& value = testData[p.second];
-		unsigned len = value.size();
+		uint16_t len = value.size();
 		const Record& rec = *(sp.lookup(tid));
-		assert(rec.getLen() == len);
-		assert(memcmp(rec.getData(), value.c_str(), len) == 0);
+		assert(rec.len == len);
+		assert(memcmp(rec.data, value.c_str(), len) == 0);
 	}
 
 	return 0;

@@ -12,25 +12,32 @@
 
 using namespace std;
 
-Record::Record(Record&& t) : len(t.len), data(t.data) {
+Record::Record(Record&& t) : len(t.len), data(t.data), dataRecord(t.dataRecord) {
+	t.dataRecord = true;
 	t.len = 0;
 	t.data = 0;
 }
 
-Record::Record(uint16_t len, const char* const ptr) : len(len) {
+Record::Record(uint16_t len, const char* ptr) : len(len), dataRecord(true) {
 	data = static_cast<char*>(malloc(len));
 	memcpy(data, ptr, len);
 }
 
-const char* Record::getData() const {
+char* Record::getData() {
 	return data;
 }
 
-uint16_t Record::getLen() const {
+uint16_t Record::getLen() {
 	return len;
 }
 
+bool Record::isDataRecord() {
+	return dataRecord;
+}
+
 Record::~Record() {
-	free(data);
+	if (isDataRecord()) {
+		free(data);
+	}
 }
 
