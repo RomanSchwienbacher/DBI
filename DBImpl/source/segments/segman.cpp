@@ -11,24 +11,22 @@
 #include "sp_segment.h"
 #include <iostream>
 
-SegmentManager::SegmentManager(BufferManager* bm) {
+SegmentManager::SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManager* bm) {
 
 	SegmentManager::bm = bm;
 
 	currentId = 0;
 
-	//TODO: accept si and fsi sizes for extent creation
-
-	// create SISegment
+	// create SISegment of size si_size
 	std::vector<uint64_t> siExtents;
 	siExtents.push_back(0);
-	siExtents.push_back(1);
+	siExtents.push_back(si_size);
 	segmentInventory = new SISegment(siExtents, currentId++);
 
 	// create FSISegment and increment currentId to 2
 	std::vector<uint64_t> fsiExtents;
-	fsiExtents.push_back(1);
-	fsiExtents.push_back(2);
+	fsiExtents.push_back(si_size);
+	fsiExtents.push_back(si_size + fsi_size);
 	
 	freeSegmentInventory = new FSISegment(fsiExtents, currentId++, bm->getPagesOnDisk());
 

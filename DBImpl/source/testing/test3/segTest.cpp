@@ -6,13 +6,13 @@
 #include <string.h>
 #include <unordered_map>
 
-#include "../segments/record.h"
-#include "../segments/tid.h"
-#include "../segments/sp_segment.h"
-#include "../segments/si_segment.h"
-#include "../segments/fsi_segment.h"
-#include "../segments/segment.h"
-#include "../segments/segman.h"
+#include "../../segments/record.h"
+#include "../../segments/tid.h"
+#include "../../segments/sp_segment.h"
+#include "../../segments/si_segment.h"
+#include "../../segments/fsi_segment.h"
+#include "../../segments/segment.h"
+#include "../../segments/segman.h"
 
 using namespace std;
 
@@ -53,7 +53,7 @@ public:
  */
 static int launchSlottedtest(char** argv) {
 
-	const unsigned pageSize = atoi(argv[8]);
+	const unsigned pageSize = atoi(argv[2]);
 
 	// Bookkeeping
 	unordered_map<TID, unsigned, TIDHash, TIDEq> values; // TID -> testData entry
@@ -61,7 +61,7 @@ static int launchSlottedtest(char** argv) {
 
 	// Setting everything up
 	// changed second param to number of frames and not bytes
-	BufferManager bm(argv[4], 25600ul); // bogus arguments
+	BufferManager bm(argv[1], 25600ul); // bogus arguments
 	cout << "Buffer Manager initialized. " << endl;
 	// segment manager takes two uint64_t arguments for Segment Inventory and Free Segment Inventory size
 	SegmentManager sm(1, 1, &bm);

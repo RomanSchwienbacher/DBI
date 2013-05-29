@@ -23,7 +23,7 @@ class SegmentManager {
 	uint64_t currentId = 0;
 
 public:
-	SegmentManager(BufferManager* bm);
+	SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManager* bm);
 
 	uint64_t createSegment(uint64_t size);
 	Segment& getSegment(uint64_t segId);
