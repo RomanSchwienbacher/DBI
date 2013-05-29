@@ -51,8 +51,6 @@ void SlottedPage::removeRecord(uint16_t slotId) {
 
 		header->freeSpace += recordToDelete->getLen() + (2 * sizeof(uint16_t));
 		--(header->slotCount);
-
-		delete recordToDelete;
 	}
 }
 
@@ -91,8 +89,6 @@ void SlottedPage::updateRecord(uint16_t slotId, const Record& r) {
 		recordsMap[slotId] = &r;
 
 		header->freeSpace += recordToReplace->getLen() - r.getLen();
-
-		delete recordToReplace;
 
 	} else {
 		throw invalid_argument("No record found by given slotId");
