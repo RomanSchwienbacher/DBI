@@ -187,6 +187,10 @@ char* SlottedPage::getSerialized() {
 		offset += it->second->getLen();
 	}
 
+	if (offset > sysconf(_SC_PAGESIZE)) {
+		cerr << "SlottedPage::getSerialized(): Offset " << offset << " is bigger than the size of a single page" << endl;
+	}
+
 	return rtrn;
 }
 

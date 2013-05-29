@@ -219,12 +219,33 @@ bool SPSegment::update(TID tid, const Record& r) {
 
 			if (spMap.count(tid.pageId) > 0) {
 
+				// fetch slotted page
 				SlottedPage* sp = spMap.at(tid.pageId);
-				sp->updateRecord(tid.slotId, r);
+				if (sp->getRecordsMap().count(tid.slotId) > 0) {
 
-				// write changes back to disk
-				if (!writeToFrame(sp, tid.pageId)) {
-					cerr << "Cannot write frame into slotted page" << endl;
+					// fetch old record
+					const Record* rOld = sp->getRecordsMap().at(tid.slotId);
+
+					// calculate whether or not the sp has enough free space to contain the new record
+					bool enoughFreeSpace = (sp->getFreeSpace() + rOld->getLen()) >= r.getLen();
+
+					// if there is enough free space just update
+					if (enoughFreeSpace) {
+
+						sp->updateRecord(tid.slotId, r);
+
+						// write changes back to disk
+						if (!writeToFrame(sp, tid.pageId)) {
+							cerr << "Cannot write frame into slotted page" << endl;
+						}
+					}
+					// otherwise reallocate record
+					else {
+						cout << "REALLOCATE BABY!!" << endl;
+					}
+
+				} else {
+					throw invalid_argument("No record found by given slotId");
 				}
 
 			} else {

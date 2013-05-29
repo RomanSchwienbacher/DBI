@@ -91,7 +91,7 @@ static int launchSlottedtest(char** argv) {
 			break;
 
 		// Insert record
-		TID tid = sp.insert(Record(s.size(), s.c_str()));
+		TID tid = sp.insert(*(new Record(s.size(), s.c_str())));
 
 		// TODO: insert TID into values hashmap????
 		assert(values.find(tid) == values.end()); // TIDs should not be overwritten
@@ -134,6 +134,7 @@ static int launchSlottedtest(char** argv) {
 	}
 
 	// Update some values ('usage' counter invalid from here on)
+	cout << "Starting update of max: " << maxDeletes << " records..." << endl;
 	for (unsigned i = 0; i < maxUpdates; ++i) {
 		// Select victim
 		TID tid = values.begin()->first;
@@ -143,11 +144,12 @@ static int launchSlottedtest(char** argv) {
 		const string s = testData[r];
 
 		// Replace old with new value
-		sp.update(tid, Record(s.size(), s.c_str()));
+		sp.update(tid, *(new Record(s.size(), s.c_str())));
 		values[tid] = r;
 	}
 
 	// Lookups
+	cout << "Finally lookup all records" << endl;
 	for (auto p : values) {
 		TID tid = p.first;
 		const std::string& value = testData[p.second];
