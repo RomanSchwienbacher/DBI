@@ -23,6 +23,9 @@ public:
 	void addToMap(std::pair<uint64_t, Segment*> segment);
 	Segment* retrieveFromMap(uint64_t segId);
 	void removeFromMap(uint64_t segId);
+
+	void flushToDisk();
+	void readFromDisk();
 };
 
 

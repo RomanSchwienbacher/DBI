@@ -76,8 +76,12 @@ Segment& SegmentManager::getSegment(uint64_t segId){
 		 ret = segmentInventory->retrieveFromMap(segId);
 	}
 	catch (const std::out_of_range& oor){
-		std::cerr << "** Segment with id: " << segId << " not in map **" << std::endl;
-		exit(-1);
+		std::cerr << "** Segment with id: " << segId << " not in map - creating one **" << std::endl;
+		uint64_t oldCurrentId = currentId;
+		currentId = segId;
+		createSegment(10);
+		currentId = oldCurrentId;
+		return getSegment(segId);
 	}
 
 	return *ret;
