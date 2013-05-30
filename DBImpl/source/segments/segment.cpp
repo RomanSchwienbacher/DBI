@@ -42,7 +42,7 @@ void Segment::expandExtents(std::vector<uint64_t> extents){
 	uint64_t pageId;
 
 	uint64_t diff;
-	for(int i = 1; i < extents.size(); i+=2){
+	for(unsigned i = 1; i < extents.size(); i+=2){
 		pageId = extents.at(i-1);
 		diff = extents.at(i+1) - extents.at(i);
 
@@ -66,7 +66,7 @@ uint64_t Segment::calculateSize(std::vector<uint64_t> extents) {
 	uint64_t ret = 0;
 
 	extentLengths.clear();
-	for (int i = 0; i < extents.size(); i += 2) {
+	for (unsigned i = 0; i < extents.size(); i += 2) {
 		ret += (extents.at(i + 1) - extents.at(i));
 		extentLengths.push_back((extents.at(i+1) - extents.at(i)));
 	}
@@ -88,7 +88,7 @@ std::vector<uint64_t> Segment::mergeExtents(std::vector<uint64_t> extents1,
 	mergedExtents.push_back(extents1.at(0));
 
 	// merge neighboring extents
-	for (int i = 1; i < extents1.size(); i += 2) {
+	for (unsigned i = 1; i < extents1.size(); i += 2) {
 		if (i+1 == extents1.size()){
 			mergedExtents.push_back(extents1.at(i));
 			break;
@@ -115,7 +115,7 @@ uint64_t Segment::at(uint64_t pos){
 	uint64_t extRange = 0;
 	uint64_t prevExtRange = 0;
 
-	for(int i = 0; i < extentLengths.size(); ++i){
+	for(unsigned i = 0; i < extentLengths.size(); ++i){
 		prevExtRange = extRange;
 		extRange += extentLengths.at(i);
 

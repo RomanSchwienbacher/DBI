@@ -18,7 +18,7 @@ SISegment::SISegment(std::vector<uint64_t> extents, uint64_t segId) :
 
 	// DEBUG
 	std::cout << "SISegment extents: " << std::endl;
-	for (int i = 0; i < extents.size(); ++i) {
+	for (unsigned i = 0; i < extents.size(); ++i) {
 		std::cout << "value: " << i << ": " << extents.at(i) << std::endl;
 	}
 
@@ -70,7 +70,7 @@ void SISegment::flushToDisk() {
 		offset += sizeof(std::vector<uint64_t>::size_type);
 
 		//serialize vector data = extents min and max
-		for (int i = 0; i < segment->getExtents().size(); ++i) {
+		for (unsigned i = 0; i < segment->getExtents().size(); ++i) {
 			memcpy(temp + offset, &(segment->getExtents().at(i)), sizeof(uint64_t));
 			offset += sizeof(uint64_t);
 		}
@@ -79,7 +79,7 @@ void SISegment::flushToDisk() {
 
 	// fix size pages from bm
 	// write pages to bm
-	for (int i = 0; i < size; ++i) {
+	for (unsigned i = 0; i < size; ++i) {
 		BufferFrame frame = bm->fixPage(at(i), true);
 
 		try {
@@ -107,7 +107,7 @@ void SISegment::readFromDisk() {
 	segMapping.clear();
 
 	// read entire segment inventory from disk
-	for (int i = 0; i < size; ++i) {
+	for (unsigned i = 0; i < size; ++i) {
 		BufferFrame frame = bm->fixPage(at(i), false);
 
 		// write into temporary data pointer

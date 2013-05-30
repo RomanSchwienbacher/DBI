@@ -20,11 +20,11 @@ FSISegment::FSISegment(std::vector<uint64_t> extents, uint64_t segId, uint64_t m
 
 	// DEBUG
 	std::cout << "FSISegment extents: "<< std::endl;
-	for(int i = 0; i < extents.size(); ++i){
+	for(unsigned i = 0; i < extents.size(); ++i){
 		std::cout << "value: " << i << ": " << extents.at(i) << std::endl;
 	}
 	std::cout << "FSISegment FREE extents: "<< std::endl;
-		for(int i = 0; i < freeExtents.size(); ++i){
+		for(unsigned i = 0; i < freeExtents.size(); ++i){
 			std::cout << "value: " << i << ": " << freeExtents.at(i) << std::endl;
 		}
 
@@ -47,7 +47,7 @@ std::vector<uint64_t> FSISegment::getFreeExtents(uint64_t size){
 	uint64_t min = 0;
 
 	// iterate through free extents
-	for(int i = 0; i< freeExtents.size(); i+=2){
+	for(unsigned i = 0; i< freeExtents.size(); i+=2){
 
 		max = freeExtents.at(i+1);
 		min = freeExtents.at(i);
