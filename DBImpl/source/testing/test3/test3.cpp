@@ -19,15 +19,18 @@ using namespace sorting;
 
 namespace testing {
 
+/*
 int g_argc;
 char** g_argv;
 
-TEST (SlottedTest, CompleteRun) {
+
+TEST (SlottedTest, SingleRun) {
 	ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
 }
-
+*/
 }
 
+/*
 int main(int argc, char **argv) {
 
 	// check input parameter
@@ -44,3 +47,4 @@ int main(int argc, char **argv) {
 
 	return RUN_ALL_TESTS();
 }
+*/
