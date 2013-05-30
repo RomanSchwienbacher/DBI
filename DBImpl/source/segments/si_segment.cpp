@@ -9,6 +9,8 @@
 #include <vector>
 #include <stdexcept>
 #include <iostream>
+#include <unistd.h>
+#include <string.h>
 #include "si_segment.h"
 
 SISegment::SISegment(std::vector<uint64_t> extents, uint64_t segId) :
@@ -44,6 +46,9 @@ void SISegment::flushToDisk() {
 	uint64_t segId = 0;
 	Segment *segment;
 
+	unordered_map<uint64_t, Segment *>::size_type mappingSize = 0;
+	std::vector<uint64_t>::size_type extentSize = 0;
+
 	// serialize mapping
 	for (auto it = segMapping.begin(); it != segMapping.end(); ++it) {
 
@@ -51,7 +56,8 @@ void SISegment::flushToDisk() {
 		segment = it->second;
 
 		// serialize map size
-		memcpy(temp + offset, &(segMapping.size()), sizeof(unordered_map<uint64_t, Segment *>::size_type));
+		mappingSize = segMapping.size();
+		memcpy(temp + offset, &(mappingSize), sizeof(unordered_map<uint64_t, Segment *>::size_type));
 		offset += sizeof(unordered_map<uint64_t, Segment *>::size_type);
 
 		// serialize segmendId
@@ -59,12 +65,13 @@ void SISegment::flushToDisk() {
 		offset += sizeof(uint64_t);
 
 		// serialize vector length
-		memcpy(temp + offset, &(segment->extents.size()), sizeof(std::vector<uint64_t>::size_type));
+		extentSize = segment->getExtents().size();
+		memcpy(temp + offset, &(extentSize), sizeof(std::vector<uint64_t>::size_type));
 		offset += sizeof(std::vector<uint64_t>::size_type);
 
 		//serialize vector data = extents min and max
-		for (int i = 0; i < segment->extents.size(); ++i) {
-			memcpy(temp + offset, &(segment->extents.at(i)), sizeof(uint64_t));
+		for (int i = 0; i < segment->getExtents().size(); ++i) {
+			memcpy(temp + offset, &(segment->getExtents().at(i)), sizeof(uint64_t));
 			offset += sizeof(uint64_t);
 		}
 
@@ -72,7 +79,7 @@ void SISegment::flushToDisk() {
 
 	// fix size pages from bm
 	// write pages to bm
-	for (int i = 0; i < size(); ++i) {
+	for (int i = 0; i < size; ++i) {
 		BufferFrame frame = bm->fixPage(at(i), true);
 
 		try {
@@ -83,32 +90,6 @@ void SISegment::flushToDisk() {
 		} catch (exception& e) {
 			cerr << "An exception occurred while writing slotted page to frame: " << e.what() << endl;
 		}
-	}
-
-	// retrieve segments data
-
-	// deserialize map size
-	unordered_map<uint64_t, Segment *>::size_type mapSize;
-	memcpy(&mapSize, temp + offset, sizeof(unordered_map<uint64_t, Segment *>::size_type));
-	offset += sizeof(unordered_map<uint64_t, Segment *>::size_type);
-
-
-	// TODO: retrieve segment ID, and min max until all segments retrieved
-	while (mapSize > 0) {
-		// serialize segmendId
-		memcpy(temp + offset, &(segId), sizeof(uint64_t));
-		offset += sizeof(uint64_t);
-
-		// serialize vector length
-		memcpy(temp + offset, &(segment->extents.size()), sizeof(std::vector<uint64_t>::size_type));
-		offset += sizeof(std::vector<uint64_t>::size_type);
-
-		//serialize vector data = extents min and max
-		for (int i = 0; i < segment->extents.size(); ++i) {
-			memcpy(temp + offset, &(segment->extents.at(i)), sizeof(uint64_t));
-			offset += sizeof(uint64_t);
-		}
-
 	}
 
 }
@@ -126,17 +107,28 @@ void SISegment::readFromDisk() {
 	segMapping.clear();
 
 	// read entire segment inventory from disk
-	for (int i = 0; i < size(); ++i) {
+	for (int i = 0; i < size; ++i) {
 		BufferFrame frame = bm->fixPage(at(i), false);
 
-		try {
+		// write into temporary data pointer
+		memcpy(temp, (char *)frame.getData() + (i * sysconf(_SC_PAGESIZE)), bm->getPageSize());
+	}
 
-			// write into temporary data pointer
-			memcpy(temp, frame.getData() + (i * sysconf(_SC_PAGESIZE)), bm->getPageSize());
+	// retrieve segments data
 
-		} catch (exception& e) {
-			cerr << "An exception occurred while writing slotted page to frame: " << e.what() << endl;
-		}
+	// deserialize map size
+	unordered_map<uint64_t, Segment *>::size_type mapSize;
+	memcpy(&mapSize, temp + offset, sizeof(unordered_map<uint64_t, Segment *>::size_type));
+	offset += sizeof(unordered_map<uint64_t, Segment *>::size_type);
+
+	std::vector<uint64_t>::size_type extentSize = 0;
+
+	// TODO: retrieve segment ID, and min max until all segments retrieved
+	while (mapSize > 0) {
+		// serialize segmendId
+		memcpy(temp + offset, &(segId), sizeof(uint64_t));
+		offset += sizeof(uint64_t);
+
 	}
 
 }
