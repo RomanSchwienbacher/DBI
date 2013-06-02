@@ -13,6 +13,7 @@
 #include "../sorting/sorter.h"
 #include "buffertest.cpp"
 #include "slottedtest.cpp"
+#include "bTreeTest.cpp"
 #include <math.h>
 #include <iostream>
 
@@ -115,6 +116,10 @@ TEST (SlottedTest, CompleteRun) {
 	ASSERT_EQ(testing::launchSlottedtest(g_argv), 0);
 }
 
+TEST (BTreeTest, CompleteRun) {
+	//ASSERT_EQ(testing::launchBTreetest(g_argv), 0);
+}
+
 }
 
 /*
@@ -127,12 +132,13 @@ TEST (SlottedTest, CompleteRun) {
  * 128
  * 7
  * 20
+ * 100000
  */
 int main(int argc, char **argv) {
 
 	// check input parameter
-	if (argc < 9) {
-		cerr << "usage of whole test: " << argv[0] << " <sort_inputFile> <sort_outputFile> <sort_memoryBufferInMB> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads> <slot_pageSize>" << endl;
+	if (argc < 10) {
+		cerr << "usage of whole test: " << argv[0] << " <sort_inputFile> <sort_outputFile> <sort_memoryBufferInMB> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads> <slot_pageSize> <btree_items>" << endl;
 		exit(0);
 	}
 

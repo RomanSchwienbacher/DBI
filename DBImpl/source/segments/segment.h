@@ -67,4 +67,7 @@ public:
 
 };
 
-#endif /* SEGMENT_H_ */
+// Defines which segment types can be created
+enum SegmentType {SLOTTED_PAGE, BTREE};
+
+#endif

@@ -15,4 +15,4 @@ public:
 };
 
 }
-#endif /* MAINTEST_H_ */
+#endif

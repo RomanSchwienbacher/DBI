@@ -9,6 +9,7 @@
 
 #include "segman.h"
 #include "sp_segment.h"
+#include "btree_segment.h"
 #include <iostream>
 
 SegmentManager::SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManager* bm) {
@@ -27,18 +28,19 @@ SegmentManager::SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManage
 	std::vector<uint64_t> fsiExtents;
 	fsiExtents.push_back(si_size);
 	fsiExtents.push_back(si_size + fsi_size);
-	
+
 	freeSegmentInventory = new FSISegment(fsiExtents, currentId++, bm->getPagesOnDisk());
 
 }
 
 /**
  * creates a new segment
+ * @param type: the type of the created segment
  * @param size: the size in pages of the new segment to be created
  * @return: segmentId of new segment, -1 if not enough free space
  */
 
-uint64_t SegmentManager::createSegment(uint64_t size){
+uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size) {
 
 	int ret;
 
@@ -47,15 +49,22 @@ uint64_t SegmentManager::createSegment(uint64_t size){
 	freeExtents = freeSegmentInventory->getFreeExtents(size);
 
 	// getFreeExtents returns size 0 if not enough free extents exist
-	if(freeExtents.size() == 0){
+	if (freeExtents.size() == 0) {
 		ret = -1;
-	} else{
+	} else {
 		ret = currentId;
 	}
 
-	// TODO: make this work for all Segments, maybe pass type of segment via param?
-	Segment* seg = new SPSegment(freeExtents, currentId, bm);
-	segmentInventory->addToMap(std::make_pair(currentId++, seg));
+	if (type == SegmentType::SLOTTED_PAGE) {
+
+		Segment* seg = new SPSegment(freeExtents, currentId, bm);
+		segmentInventory->addToMap(std::make_pair(currentId++, seg));
+
+	} else if (type == SegmentType::BTREE) {
+
+		Segment* seg = new BTreeSegment(freeExtents, currentId, bm);
+		segmentInventory->addToMap(std::make_pair(currentId++, seg));
+	}
 
 	return ret;
 
@@ -68,18 +77,17 @@ uint64_t SegmentManager::createSegment(uint64_t size){
  * @return: a reference to the segment
  */
 
-Segment& SegmentManager::getSegment(uint64_t segId){
+Segment& SegmentManager::getSegment(uint64_t segId) {
 
 	Segment* ret;
 
-	try{
-		 ret = segmentInventory->retrieveFromMap(segId);
-	}
-	catch (const std::out_of_range& oor){
+	try {
+		ret = segmentInventory->retrieveFromMap(segId);
+	} catch (const std::out_of_range& oor) {
 		std::cerr << "** Segment with id: " << segId << " not in map - creating one **" << std::endl;
 		uint64_t oldCurrentId = currentId;
 		currentId = segId;
-		createSegment(10);
+		createSegment(SegmentType::SLOTTED_PAGE, 10);
 		currentId = oldCurrentId;
 		return getSegment(segId);
 	}
@@ -94,15 +102,15 @@ Segment& SegmentManager::getSegment(uint64_t segId){
  * @param newSize: the new size the segment is supposed to be extended to
  * @return: current size of the segment in pages (success), -1 if resize failed
  */
-uint64_t SegmentManager::growSegment(uint64_t segId, uint64_t newSize){
+uint64_t SegmentManager::growSegment(uint64_t segId, uint64_t newSize) {
 
 	// retrieve segment
 	Segment& seg = getSegment(segId);
 
 	// if newSize is old size then do nothing and return that size
-	if(seg.getSize() == newSize){
+	if (seg.getSize() == newSize) {
 		return newSize;
-	} else if(seg.getSize() > newSize){
+	} else if (seg.getSize() > newSize) {
 		// if newSize is smaller, then return an error
 		return -1;
 	}
@@ -122,7 +130,7 @@ uint64_t SegmentManager::growSegment(uint64_t segId, uint64_t newSize){
  *
  */
 
-void SegmentManager::dropSegment(uint64_t segId){
+void SegmentManager::dropSegment(uint64_t segId) {
 
 	int ret;
 
@@ -131,7 +139,6 @@ void SegmentManager::dropSegment(uint64_t segId){
 
 	// return extents to free space
 	freeSegmentInventory->returnFreeExtents(seg.getExtents());
-
 
 	// remove segment from mapping
 	segmentInventory->removeFromMap(segId);
