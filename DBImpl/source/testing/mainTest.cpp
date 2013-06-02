@@ -117,7 +117,7 @@ TEST (SlottedTest, CompleteRun) {
 }
 
 TEST (BTreeTest, CompleteRun) {
-	//ASSERT_EQ(testing::launchBTreetest(g_argv), 0);
+	ASSERT_EQ(testing::launchBTreetest(g_argv), 0);
 }
 
 }

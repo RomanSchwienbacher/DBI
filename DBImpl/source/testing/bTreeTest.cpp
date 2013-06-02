@@ -84,7 +84,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 	BTreeSegment& seg = (BTreeSegment&) (sm.getSegment(spId));
 	BTree<T, CMP> bTree(seg);
 
-	// Insert values
+	cout << "Insert values" << endl;
 	for (uint64_t i = 0; i < n; ++i) {
 
 		//bTree.insert(getKey<T>(i), static_cast<TID>(i * i));
@@ -96,7 +96,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 	}
 	assert(bTree.size() == n);
 
-	// Check if they can be retrieved
+	cout << "Check if they can be retrieved" << endl;
 	for (uint64_t i = 0; i < n; ++i) {
 		TID tid;
 		assert(bTree.lookup(getKey<T>(i), tid));
@@ -105,12 +105,14 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		assert(tid.pageId == i * i); // TODO fix this: how to get page-id and slot-id by simple i increment? bit-shifting?
 	}
 
-	// Delete some values
-	for (uint64_t i = 0; i < n; ++i)
-		if ((i % 7) == 0)
+	cout << "Delete some values" << endl;
+	for (uint64_t i = 0; i < n; ++i) {
+		if ((i % 7) == 0) {
 			bTree.erase(getKey<T>(i));
+		}
+	}
 
-	// Check if the right ones have been deleted
+	cout << "Check if the right ones have been deleted" << endl;
 	for (uint64_t i = 0; i < n; ++i) {
 		TID tid;
 		if ((i % 7) == 0) {
@@ -123,24 +125,26 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		}
 	}
 
-	// Delete everything
-	for (uint64_t i = 0; i < n; ++i)
+	cout << "Delete everything" << endl;
+	for (uint64_t i = 0; i < n; ++i) {
 		bTree.erase(getKey<T>(i));
+	}
+
 	assert(bTree.size() == 0);
 }
 
 static int launchBTreetest(char** argv) {
 
-	// Get command line argument
+	// Get command line argument (amount of tid's managed by tree)
 	const uint64_t n = strtoul(argv[9], NULL, 10);
 
-	// Test index with 64bit unsigned integers
+	cout << "Test index with 64bit unsigned integers" << endl;
 	bTreeTest<uint64_t, MyCustomUInt64Cmp>(argv[4], n);
 
-	// Test index with 20 character strings
+	cout << "Test index with 20 character strings" << endl;
 	bTreeTest<Char<20>, MyCustomCharCmp<20>>(argv[4], n);
 
-	// Test index with compound key
+	cout << "Test index with compound key" << endl;
 	bTreeTest<IntPair, MyCustomIntPairCmp>(argv[4], n);
 
 	return 0;

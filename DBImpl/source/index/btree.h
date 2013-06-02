@@ -16,13 +16,16 @@
 #include <inttypes.h>
 #include "../segments/btree_segment.h"
 #include "../segments/tid.h"
+#include "node.h"
 
 template<class T, class CMP>
 class BTree {
 
-public:
-
 	BTreeSegment* seg;
+	unsigned k = 3;
+	unsigned kstar = 3;
+
+public:
 
 	BTree(BTreeSegment& seg);
 
