@@ -25,6 +25,9 @@ class BTree {
 	unsigned k = 3;
 	unsigned kstar = 3;
 
+	uint64_t rootNodePage;
+	Node<T, CMP>* rootNode;
+
 public:
 
 	BTree(BTreeSegment& seg);
