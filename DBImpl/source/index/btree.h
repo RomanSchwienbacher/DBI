@@ -37,16 +37,15 @@ class BTree {
 
 		bool rtrn = false;
 
-		/*
 		if (node->isLeaf) {
 
-			LeafNode<T, CMP>* leaf = dynamic_cast<LeafNode*>(node);
+			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
 
 			unsigned i = 0;
-			for (auto lKey : leaf->keys) {
+			for (T lKey : leaf->keys) {
 				// check for equality
-				if (!(CMP()(lkey, key)) && !(CMP()(key, lkey))) {
-					result = leaf->values.at(i);
+				if (!(CMP()(lKey, key)) && !(CMP()(key, lKey))) {
+					tid = leaf->values.at(i);
 					rtrn = true;
 					break;
 				}
@@ -55,19 +54,19 @@ class BTree {
 
 		} else {
 
-			InnerNode<T, CMP>* inner = dynamic_cast<InnerNode*>(node);
+			InnerNode<T, CMP>* inner = reinterpret_cast<InnerNode<T, CMP>*>(node);
 
 			unsigned i = 0;
-			for (auto iSeparator : inner->separators) {
+			for (T iSeparator : inner->separators) {
 				if (!(CMP()(iSeparator, key)) ) {
 					// recursive call
-					rtrn = lookupInternal(key, inner->children.at(i), result);
+					// TODO fetch node by inner->children.at(i)
+					//rtrn = lookupInternal(key, inner->children.at(i), tid);
 					break;
 				}
 				++i;
 			}
 		}
-		*/
 
 		return rtrn;
 	}
