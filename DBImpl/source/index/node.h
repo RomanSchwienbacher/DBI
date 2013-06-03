@@ -16,8 +16,9 @@
 template<class T, class CMP>
 struct Node {
 	uint32_t LSN;
-	uint16_t count;
+	uint16_t count; // number of entries in keys
 	bool isLeaf;
+	Node<T, CMP> *parentNode;
 };
 
 template<class T, class CMP>

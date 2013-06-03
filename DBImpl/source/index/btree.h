@@ -33,7 +33,7 @@ class BTree {
 	 *
 	 * @return boolean which indicates whether the key was found or not
 	 */
-	bool lookupInternal(T key, Node<T, CMP>* node, TID& tid) {
+	bool lookupInternal(T key, Node<T, CMP>* node, TID& tid, Node<T, CMP>* currentNode) {
 
 		bool rtrn = false;
 
@@ -46,6 +46,7 @@ class BTree {
 				// check for equality
 				if (!(CMP()(lKey, key)) && !(CMP()(key, lKey))) {
 					tid = leaf->values.at(i);
+					currentNode = leaf;
 					rtrn = true;
 					break;
 				}
@@ -58,10 +59,11 @@ class BTree {
 
 			unsigned i = 0;
 			for (T iSeparator : inner->separators) {
-				if (!(CMP()(iSeparator, key)) ) {
+				if (!(CMP()(iSeparator, key))) {
 					// recursive call
 					// TODO fetch node by inner->children.at(i)
 					//rtrn = lookupInternal(key, inner->children.at(i), tid);
+
 					break;
 				}
 				++i;
@@ -69,6 +71,82 @@ class BTree {
 		}
 
 		return rtrn;
+	}
+
+	/**
+	 * Calculates the free space within a node
+	 *
+	 * @param *node: the node whose space is calculated
+	 *
+	 * @return long int with the number of bytes free in the node
+	 */
+	long calculateFreeNodeSpace(Node<T, CMP> *node) {
+
+		long rtrn = seg->bm->pageSize;
+
+		// add the node header
+		rtrn -= sizeof(Node<T, CMP*> );
+
+		if (node->isLeaf) {
+
+			// alternative: calculate keys.capacity() * sizeof(T)
+			// and values.capacity() * sizeof(TID)
+			rtrn -= sizeof(LeafNode<T, CMP>*);
+			rtrn -= node->count(sizeof(T) + sizeof(TID));
+
+		} else {
+
+			// alternative: calculate separators.capacity() * sizeof(T)
+			// and children.capacity() * sizeof(uint64_t)
+			rtrn -= node->count * sizeof(T);
+			rtrn -= (node->count + 1) * sizeof(uint64_t);
+
+		}
+
+		return rtrn;
+	}
+
+	/**
+	 * Splits a node and cascades to the top of the b tree
+	 *
+	 * @param *node: the node to be split
+	 */
+
+	void splitNode(Node<T, CMP> *node) {
+
+		if(node->isLeaf){
+
+			// create neighboring leaf and set next to it
+			LeafNode<T, CMP> thisLeaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
+			LeafNode<T, CMP> neighborLeaf = new LeafNode<T, CMP>;
+			neighborLeaf->isLeaf = true;
+			neighborLeaf->parentNode = thisLeaf->parentNode;
+			thisLeaf->next = neighborLeaf;
+
+			// take first half of keys and values and place them left
+			// place the others on the neighborLeaf
+			unsigned half = (thisLeaf->keys).size() / 2;
+			for (unsigned i = half; i < (thisLeaf->keys).size(); ++i){
+				(neighborLeaf->keys).push_back(thisLeaf->keys.at(i));
+				(neighborLeaf->values).push_back(thisLeaf->values.at(i));
+			}
+
+			// delete half to end from key and value vectors of leaf
+			thisLeaf->keys.erase(half, thisLeaf->keys.end());
+			thisLeaf->values.erase(half, thisLeaf->values.end());
+
+			// check if parent needs to be split
+			long neededSpace = sizeof(T) + sizeof(uint64_t);
+			if(neededSpace > calculateFreeNodeSpace(thisLeaf->parentNode)){
+				splitNode(thisLeaf->parentNode); // implement child re-hanging in else case
+			}
+
+
+		} else{
+
+			// split children -> update their parents
+			// split vectors
+		}
 	}
 
 public:
@@ -93,6 +171,48 @@ public:
 	 */
 	void insert(T key, TID tid) {
 
+		Node<T, CMP>* insertNode;
+
+		// calculate required space
+		long requiredSpace = sizeof(tid) + sizeof(T);
+
+		// because lookupInternal changes tid - this invokes copy constructor
+		TID toInsertTID = tid;
+
+		// lookup and change to the node which should be inserted to
+		lookupInternal(key, rootNode, tid, insertNode);
+
+		long freeNodeSpace = calculateFreeNodeSpace(insertNode);
+
+		// node should be a leaf node
+		LeafNode<T, CMP> *leaf;
+		if (insertNode->isLeaf) {
+			leaf = reinterpret_cast<LeafNode<T, CMP>*>(insertNode);
+		} else {
+			std::cerr << "** BTree::lookupInternal() returned an inner node **" << std::endl;
+		}
+
+		if (freeNodeSpace > requiredSpace) {
+
+			uint16_t pos = 0;
+			for (T lKey : leaf->keys) {
+				// check if new key is larger
+				if ((CMP()(lKey, key))) {
+					++pos;
+				} else {
+					break;
+				}
+			}
+			// add key and value at correct position
+			(leaf->keys).insert(pos, key);
+			(leaf->values).insert(pos, tid);
+
+		} else {
+			// split the node and insert
+			splitNode(leaf);
+
+		}
+
 	}
 
 	/**
@@ -115,7 +235,8 @@ public:
 	 */
 	bool lookup(T key, TID& tid) {
 		// search tid beginning at the root node
-		return lookupInternal(key, rootNode, tid);
+		Node<T, CMP>* foundInNode;
+		return lookupInternal(key, rootNode, tid, foundInNode);
 	}
 
 	/**
