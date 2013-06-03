@@ -18,13 +18,16 @@
 using namespace std;
 
 /**
- * Constructor:
+ * Constructor: ladet die root page / knoten und übergibt das den btree
  */
 BTreeSegment::BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) :
 		Segment(freeExtents, segId, bm) {
 
 
 }
+
+// kann auch neue pages anlegen, wenn keine mehr verfügbar sind
+// eine bm-page pro node
 
 BTreeSegment::~BTreeSegment() {
 

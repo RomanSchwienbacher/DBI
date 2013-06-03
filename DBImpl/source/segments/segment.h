@@ -68,6 +68,6 @@ public:
 };
 
 // Defines which segment types can be created
-enum SegmentType {SLOTTED_PAGE, BTREE};
+enum class SegmentType {SLOTTED_PAGE, BTREE};
 
 #endif

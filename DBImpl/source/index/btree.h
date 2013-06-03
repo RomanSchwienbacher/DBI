@@ -30,83 +30,70 @@ class BTree {
 
 public:
 
-	BTree(BTreeSegment& seg);
+	// jede page wird exklusiv geladen
 
-	void insert(T key, TID tid);
-	void erase(T key);
-	bool lookup(T key, TID& tid);
-	vector<TID>::iterator lookupRange();
-	uint64_t size();
+	/**
+	 * Constructor
+	 *
+	 * @param seg: B+Tree Segment
+	 */
+	BTree(BTreeSegment& seg) {
+		BTree::seg = &seg;
+	}
 
-	virtual ~BTree();
+	/**
+	 * Inserts a new key/TID pair into the tree
+	 *
+	 * @param key: the key
+	 * @param tid: the TID
+	 */
+	void insert(T key, TID tid) {
+
+	}
+
+	/**
+	 * Deletes a specified key from the tree
+	 * mach die einfache variante!!!!
+	 *
+	 * @param key: the key
+	 */
+	void erase(T key) {
+
+	}
+
+	/**
+	 * Searches a TID by key and writes found-tid into referenced param tid
+	 *
+	 * @param key: the key
+	 * @param tid: the tid (result)
+	 *
+	 * @return rtrn: indicates that the key was found or not
+	 */
+	bool lookup(T key, TID& tid) {
+
+	}
+
+	/**
+	 * Returns an iterator that allows to iterate over the result set
+	 *
+	 * @return rtrn: the iterator
+	 */
+	vector<TID>::iterator lookupRange() {
+
+	}
+
+	/**
+	 * Returns the size of the tree (amount of nodes)
+	 *
+	 * @return rtrn: the size
+	 */
+	uint64_t size() {
+
+	}
+
+	virtual ~BTree() {
+
+	}
 };
-
-/**
- * Constructor
- *
- * @param seg: B+Tree Segment
- */
-template<class T, class CMP>
-BTree<T, CMP>::BTree(BTreeSegment& seg) {
-	BTree::seg = &seg;
-}
-
-/**
- * Inserts a new key/TID pair into the tree
- *
- * @param key: the key
- * @param tid: the TID
- */
-template<class T, class CMP>
-void BTree<T, CMP>::insert(T key, TID tid) {
-
-}
-
-/**
- * Deletes a specified key from the tree
- *
- * @param key: the key
- */
-template<class T, class CMP>
-void BTree<T, CMP>::erase(T key) {
-
-}
-
-/**
- * Searches a TID by key and writes found-tid into referenced param tid
- *
- * @param key: the key
- * @param tid: the tid (result)
- *
- * @return rtrn: indicates that the key was found or not
- */
-template<class T, class CMP>
-bool BTree<T, CMP>::lookup(T key, TID& tid) {
-
-}
-
-/**
- * Returns an iterator that allows to iterate over the result set
- *
- * @return rtrn: the iterator
- */
-template<class T, class CMP>
-vector<TID>::iterator BTree<T, CMP>::lookupRange() {
-
-}
-
-/**
- * Returns the size of the tree (amount of nodes)
- *
- * @return rtrn: the size
- */
-template<class T, class CMP>
-uint64_t BTree<T, CMP>::size() {
-
-}
-
-template<class T, class CMP>
-BTree<T, CMP>::~BTree() {
-}
 
 #endif
