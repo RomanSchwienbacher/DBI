@@ -9,8 +9,11 @@
 #define SEGMENT_H_
 
 #include "../buffer/bufman.h"
+//#include "fsi_segment.h"
 #include <stdint.h>
 #include <vector>
+
+class FSISegment;
 
 class Segment {
 
@@ -44,13 +47,16 @@ protected:
 	// pointer to the buffer manager of the db system
 	BufferManager * bm;
 
+	// pointer to the free segment inventory (used for growing)
+	FSISegment *fsi;
+
 public:
 
 	Segment(std::vector<uint64_t> extents, uint64_t segId);
 
-	Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm);
+	Segment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager * bm);
 
-	std::vector<uint64_t> grow(std::vector<uint64_t> addExtents);
+	std::vector<uint64_t> grow(uint64_t addedSpace);
 
 	// returns size in pages
 	uint64_t getSize();

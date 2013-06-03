@@ -57,12 +57,12 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size) {
 
 	if (type == SegmentType::SLOTTED_PAGE) {
 
-		Segment* seg = new SPSegment(freeExtents, currentId, bm);
+		Segment* seg = new SPSegment(freeExtents, currentId, freeSegmentInventory, bm);
 		segmentInventory->addToMap(std::make_pair(currentId++, seg));
 
 	} else if (type == SegmentType::BTREE) {
 
-		Segment* seg = new BTreeSegment(freeExtents, currentId, bm);
+		Segment* seg = new BTreeSegment(freeExtents, currentId, freeSegmentInventory, bm);
 		segmentInventory->addToMap(std::make_pair(currentId++, seg));
 	}
 
@@ -115,10 +115,7 @@ uint64_t SegmentManager::growSegment(uint64_t segId, uint64_t newSize) {
 		return -1;
 	}
 
-	// try to get enough free extents for growing
-	std::vector<uint64_t> addExtents = freeSegmentInventory->getFreeExtents(newSize - seg.getSize());
-
-	seg.grow(addExtents);
+	seg.grow(newSize - seg.getSize());
 
 	return seg.getSize();
 }

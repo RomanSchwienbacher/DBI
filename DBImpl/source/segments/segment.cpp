@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <iostream>
 #include "segment.h"
+#include "fsi_segment.h"
 
 /**
  * Constructor for Segment Inventory and Free Segment Inventory
@@ -26,10 +27,11 @@ Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
  * @param segId: id of the segment
  * @param bm: buffer manager for writing to disk
 */
-Segment::Segment(std::vector<uint64_t> extents, uint64_t segId, BufferManager * bm) {
+Segment::Segment(std::vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm) {
 
 	Segment::segId = segId;
 	Segment::extents = extents;
+	Segment::fsi = fsi;
 	Segment::bm = bm;
 	size = calculateSize(extents);
 	//Segment::expandExtents(extents);
@@ -52,7 +54,10 @@ void Segment::expandExtents(std::vector<uint64_t> extents){
 	}
 }
 
-std::vector<uint64_t> Segment::grow(std::vector<uint64_t> addExtents) {
+std::vector<uint64_t> Segment::grow(uint64_t addedSpace) {
+
+	std::vector<uint64_t> addExtents;
+	fsi->getFreeExtents(addedSpace);
 
 	extents = mergeExtents(extents, addExtents);
 	size = calculateSize(extents);

@@ -20,8 +20,8 @@ using namespace std;
 /**
  * Constructor: initializes slotted pages
  */
-SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) :
-		Segment(freeExtents, segId, bm) {
+SPSegment::SPSegment(vector<uint64_t> freeExtents, uint64_t segId, FSISegment *fsi,BufferManager * bm) :
+		Segment(freeExtents, segId, fsi, bm) {
 
 	for (unsigned i = 0; i < getSize(); i++) {
 
@@ -89,12 +89,8 @@ TID SPSegment::insert(Record& r) {
 		// just need one more page
 		vector<uint64_t> neededExtents;
 
-		// TODO: get correct free extents
-		neededExtents.push_back(extents.back());
-		neededExtents.push_back(extents.back() + 1);
-
-		// grow by needed extents
-		vector<uint64_t> newExtents = grow(neededExtents);
+		// grow by 10 pages
+		vector<uint64_t> newExtents = grow(10);
 
 		// create new slotted page
 		SlottedPage* sp = new SlottedPage();
