@@ -18,11 +18,10 @@
 using namespace std;
 
 /**
- * Constructor: ladet die root page / knoten und übergibt das den btree
+ * Constructor:
  */
 BTreeSegment::BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm) :
 		Segment(freeExtents, segId, bm) {
-
 
 }
 
