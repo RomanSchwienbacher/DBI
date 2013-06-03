@@ -24,6 +24,43 @@ class BTree {
 	BTreeSegment* seg;
 	Node<T, CMP>* rootNode;
 
+	bool lookupInternal(T key, Node<T, CMP>* node, TID& result) {
+
+		bool rtrn = false;
+
+		/*
+		if (node->isLeaf) {
+
+			LeafNode<T, CMP>* leaf = dynamic_cast<LeafNode*>(node);
+
+			unsigned i = 0;
+			for (auto lKey : leaf->keys) {
+				if (!(CMP()(lkey, key)) && !(CMP()(key, lkey))) {
+					result = leaf->values.at(i);
+					rtrn = true;
+					break;
+				}
+				++i;
+			}
+
+		} else {
+
+			InnerNode<T, CMP>* inner = dynamic_cast<InnerNode*>(node);
+
+			unsigned i = 0;
+			for (auto iSeparator : inner->separators) {
+				if ((CMP()(iSeparator, key)) ) {
+					rtrn = lookupInternal(key, inner->children.at(i), result);
+					break;
+				}
+				++i;
+			}
+		}
+		*/
+
+		return rtrn;
+	}
+
 public:
 
 	// jede page wird exklusiv geladen
@@ -64,10 +101,11 @@ public:
 	 * @param key: the key
 	 * @param tid: the tid (result)
 	 *
-	 * @return rtrn: indicates that the key was found or not
+	 * @return boolean which indicates whether the key was found or not
 	 */
 	bool lookup(T key, TID& tid) {
-		return false;
+		// search tid beginning at the root node
+		return lookupInternal(key, rootNode, tid);
 	}
 
 	/**

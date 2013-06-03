@@ -22,7 +22,7 @@ struct Node {
 
 template<class T, class CMP>
 struct InnerNode: public Node<T, CMP> {
-	vector<T> separator;
+	vector<T> separators;
 	vector<uint64_t> children;
 };
 
