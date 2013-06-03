@@ -24,7 +24,16 @@ class BTree {
 	BTreeSegment* seg;
 	Node<T, CMP>* rootNode;
 
-	bool lookupInternal(T key, Node<T, CMP>* node, TID& result) {
+	/**
+	 * Searches tid by key recursively through b+tree
+	 *
+	 * @param key: the key
+	 * @param node: the current node where key is searched
+	 * @param tid: the tid (result)
+	 *
+	 * @return boolean which indicates whether the key was found or not
+	 */
+	bool lookupInternal(T key, Node<T, CMP>* node, TID& tid) {
 
 		bool rtrn = false;
 
@@ -35,6 +44,7 @@ class BTree {
 
 			unsigned i = 0;
 			for (auto lKey : leaf->keys) {
+				// check for equality
 				if (!(CMP()(lkey, key)) && !(CMP()(key, lkey))) {
 					result = leaf->values.at(i);
 					rtrn = true;
@@ -49,7 +59,8 @@ class BTree {
 
 			unsigned i = 0;
 			for (auto iSeparator : inner->separators) {
-				if ((CMP()(iSeparator, key)) ) {
+				if (!(CMP()(iSeparator, key)) ) {
+					// recursive call
 					rtrn = lookupInternal(key, inner->children.at(i), result);
 					break;
 				}
