@@ -18,7 +18,7 @@ class BTreeSegment: public Segment {
 
 public:
 
-	BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm);
+	BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, FSISegment *fsi, BufferManager * bm);
 
 	virtual ~BTreeSegment();
 };

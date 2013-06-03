@@ -23,7 +23,7 @@ class SPSegment: public Segment {
 
 
 public:
-	SPSegment(vector<uint64_t> freeExtents, uint64_t segId, BufferManager * bm);
+	SPSegment(vector<uint64_t> freeExtents, uint64_t segId, FSISegment *fsi, BufferManager * bm);
 
 	TID insert(Record& r);
 
