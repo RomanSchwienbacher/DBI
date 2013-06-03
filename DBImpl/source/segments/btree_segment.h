@@ -10,15 +10,23 @@
 
 #include "segment.h"
 #include "tid.h"
+#include "../index/node.h"
 
 using namespace std;
 
 class BTreeSegment: public Segment {
 
-
 public:
 
 	BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, FSISegment *fsi, BufferManager * bm);
+
+	/**
+	 * Initializes root node for B+Tree
+	 */
+	template<class T, class CMP>
+	Node<T, CMP>* initializeRootNode() {
+		return NULL;
+	}
 
 	virtual ~BTreeSegment();
 };

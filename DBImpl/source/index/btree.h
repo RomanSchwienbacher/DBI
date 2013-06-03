@@ -22,10 +22,6 @@ template<class T, class CMP>
 class BTree {
 
 	BTreeSegment* seg;
-	unsigned k = 3;
-	unsigned kstar = 3;
-
-	uint64_t rootNodePage;
 	Node<T, CMP>* rootNode;
 
 public:
@@ -33,12 +29,13 @@ public:
 	// jede page wird exklusiv geladen
 
 	/**
-	 * Constructor
+	 * Constructor: initialize seg and rootNode
 	 *
 	 * @param seg: B+Tree Segment
 	 */
 	BTree(BTreeSegment& seg) {
 		BTree::seg = &seg;
+		BTree::rootNode = seg.initializeRootNode<T, CMP>();
 	}
 
 	/**
@@ -70,7 +67,7 @@ public:
 	 * @return rtrn: indicates that the key was found or not
 	 */
 	bool lookup(T key, TID& tid) {
-
+		return false;
 	}
 
 	/**
@@ -79,7 +76,7 @@ public:
 	 * @return rtrn: the iterator
 	 */
 	vector<TID>::iterator lookupRange() {
-
+		return NULL;
 	}
 
 	/**
@@ -88,11 +85,11 @@ public:
 	 * @return rtrn: the size
 	 */
 	uint64_t size() {
-
+		return 0;
 	}
 
 	virtual ~BTree() {
-
+		delete rootNode;
 	}
 };
 
