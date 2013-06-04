@@ -172,9 +172,6 @@ public:
 	 */
 	void insert(T key, TID& tid) {
 
-		bool test = false;
-
-		/*
 		Node<T, CMP> insertNode;
 
 		// calculate required space
@@ -216,7 +213,6 @@ public:
 			// split the node and insert
 			splitNode(leaf);
 		}
-		*/
 	}
 
 	/**
