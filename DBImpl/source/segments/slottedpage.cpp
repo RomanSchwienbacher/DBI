@@ -241,7 +241,7 @@ SlottedPage* SlottedPage::getDeserialized(char* spPointer) {
 	int offset = 0;
 
 	// deserialize header
-	memcpy(rtrn->getHeader() + offset, spPointer, sizeof(Header));
+	memcpy(rtrn->getHeader(), spPointer + offset, sizeof(Header));
 	offset += sizeof(Header);
 
 	// deserialize slots and records

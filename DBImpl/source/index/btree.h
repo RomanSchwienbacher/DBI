@@ -61,10 +61,13 @@ class BTree {
 			unsigned i = 0;
 			for (T iSeparator : inner->separators) {
 				if (!(CMP()(iSeparator, key))) {
-					// recursive call
-					// TODO fetch node by inner->children.at(i)
-					//rtrn = lookupInternal(key, inner->children.at(i), tid);
 
+					// fetch childNode by child-pageId
+					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->children.at(i));
+					childNode->parentNode = node;
+
+					// recursive call
+					rtrn = lookupInternal(key, childNode, tid, tidNode);
 					break;
 				}
 				++i;
