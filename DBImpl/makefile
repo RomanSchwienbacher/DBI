@@ -7,17 +7,14 @@ CFLAGS=-std=c++11 -pthread
 all: dbi
 
 # Tool invocations
-dbi: bufman.o btree.o mainTest.o sorter.o segment.o
-	$(CC) $(CFLAGS) -o "dbi" bufframe.o bufman.o btree.o locker.o buffertest.o slottedtest.o bTreeTest.o mainTest.o gtest-all.o sorter.o segment.o si_segment.o fsi_segment.o record.o tid.o sp_segment.o btree_segment.o segman.o slottedpage.o
+dbi: bufman.o mainTest.o sorter.o segment.o
+	$(CC) $(CFLAGS) -o "dbi" bufframe.o bufman.o locker.o buffertest.o slottedtest.o bTreeTest.o mainTest.o gtest-all.o sorter.o segment.o si_segment.o fsi_segment.o record.o tid.o sp_segment.o btree_segment.o segman.o slottedpage.o
 
 segment.o: ./source/segments/segment.cpp ./source/segments/si_segment.cpp ./source/segments/fsi_segment.cpp ./source/segments/record.cpp ./source/segments/tid.cpp ./source/segments/sp_segment.cpp ./source/segments/btree_segment.cpp ./source/segments/segman.cpp ./source/segments/slottedpage.cpp
 	$(CC) $(DEBUG) $(CFLAGS) ./source/segments/segment.cpp ./source/segments/si_segment.cpp ./source/segments/fsi_segment.cpp ./source/segments/record.cpp ./source/segments/tid.cpp ./source/segments/sp_segment.cpp ./source/segments/btree_segment.cpp ./source/segments/segman.cpp ./source/segments/slottedpage.cpp
 
 bufman.o: ./source/buffer/bufframe.cpp ./source/buffer/bufman.cpp ./source/buffer/locker.cpp
 	$(CC) $(DEBUG) $(CFLAGS) ./source/buffer/bufframe.cpp ./source/buffer/bufman.cpp ./source/buffer/locker.cpp
-
-btree.o: ./source/index/btree.h ./source/index/node.h
-	$(CC) $(DEBUG) $(CFLAGS) ./source/index/btree.h ./source/index/node.h
 
 mainTest.o: ./source/testing/buffertest.cpp ./source/testing/slottedtest.cpp ./source/testing/bTreeTest.cpp ./source/testing/mainTest.cpp ./testinglib/gtest/gtest-all.cc
 	$(CC) $(DEBUG) $(CFLAGS) ./source/testing/buffertest.cpp ./source/testing/slottedtest.cpp ./source/testing/bTreeTest.cpp ./source/testing/mainTest.cpp ./testinglib/gtest/gtest-all.cc
