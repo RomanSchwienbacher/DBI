@@ -173,6 +173,7 @@ public:
 	void insert(T key, TID& tid) {
 
 		bool test = false;
+
 		/*
 		Node<T, CMP> insertNode;
 
@@ -216,7 +217,6 @@ public:
 			splitNode(leaf);
 		}
 		*/
-
 	}
 
 	/**
