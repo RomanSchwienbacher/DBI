@@ -14,7 +14,7 @@ using namespace std;
 
 namespace testing {
 
-/* Comparator functor for uint64_t*/
+// Comparator functor for uint64_t
 struct MyCustomUInt64Cmp {
 	bool operator()(uint64_t a, uint64_t b) const {
 		return a < b;
@@ -26,7 +26,7 @@ struct Char {
 	char data[len];
 };
 
-/* Comparator functor for char */
+// Comparator functor for char
 template<unsigned len>
 struct MyCustomCharCmp {
 	bool operator()(const Char<len>& a, const Char<len>& b) const {
@@ -36,7 +36,7 @@ struct MyCustomCharCmp {
 
 typedef std::pair<uint32_t, uint32_t> IntPair;
 
-/* Comparator for IntPair */
+// Comparator for IntPair
 struct MyCustomIntPairCmp {
 	bool operator()(const IntPair& a, const IntPair& b) const {
 		if (a.first < b.first)
@@ -91,6 +91,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		TID tid;
 		tid.pageId = i * i;
 		tid.slotId = 0;
+
 		bTree.insert(getKey<T>(i), tid);
 	}
 	assert(bTree.size() == n);
@@ -150,3 +151,4 @@ static int launchBTreetest(char** argv) {
 }
 
 }
+

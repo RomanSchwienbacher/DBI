@@ -26,7 +26,8 @@ public:
 	template<class T, class CMP>
 	Node<T, CMP>* initializeRootNode() {
 		// FIXME go on here
-		return NULL;
+		LeafNode<T, CMP>* leaf = new LeafNode<T, CMP>();
+		return leaf;
 	}
 
 	virtual ~BTreeSegment();

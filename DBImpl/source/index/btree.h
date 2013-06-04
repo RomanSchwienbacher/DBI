@@ -170,7 +170,7 @@ public:
 	 * @param key: the key
 	 * @param tid: the TID
 	 */
-	void insert(T key, TID tid) {
+	void insert(T key, TID& tid) {
 
 		/*
 		Node<T, CMP> insertNode;
@@ -215,6 +215,7 @@ public:
 			splitNode(leaf);
 		}
 		*/
+
 	}
 
 	/**
