@@ -57,7 +57,7 @@ void Segment::expandExtents(std::vector<uint64_t> extents) {
 std::vector<uint64_t> Segment::grow(uint64_t addedSpace) {
 
 	std::vector<uint64_t> addExtents;
-	fsi->getFreeExtents(addedSpace);
+	addExtents = fsi->getFreeExtents(addedSpace);
 
 	extents = mergeExtents(extents, addExtents);
 	size = calculateSize(extents);
