@@ -14,7 +14,7 @@
  * Constructor for Segment Inventory and Free Segment Inventory
  * @param extents: extents used for the segment
  * @param segId: id of the segment
-*/
+ */
 Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
 	Segment::segId = segId;
 	Segment::extents = extents;
@@ -26,7 +26,7 @@ Segment::Segment(std::vector<uint64_t> extents, uint64_t segId) {
  * @param extents: extents used for the segment
  * @param segId: id of the segment
  * @param bm: buffer manager for writing to disk
-*/
+ */
 Segment::Segment(std::vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm) {
 
 	Segment::segId = segId;
@@ -37,18 +37,18 @@ Segment::Segment(std::vector<uint64_t> extents, uint64_t segId, FSISegment * fsi
 	//Segment::expandExtents(extents);
 }
 
-void Segment::expandExtents(std::vector<uint64_t> extents){
+void Segment::expandExtents(std::vector<uint64_t> extents) {
 
 	allPages.clear();
 
 	uint64_t pageId;
 
 	uint64_t diff;
-	for(unsigned i = 1; i < extents.size(); i+=2){
-		pageId = extents.at(i-1);
-		diff = extents.at(i+1) - extents.at(i);
+	for (unsigned i = 1; i < extents.size(); i += 2) {
+		pageId = extents.at(i - 1);
+		diff = extents.at(i + 1) - extents.at(i);
 
-		while(0 < diff--){
+		while (0 < diff--) {
 			allPages.push_back(pageId++);
 		}
 	}
@@ -73,14 +73,13 @@ uint64_t Segment::calculateSize(std::vector<uint64_t> extents) {
 	extentLengths.clear();
 	for (unsigned i = 0; i < extents.size(); i += 2) {
 		ret += (extents.at(i + 1) - extents.at(i));
-		extentLengths.push_back((extents.at(i+1) - extents.at(i)));
+		extentLengths.push_back((extents.at(i + 1) - extents.at(i)));
 	}
 
 	return ret;
 }
 
-std::vector<uint64_t> Segment::mergeExtents(std::vector<uint64_t> extents1,
-		std::vector<uint64_t> extents2) {
+std::vector<uint64_t> Segment::mergeExtents(std::vector<uint64_t> extents1, std::vector<uint64_t> extents2) {
 
 	// append second extent vector to first one
 	extents1.insert(extents1.end(), extents2.begin(), extents2.end());
@@ -94,24 +93,24 @@ std::vector<uint64_t> Segment::mergeExtents(std::vector<uint64_t> extents1,
 
 	// merge neighboring extents
 	for (unsigned i = 1; i < extents1.size(); i += 2) {
-		if (i+1 == extents1.size()){
+		if (i + 1 == extents1.size()) {
 			mergedExtents.push_back(extents1.at(i));
 			break;
 		}
 		if (extents1.at(i) != extents1.at(i + 1)) {
 			mergedExtents.push_back(extents1.at(i));
-			mergedExtents.push_back(extents1.at(i+1));
+			mergedExtents.push_back(extents1.at(i + 1));
 		}
 	}
 
 	return mergedExtents;
 }
 
-uint64_t Segment::at(uint64_t pos){
+uint64_t Segment::at(uint64_t pos) {
 
 	uint64_t ret;
 
-	if(pos >= size){
+	if (pos >= size) {
 		return -1;
 	}
 
@@ -120,11 +119,11 @@ uint64_t Segment::at(uint64_t pos){
 	uint64_t extRange = 0;
 	uint64_t prevExtRange = 0;
 
-	for(unsigned i = 0; i < extentLengths.size(); ++i){
+	for (unsigned i = 0; i < extentLengths.size(); ++i) {
 		prevExtRange = extRange;
 		extRange += extentLengths.at(i);
 
-		if(pos < extRange){
+		if (pos < extRange) {
 			currentExt = i;
 			offset = pos - prevExtRange;
 			break;
@@ -136,12 +135,14 @@ uint64_t Segment::at(uint64_t pos){
 	return ret;
 }
 
-uint64_t Segment::getSize(){
-
+uint64_t Segment::getSize() {
 	return size;
-
 }
 
-std::vector <uint64_t> Segment::getExtents(){
+std::vector<uint64_t> Segment::getExtents() {
 	return extents;
+}
+
+BufferManager* Segment::getBm() {
+	return bm;
 }

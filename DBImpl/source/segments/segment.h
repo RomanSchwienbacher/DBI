@@ -63,6 +63,8 @@ public:
 
 	uint64_t getId();
 
+	BufferManager* getBm();
+
 	std::vector<uint64_t> getExtents();
 
 	// Iteration

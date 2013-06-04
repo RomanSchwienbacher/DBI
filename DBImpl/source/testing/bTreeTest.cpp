@@ -49,12 +49,13 @@ struct MyCustomIntPairCmp {
 template<class T>
 static const T& getKey(const uint64_t& i);
 
+static std::vector<std::string> char20;
+static std::vector<IntPair> intPairs;
+
 template<>
 const uint64_t& getKey(const uint64_t& i) {
 	return i;
 }
-
-static std::vector<std::string> char20;
 
 template<>
 const Char<20>& getKey(const uint64_t& i) {
@@ -64,8 +65,6 @@ const Char<20>& getKey(const uint64_t& i) {
 	char20.push_back(std::string(20 - s.size(), '0') + s);
 	return *reinterpret_cast<const Char<20>*>(char20.back().data());
 }
-
-static std::vector<IntPair> intPairs;
 
 template<>
 const IntPair& getKey(const uint64_t& i) {
@@ -91,7 +90,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 
 		TID tid;
 		tid.pageId = i * i;
-		tid.slotId = 0; // TODO fix this: how to get page-id and slot-id by simple i increment? bit-shifting?
+		tid.slotId = 0;
 		bTree.insert(getKey<T>(i), tid);
 	}
 	assert(bTree.size() == n);
@@ -102,7 +101,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		assert(bTree.lookup(getKey<T>(i), tid));
 
 		//assert(tid == i * i);
-		assert(tid.pageId == i * i); // TODO fix this: how to get page-id and slot-id by simple i increment? bit-shifting?
+		assert(tid.pageId == i * i);
 	}
 
 	cout << "Delete some values" << endl;
@@ -121,7 +120,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 			assert(bTree.lookup(getKey<T>(i), tid));
 
 			//assert(tid == i * i);
-			assert(tid.pageId == i * i); // TODO fix this: how to get page-id and slot-id by simple i increment? bit-shifting?
+			assert(tid.pageId == i * i);
 		}
 	}
 

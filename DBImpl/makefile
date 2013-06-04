@@ -17,7 +17,7 @@ bufman.o: ./source/buffer/bufframe.cpp ./source/buffer/bufman.cpp ./source/buffe
 	$(CC) $(DEBUG) $(CFLAGS) ./source/buffer/bufframe.cpp ./source/buffer/bufman.cpp ./source/buffer/locker.cpp
 
 btree.o: ./source/index/btree.h ./source/index/node.h
-	$(CC) $(DEBUG) $(CFLAGS) ./source/index/btree.h
+	$(CC) $(DEBUG) $(CFLAGS) ./source/index/btree.h ./source/index/node.h
 
 mainTest.o: ./source/testing/buffertest.cpp ./source/testing/slottedtest.cpp ./source/testing/bTreeTest.cpp ./source/testing/mainTest.cpp ./testinglib/gtest/gtest-all.cc
 	$(CC) $(DEBUG) $(CFLAGS) ./source/testing/buffertest.cpp ./source/testing/slottedtest.cpp ./source/testing/bTreeTest.cpp ./source/testing/mainTest.cpp ./testinglib/gtest/gtest-all.cc
