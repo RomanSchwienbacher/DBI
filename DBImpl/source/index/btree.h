@@ -144,7 +144,6 @@ class BTree {
 	 *
 	 * @param *node: the node to be split
 	 */
-
 	void splitNode(Node<T, CMP> *node) {
 
 		if (node->isLeaf) {
@@ -317,12 +316,42 @@ public:
 	}
 
 	/**
-	 * Returns an iterator that allows to iterate over the result set
+	 * Returns an iterator that allows to iterate over the result set within (start,stop( range
 	 *
 	 * @return rtrn: the iterator
 	 */
-	vector<TID>::iterator lookupRange() {
-		return NULL;
+	vector<TID>::iterator lookupRange(T start, T stop) {
+
+		vector<TID>* result = new vector<TID>();
+
+		// search tid beginning at the root node
+		LeafNode<T, CMP> foundInNode;
+		TID tid;
+
+		if (lookupInternal(start, rootNode, tid, foundInNode)) {
+
+			bool stopReached = false;
+
+			// iterate on leaf level through leaf nodes until end or stop is reached
+			do {
+
+				for (int i=0; i < foundInNode.count; i++) {
+
+					if (!(CMP()(foundInNode.keys.at(i), stop)) && !(CMP()(stop, foundInNode.keys.at(i)))) {
+						stopReached = true;
+						break;
+					} else {
+						result->push_back(foundInNode.values.at(i));
+					}
+				}
+
+			} while ((foundInNode = foundInNode->next) != NULL && !stopReached);
+
+		} else {
+			cerr << "Start key was not found in tree" << endl;
+		}
+
+		return result->begin();
 	}
 
 	/**
