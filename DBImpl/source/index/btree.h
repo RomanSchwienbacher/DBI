@@ -79,6 +79,33 @@ class BTree {
 	}
 
 	/**
+	 * Searches the first leaf node on lowest level starting at given node
+	 *
+	 * @param node: the current node
+	 *
+	 * @return rtrn: first leaf node
+	 */
+	LeafNode<T, CMP>* fetchFirstLeaf(Node<T, CMP>* node) {
+
+		LeafNode<T, CMP>* rtrn = NULL;
+
+		if (node->isLeaf) {
+
+			rtrn = reinterpret_cast<LeafNode<T, CMP>*>(node);
+
+		} else {
+
+			InnerNode<T, CMP>* inner = reinterpret_cast<InnerNode<T, CMP>*>(node);
+
+			Node<T, CMP>* firstChildNode = seg->readFromFrame<T, CMP>(inner->children.at(0));
+
+			rtrn = fetchFirstLeaf(firstChildNode);
+		}
+
+		return rtrn;
+	}
+
+	/**
 	 * Calculates the free space within a node
 	 *
 	 * @param *node: the node whose space is calculated
@@ -127,6 +154,7 @@ class BTree {
 			LeafNode<T, CMP>* neighborLeaf = new LeafNode<T, CMP>;
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
+			//neighborLeaf->pageId = XXX TODO assign new page ID!!!!
 			thisLeaf->next = neighborLeaf;
 
 			// take first half of keys and values and place them left
@@ -272,12 +300,24 @@ public:
 	}
 
 	/**
-	 * Returns the size of the tree (amount of nodes)
+	 * Returns the size of the tree (amount of indexed TID's)
 	 *
 	 * @return rtrn: the size
 	 */
 	uint64_t size() {
-		return 0;
+
+		uint64_t rtrn = 0;
+
+		// fetch first leaf node starting at root node
+		LeafNode<T, CMP>* leaf = fetchFirstLeaf(rootNode);
+		rtrn += leaf->count;
+
+		// iterate on leaf level through leaf nodes and count size
+		while ((leaf = leaf->next) != NULL) {
+			rtrn += leaf->count;
+		}
+
+		return rtrn;
 	}
 
 	virtual ~BTree() {
