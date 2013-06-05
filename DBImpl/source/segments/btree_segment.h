@@ -11,10 +11,82 @@
 #include "segment.h"
 #include "tid.h"
 #include "../index/node.h"
+#include <cstring>
+#include <stdexcept>
+#include <unistd.h>
+#include <iostream>
 
 using namespace std;
 
 class BTreeSegment: public Segment {
+
+	/**
+	 * @return the serialized object (isLeaf;LSN;count;([Key;Value;]|[Separator;Child;])*)
+	 */
+	template<class T, class CMP>
+	char* getSerialized(Node<T, CMP>* node) {
+
+		char *rtrn = new char[sysconf(_SC_PAGESIZE)];
+		int offset = 0;
+
+		// serialize type
+		memcpy(rtrn + offset, &(node->isLeaf), sizeof(bool));
+		offset += sizeof(bool);
+
+		// serialize LSN
+		memcpy(rtrn + offset, &(node->LSN), sizeof(uint32_t));
+		offset += sizeof(uint32_t);
+
+		// serialize count
+		memcpy(rtrn + offset, &(node->count), sizeof(uint16_t));
+		offset += sizeof(uint16_t);
+
+		// node is leaf
+		if (node->isLeaf) {
+
+			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
+
+			unsigned i = 0;
+			for (T lKey : leaf->keys) {
+
+				// serialize key
+				memcpy(rtrn + offset, &lKey, sizeof(T));
+				offset += sizeof(T);
+
+				// serialize value
+				memcpy(rtrn + offset, &(leaf->values.at(i)), sizeof(TID));
+				offset += sizeof(TID);
+
+				++i;
+			}
+
+		}
+		// node is inner node
+		else {
+
+			InnerNode<T, CMP>* inner = reinterpret_cast<InnerNode<T, CMP>*>(node);
+
+			unsigned i = 0;
+			for (T sep : inner->separators) {
+
+				// serialize separator
+				memcpy(rtrn + offset, &sep, sizeof(T));
+				offset += sizeof(T);
+
+				// serialize child pointer
+				memcpy(rtrn + offset, &(inner->children.at(i)), sizeof(uint64_t));
+				offset += sizeof(uint64_t);
+
+				++i;
+			}
+		}
+
+		if (offset > sysconf(_SC_PAGESIZE)) {
+			cerr << "SlottedPage::getSerialized(): Offset " << offset << " is bigger than the size of a single page" << endl;
+		}
+
+		return rtrn;
+	}
 
 	/**
 	 * Factory: Parses a tree node instance by a given pointer
@@ -115,6 +187,39 @@ public:
 		// FIXME go on here
 		LeafNode<T, CMP>* leaf = new LeafNode<T, CMP>();
 		return leaf;
+	}
+
+	/**
+	 * Writes a tree node into a given buffer-frame
+	 *
+	 * @param node: the node
+	 * @param pageId: the page id
+	 *
+	 * @return rtrn: whether successfully or not
+	 */
+	template<class T, class CMP>
+	bool writeToFrame(Node<T, CMP>* node, uint64_t pageId) {
+
+		bool rtrn = true;
+
+		BufferFrame frame = bm->fixPage(pageId, true);
+
+		try {
+
+			// 1st step: serialize
+			char* spSer = getSerialized<T, CMP>(node);
+
+			// 2nd step: write into frame data pointer
+			memcpy(frame.getData(), spSer, bm->getPageSize());
+
+		} catch (exception& e) {
+			cerr << "An exception occurred while writing tree node to frame: " << e.what() << endl;
+			rtrn = false;
+		}
+
+		bm->unfixPage(frame, rtrn);
+
+		return rtrn;
 	}
 
 	/**
