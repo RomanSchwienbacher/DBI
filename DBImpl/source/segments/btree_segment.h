@@ -184,12 +184,19 @@ public:
 	 */
 	template<class T, class CMP>
 	Node<T, CMP>* initializeRootNode() {
-		// FIXME go on here, differ between leaf and inner node
-		LeafNode<T, CMP>* leaf = new LeafNode<T, CMP>();
-		leaf->parentNode = NULL;
-		leaf->count = leaf->keys.size();
-		//leaf->pageId = XXX don't forget
-		return leaf;
+
+		LeafNode<T, CMP>* root = new LeafNode<T, CMP>();
+		root->isLeaf = true;
+		root->parentNode = NULL;
+		root->count = 0;
+		root->pageId = getNextPageId(); // FIXME Dave, is this ok?
+
+		// write root back to disk
+		if (!writeToFrame(root, root->pageId)) {
+			cerr << "Cannot write root node into frame" << endl;
+		}
+
+		return root;
 	}
 
 	/**
@@ -252,6 +259,8 @@ public:
 
 		return rtrn;
 	}
+
+	uint64_t getNextPageId();
 
 	virtual ~BTreeSegment();
 };

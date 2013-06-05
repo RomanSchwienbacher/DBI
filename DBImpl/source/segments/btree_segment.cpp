@@ -22,12 +22,19 @@ using namespace std;
  */
 BTreeSegment::BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, FSISegment *fsi, BufferManager * bm) :
 		Segment(freeExtents, segId, fsi, bm) {
-
-
 }
 
-// kann auch neue pages anlegen, wenn keine mehr verfügbar sind
-// eine bm-page pro node
+/**
+ * Grows and returns one new page-id
+ */
+uint64_t BTreeSegment::getNextPageId() {
+
+	// 1st step: grow by 1
+	vector<uint64_t> newExtents = grow(1);
+
+	// 2nd step: return fetched pageId
+	return newExtents.front();
+}
 
 BTreeSegment::~BTreeSegment() {
 

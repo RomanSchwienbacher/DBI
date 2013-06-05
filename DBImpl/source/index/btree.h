@@ -154,7 +154,7 @@ class BTree {
 			LeafNode<T, CMP>* neighborLeaf = new LeafNode<T, CMP>;
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
-			//neighborLeaf->pageId = XXX TODO assign new page ID!!!!
+			neighborLeaf->pageId = seg->getNextPageId();
 			thisLeaf->next = neighborLeaf;
 
 			// take first half of keys and values and place them left
