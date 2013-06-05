@@ -17,6 +17,7 @@ template<class T, class CMP>
 struct Node {
 	uint32_t LSN;
 	uint16_t count; // number of entries in keys
+	uint64_t pageId; // transient helper field
 	bool isLeaf;
 	Node<T, CMP> *parentNode;
 };
@@ -29,7 +30,7 @@ struct InnerNode: public Node<T, CMP> {
 
 template<class T, class CMP>
 struct LeafNode: public Node<T, CMP> {
-	LeafNode* next;
+	LeafNode<T, CMP>* next;
 	vector<T> keys;
 	vector<TID> values;
 };
