@@ -34,7 +34,7 @@ class BTree {
 	 *
 	 * @return boolean which indicates whether the key was found or not
 	 */
-	bool lookupInternal(T key, Node<T, CMP>* node, TID& tid, Node<T, CMP>& tidNode) {
+	bool lookupInternal(T key, Node<T, CMP>* node, TID& tid, LeafNode<T, CMP>& tidNode) {
 
 		bool rtrn = false;
 
@@ -214,7 +214,7 @@ public:
 	 */
 	void insert(T key, TID& tid) {
 
-		Node<T, CMP> insertNode;
+		LeafNode<T, CMP> insertNode;
 
 		// calculate required space
 		long requiredSpace = sizeof(TID) + sizeof(T);
@@ -268,12 +268,38 @@ public:
 
 	/**
 	 * Deletes a specified key from the tree
-	 * mach die einfache variante!!!!
+	 * (simplified mode)
 	 *
 	 * @param key: the key
 	 */
 	void erase(T key) {
 
+		// search tid beginning at the root node
+		LeafNode<T, CMP> foundInNode;
+		TID tid;
+
+		// removal has a successful lookup in advance
+		if (lookupInternal(key, rootNode, tid, foundInNode)) {
+
+			unsigned pos = 0;
+			for (T lKey : foundInNode.keys) {
+				// check for equality
+				if (!(CMP()(lKey, key)) && !(CMP()(key, lKey))) {
+					break;
+				}
+				++pos;
+			}
+
+			// remove key and value at correct position
+			(foundInNode.keys).erase((foundInNode.keys).begin() + pos);
+			(foundInNode.values).erase((foundInNode.values).begin() + pos);
+
+			// increment counter
+			(foundInNode.count)++;
+
+		} else {
+			cerr << "Key to delete was not found in tree" << endl;
+		}
 	}
 
 	/**
@@ -286,7 +312,7 @@ public:
 	 */
 	bool lookup(T key, TID& tid) {
 		// search tid beginning at the root node
-		Node<T, CMP> foundInNode;
+		LeafNode<T, CMP> foundInNode;
 		return lookupInternal(key, rootNode, tid, foundInNode);
 	}
 
