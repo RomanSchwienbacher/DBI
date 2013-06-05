@@ -184,8 +184,11 @@ public:
 	 */
 	template<class T, class CMP>
 	Node<T, CMP>* initializeRootNode() {
-		// FIXME go on here
+		// FIXME go on here, differ between leaf and inner node
 		LeafNode<T, CMP>* leaf = new LeafNode<T, CMP>();
+		leaf->parentNode = NULL;
+		leaf->count = leaf->keys.size();
+		//leaf->pageId = XXX don't forget
 		return leaf;
 	}
 

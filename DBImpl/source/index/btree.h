@@ -65,6 +65,7 @@ class BTree {
 					// fetch childNode by child-pageId
 					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->children.at(i));
 					childNode->parentNode = node;
+					childNode->pageId = inner->children.at(i);
 
 					// recursive call
 					rtrn = lookupInternal(key, childNode, tid, tidNode);
@@ -134,11 +135,21 @@ class BTree {
 			for (unsigned i = half; i < (thisLeaf->keys).size(); ++i) {
 				(neighborLeaf->keys).push_back(thisLeaf->keys.at(i));
 				(neighborLeaf->values).push_back(thisLeaf->values.at(i));
+				(neighborLeaf->count)++;
 			}
 
 			// delete half to end from key and value vectors of leaf
 			thisLeaf->keys.erase((thisLeaf->keys).begin() + half, thisLeaf->keys.end());
 			thisLeaf->values.erase((thisLeaf->values).begin() + half, thisLeaf->values.end());
+			(thisLeaf->count) = thisLeaf->keys.size();
+
+			// write changes back to disk
+			if (!seg->writeToFrame(thisLeaf, thisLeaf->pageId)) {
+				cerr << "Cannot write thisLeaf into frame" << endl;
+			}
+			if (!seg->writeToFrame(neighborLeaf, neighborLeaf->pageId)) {
+				cerr << "Cannot write neighborLeaf into frame" << endl;
+			}
 
 			// check if parent needs to be split
 			long neededSpace = sizeof(T) + sizeof(uint64_t);
@@ -208,9 +219,18 @@ public:
 					break;
 				}
 			}
+
 			// add key and value at correct position
 			(leaf->keys).insert((leaf->keys).begin() + pos, key);
 			(leaf->values).insert((leaf->values).begin() + pos, tid);
+
+			// increment counter
+			(leaf->count)++;
+
+			// write changes back to disk
+			if (!seg->writeToFrame(leaf, leaf->pageId)) {
+				cerr << "Cannot write tree node into frame" << endl;
+			}
 
 		} else {
 			// split the node and insert
