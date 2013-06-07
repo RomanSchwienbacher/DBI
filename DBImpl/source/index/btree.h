@@ -141,11 +141,65 @@ class BTree {
 	}
 
 	/**
+	 * Inserts a key and value into a certain node
+	 */
+	template<class V>
+	bool insertKeyValueIntoNode(T key, V value, Node<T, CMP> *node) {
+
+		bool rtrn = true;
+
+		if (node->isLeaf) {
+
+			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
+			TID tid = value;
+			uint16_t pos = 0;
+			for (T lKey : leaf->keys) {
+				// check if new key is larger
+				if ((CMP()(lKey, key))) {
+					++pos;
+				} else {
+					break;
+				}
+			}
+
+			// add key and value at correct position
+			(leaf->keys).insert((leaf->keys).begin() + pos, key);
+			(leaf->values).insert((leaf->values).begin() + pos, tid);
+
+			// increment counter
+			(leaf->count)++;
+
+			// write changes back to disk
+			if (!seg->writeToFrame<T, CMP>(leaf, leaf->pageId)) {
+				cerr << "Cannot write tree node into frame" << endl;
+				rtrn = false;
+			}
+
+		} else {
+			// node is an inner node
+			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(node);
+
+		}
+
+		return rtrn;
+	}
+
+	/**
 	 * Splits a node and cascades to the top of the b tree
 	 *
 	 * @param *node: the node to be split
 	 */
 	void splitNode(Node<T, CMP> *node) {
+
+		// Check if we are at root - create new root
+		if(node->parentNode == NULL){
+			rootNode = new InnerNode<T, CMP>;
+			rootNode->count = 0;
+			rootNode->isLeaf = false;
+			rootNode->pageId = seg->getNewPageId();
+			rootNode->parentNode = NULL;
+			node->parentNode = rootNode;
+		}
 
 		if (node->isLeaf) {
 
@@ -180,16 +234,53 @@ class BTree {
 				cerr << "Cannot write neighborLeaf into frame" << endl;
 			}
 
-			// check if parent needs to be split
-			long neededSpace = sizeof(T) + sizeof(uint64_t);
-			if (neededSpace > calculateFreeNodeSpace(thisLeaf->parentNode)) {
-				splitNode(thisLeaf->parentNode); // implement child re-hanging in else case
-			}
-
 		} else {
 
-			// split children -> update their parents
-			// split vectors
+			// create neighboring inner node and set it up
+			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(node);
+			InnerNode<T, CMP>* newInnerNode = new InnerNode<T, CMP>;
+			newInnerNode->isLeaf = false;
+			newInnerNode->parentNode = innerNode->parentNode;
+			newInnerNode->pageId = seg->getNewPageId();
+			innerNode->nextPageId = newInnerNode->pageId;
+			innerNode->next = newInnerNode;
+
+			// split children and update their parents
+			// take first half of separators and children and place them left
+			// place the others on the newInnerNode
+			unsigned half = (innerNode->separators).size() / 2;
+			for (unsigned i = half; i < (innerNode->separators).size(); ++i) {
+				(newInnerNode->separators).push_back(innerNode->separators.at(i));
+				(newInnerNode->children).push_back(innerNode->children.at(i));
+				(newInnerNode->count)++;
+
+				// update parent
+				Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(newInnerNode->children.at(i));
+				childNode->parentNode = newInnerNode;
+
+				// write changes back to disk (each child)
+				if (!seg->writeToFrame<T, CMP>(childNode, childNode->pageId)) {
+					cerr << "Cannot write childNode into frame" << endl;
+				}
+			}
+
+			// delete half to end from key and value vectors of inner node
+			innerNode->separators.erase((innerNode->separators).begin() + half, innerNode->separators.end());
+			innerNode->children.erase((innerNode->children).begin() + half, innerNode->children.end());
+			(innerNode->count) = innerNode->separators.size();
+
+			// write changes back to disk
+			if (!seg->writeToFrame<T, CMP>(innerNode, innerNode->pageId)) {
+				cerr << "Cannot write innerNode into frame" << endl;
+			}
+			if (!seg->writeToFrame<T, CMP>(newInnerNode, newInnerNode->pageId)) {
+				cerr << "Cannot write newInnerNode into frame" << endl;
+			}
+
+			if(calculateFreeNodeSpace(innerNode->parentNode) < 0){
+				splitNode(innerNode->parentNode);
+			}
+
 		}
 	}
 
@@ -217,7 +308,7 @@ public:
 
 		LeafNode<T, CMP> insertNode;
 
-		// calculate required space
+		// calculate required space: value and key
 		long requiredSpace = sizeof(TID) + sizeof(T);
 
 		// because lookupInternal changes tid - this invokes copy constructor
@@ -239,31 +330,28 @@ public:
 
 		if (freeNodeSpace > requiredSpace) {
 
-			uint16_t pos = 0;
-			for (T lKey : leaf->keys) {
-				// check if new key is larger
-				if ((CMP()(lKey, key))) {
-					++pos;
-				} else {
-					break;
-				}
-			}
-
-			// add key and value at correct position
-			(leaf->keys).insert((leaf->keys).begin() + pos, key);
-			(leaf->values).insert((leaf->values).begin() + pos, tid);
-
-			// increment counter
-			(leaf->count)++;
-
-			// write changes back to disk
-			if (!seg->writeToFrame<T, CMP>(leaf, leaf->pageId)) {
-				cerr << "Cannot write tree node into frame" << endl;
-			}
+			insertKeyValueIntoNode(key, tid, leaf);
 
 		} else {
 			// split the node and insert
 			splitNode(leaf);
+
+			// insert key and value on proper side
+			if ((CMP()(key, ((leaf->next)->keys).front()))) {
+				// insert into leaf node
+				insertKeyValueIntoNode(key, tid, leaf);
+			} else {
+				// insert into next node
+				insertKeyValueIntoNode(key, tid, leaf->next);
+			}
+
+			// insert maximum of left page as separator into parent
+			insertKeyValueIntoNode(leaf->keys.back(), leaf->pageId, leaf->parentNode);
+			if (calculateFreeNodeSpace(leaf->parentNode) < 0) {
+				// parent node overflow
+				splitNode(leaf->parentNode);
+			}
+
 		}
 	}
 
