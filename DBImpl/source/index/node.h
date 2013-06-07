@@ -30,6 +30,7 @@ struct InnerNode: public Node<T, CMP> {
 
 template<class T, class CMP>
 struct LeafNode: public Node<T, CMP> {
+	uint64_t nextPageId;
 	LeafNode<T, CMP>* next;
 	vector<T> keys;
 	vector<TID> values;

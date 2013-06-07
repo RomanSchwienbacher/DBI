@@ -188,8 +188,9 @@ public:
 		LeafNode<T, CMP>* root = new LeafNode<T, CMP>();
 		root->isLeaf = true;
 		root->parentNode = NULL;
+		root->next = NULL;
 		root->count = 0;
-		root->pageId = getNextPageId(); // FIXME Dave, is this ok?
+		root->pageId = getNextPageId();
 
 		// write root back to disk
 		if (!writeToFrame(root, root->pageId)) {

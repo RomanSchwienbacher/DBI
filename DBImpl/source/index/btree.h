@@ -47,12 +47,13 @@ class BTree {
 				// check for equality
 				if (!(CMP()(lKey, key)) && !(CMP()(key, lKey))) {
 					tid = leaf->values.at(i);
-					tidNode = *leaf;
 					rtrn = true;
 					break;
 				}
 				++i;
 			}
+
+			tidNode = *leaf;
 
 		} else {
 
@@ -154,6 +155,7 @@ class BTree {
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
 			neighborLeaf->pageId = seg->getNextPageId();
+			thisLeaf->nextPageId = neighborLeaf->pageId;
 			thisLeaf->next = neighborLeaf;
 
 			// take first half of keys and values and place them left
@@ -293,8 +295,8 @@ public:
 			(foundInNode.keys).erase((foundInNode.keys).begin() + pos);
 			(foundInNode.values).erase((foundInNode.values).begin() + pos);
 
-			// increment counter
-			(foundInNode.count)++;
+			// decrement counter
+			(foundInNode.count)--;
 
 		} else {
 			cerr << "Key to delete was not found in tree" << endl;
@@ -368,6 +370,7 @@ public:
 		rtrn += leaf->count;
 
 		// iterate on leaf level through leaf nodes and count size
+		// TODO ensure next is set properly
 		while ((leaf = leaf->next) != NULL) {
 			rtrn += leaf->count;
 		}
