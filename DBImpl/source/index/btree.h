@@ -74,6 +74,8 @@ class BTree {
 				}
 				++i;
 			}
+
+			// go to the upper?
 		}
 
 		return rtrn;
@@ -125,8 +127,8 @@ class BTree {
 
 			// alternative: calculate keys.capacity() * sizeof(T)
 			// and values.capacity() * sizeof(TID)
-			rtrn -= sizeof(LeafNode<T, CMP> );
-			rtrn -= node->count * (sizeof(T) + sizeof(TID));
+			rtrn -= sizeof(LeafNode<T, CMP>*); // next pointer
+			rtrn -= node->count * (sizeof(T) + sizeof(TID)); // current entries
 
 		} else {
 
@@ -142,6 +144,11 @@ class BTree {
 
 	/**
 	 * Inserts a key and value into a certain node
+	 *
+	 * @param key: the key to be inserted at the correct position
+	 * @param value: the value to be placed at the respective key position
+	 * @param *node: the node in which to place the key/value pair
+	 * @return boolean to indicate success or failure of insert
 	 */
 	template<class V>
 	bool insertKeyValueIntoNode(T key, V value, Node<T, CMP> *node) {
@@ -191,7 +198,7 @@ class BTree {
 	void splitNode(Node<T, CMP> *node) {
 
 		// Check if we are at root - create new root
-		if(node->parentNode == NULL){
+		if (node->parentNode == NULL) {
 			rootNode = new InnerNode<T, CMP>;
 			rootNode->count = 0;
 			rootNode->isLeaf = false;
@@ -208,6 +215,7 @@ class BTree {
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
 			neighborLeaf->pageId = seg->getNewPageId();
+			neighborLeaf->nextPageId = NULL;
 			thisLeaf->nextPageId = neighborLeaf->pageId;
 			thisLeaf->next = neighborLeaf;
 
@@ -274,11 +282,27 @@ class BTree {
 				cerr << "Cannot write newInnerNode into frame" << endl;
 			}
 
-			if(calculateFreeNodeSpace(innerNode->parentNode) < 0){
+			if (calculateFreeNodeSpace(innerNode->parentNode) < 0) {
 				splitNode(innerNode->parentNode);
 			}
 
 		}
+	}
+
+	/**
+	 * Iterates through B-Tree (used for visualize)
+	 */
+	Node<T, CMP>* iterateBTree(Node<T, CMP>* node) {
+		Node<T, CMP>* rtrn;
+
+		if (node->isLeaf) {
+			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
+			rtrn = leaf->next;
+		} else {
+			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(node);
+		}
+
+		return rtrn;
 	}
 
 public:
@@ -465,6 +489,134 @@ public:
 		}
 
 		return rtrn;
+	}
+
+	std::string visualize() {
+		std::stringstream stream1;
+		std::stringstream stream2;
+
+		stream1 << "digraph myBTree {" << endl;
+		stream1 << "node [shape=record]" << endl;
+
+		long nodeCount = 0;
+		long leafCount = 0;
+
+		Node<T, CMP>* currentNode;
+		currentNode = rootNode;
+
+		// start at root node
+		if (currentNode->isLeaf) {
+			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(currentNode);
+
+			// calculate maximum length of key/values
+			LeafNode<T, CMP> emptyLeaf;
+			long vectorSizeMax = calculateFreeNodeSpace(emptyLeaf) / (sizeof(T) + sizeof(TID));
+
+			stream1 << "leaf" << leafCount << " [shape=record], label=" << "<count> " << leaf->count << " | <isLeaf> true | ";
+
+			// add <key> tags
+			for (long i = 0; i < vectorSizeMax; ++i) {
+
+				stream1 << "<key" << i << "> ";
+				if (i < leaf->keys.size()) {
+					// existing key value
+					stream1 << leaf->keys.at(i) << " | "; // TODO: check if this always outputs toString()
+				} else {
+					// emtpy key value
+					stream1 << "| ";
+				}
+			}
+
+			// add <tid> tags
+			for (long i = 0; i < vectorSizeMax; ++i) {
+				stream1 << "<tid" << i << "> ";
+				if (i < leaf->values.size()) {
+					// existing TID TODO: does this give the correct representation?
+					stream1 << leaf->values.at(i) << " | ";
+				} else {
+					// empty value
+					stream1 << "| ";
+				}
+			}
+
+			// add <next> tag
+			stream1 << "<next>";
+			if (leaf->next != NULL) {
+				stream1 << " *\"];" << endl;
+
+				// add bottom part to stream2
+				stream2 << "leaf" << leafCount << ":next -> leaf" << leafCount + 1 << ":count;" << endl;
+			} else {
+				stream1 << "\"];" << endl;
+			}
+
+			// increment leaf count
+			leafCount++;
+
+		} else {
+			// the current node is an inner node
+			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(currentNode);
+
+			// find out if this inner node has leaf or more inner node children - important for stream2 output
+			Node<T, CMP>* childNode = seg->readFromFrame(innerNode->children.front());
+
+			bool childIsLeaf = childNode->isLeaf;
+
+			// calculate maximum length of key/values
+			InnerNode<T, CMP> emptyInnerNode;
+			long vectorSizeMax = calculateFreeNodeSpace(emptyInnerNode) / (sizeof(T) + sizeof(uint64_t));
+
+			stream1 << "node" << nodeCount << " [shape=record], label=" << "<count> " << innerNode->count << " | <isLeaf> false | ";
+
+			// add <key> tags
+			for (long i = 0; i < vectorSizeMax - 1; ++i) {
+
+				stream1 << "<key" << i << "> ";
+				if (i < innerNode->separators.size()) {
+					// existing key value
+					stream1 << innerNode->separators.at(i) << " | "; // TODO: check if this always outputs toString()
+				} else {
+					// emtpy key value
+					stream1 << "| ";
+				}
+			}
+
+			// add <ptr> tags
+			for (long i = 0; i < vectorSizeMax; ++i) {
+				stream1 << "<ptr" << i << "> ";
+				if (i < innerNode->children.size()) {
+					// existing ptr TODO: does this give the correct representation?
+					stream1 << "*";
+
+					// add bottom part to stream2
+					stream2 << "node" << nodeCount << ":ptr" << i << " -> ";
+					if (childIsLeaf) {
+						// TODO: figure out numbering scheme
+						stream2 << "leaf" << "#" << ":count;" << endl;
+					} else {
+						stream2 << "node" << "#" << ":count;" << endl;
+					}
+
+				}
+				if (i == vectorSizeMax - 1) {
+					// end of TIDs
+					stream1 << "\"];" << endl;
+				} else{
+					// more TIDs
+					stream1 << " | ";
+				}
+			}
+
+			// increment nodeCount
+			nodeCount++;
+
+		}
+
+
+
+		stream1 << stream2.str() << "}" << endl;
+
+		return stream1.str();
 	}
 
 	virtual ~BTree() {
