@@ -27,7 +27,7 @@ BTreeSegment::BTreeSegment(vector<uint64_t> freeExtents, uint64_t segId, FSISegm
 /**
  * Grows and returns one new page-id
  */
-uint64_t BTreeSegment::getNextPageId() {
+uint64_t BTreeSegment::getNewPageId() {
 
 	// 1st step: grow by 1
 	vector<uint64_t> newExtents = grow(1);

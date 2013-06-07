@@ -154,7 +154,7 @@ class BTree {
 			LeafNode<T, CMP>* neighborLeaf = new LeafNode<T, CMP>;
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
-			neighborLeaf->pageId = seg->getNextPageId();
+			neighborLeaf->pageId = seg->getNewPageId();
 			thisLeaf->nextPageId = neighborLeaf->pageId;
 			thisLeaf->next = neighborLeaf;
 
@@ -347,7 +347,7 @@ public:
 					}
 				}
 
-			} while ((foundInNode = foundInNode->next) != NULL && !stopReached);
+			} while ((foundInNode = seg->fetchNextLeaf<T, CMP>(foundInNode->nextPageId)) != NULL && !stopReached);
 
 		} else {
 			cerr << "Start key was not found in tree" << endl;
@@ -370,8 +370,7 @@ public:
 		rtrn += leaf->count;
 
 		// iterate on leaf level through leaf nodes and count size
-		// TODO ensure next is set properly
-		while ((leaf = leaf->next) != NULL) {
+		while ((leaf = seg->fetchNextLeaf<T, CMP>(leaf->nextPageId)) != NULL) {
 			rtrn += leaf->count;
 		}
 

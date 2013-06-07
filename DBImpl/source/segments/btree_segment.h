@@ -21,7 +21,7 @@ using namespace std;
 class BTreeSegment: public Segment {
 
 	/**
-	 * @return the serialized object (isLeaf;LSN;count;([Key;Value;]|[Separator;Child;])*)
+	 * @return the serialized object (isLeaf;LSN;count;([Key;Value;]|[Separator;Child;])*;nextPageId?;)
 	 */
 	template<class T, class CMP>
 	char* getSerialized(Node<T, CMP>* node) {
@@ -60,6 +60,9 @@ class BTreeSegment: public Segment {
 				++i;
 			}
 
+			// serialize nextPageId
+			memcpy(rtrn + offset, &(leaf->nextPageId), sizeof(uint64_t));
+			offset += sizeof(uint64_t);
 		}
 		// node is inner node
 		else {
@@ -137,6 +140,10 @@ class BTreeSegment: public Segment {
 				leaf->values.insert((leaf->values).begin() + i, value);
 			}
 
+			// deserialize nextPageid
+			memcpy(&(leaf->nextPageId), tnPointer + offset, sizeof(uint64_t));
+			offset += sizeof(uint64_t);
+
 			rtrn = leaf;
 		}
 		// node is inner node
@@ -190,7 +197,7 @@ public:
 		root->parentNode = NULL;
 		root->next = NULL;
 		root->count = 0;
-		root->pageId = getNextPageId();
+		root->pageId = getNewPageId();
 
 		// write root back to disk
 		if (!writeToFrame(root, root->pageId)) {
@@ -261,7 +268,39 @@ public:
 		return rtrn;
 	}
 
-	uint64_t getNextPageId();
+	/**
+	 * Reads a leaf node from buffer-frame by pageId
+	 *
+	 * @param pageId: the page id
+	 *
+	 * @return rtrn: the leaf node
+	 */
+	template<class T, class CMP>
+	LeafNode<T, CMP>* fetchNextLeaf(uint64_t pageId) {
+
+		LeafNode<T, CMP>* rtrn = NULL;
+
+		if (pageId > 0) {
+
+			BufferFrame frame = bm->fixPage(pageId, false);
+
+			try {
+
+				//deserialize leaf
+				rtrn = reinterpret_cast<LeafNode<T, CMP>*>(getDeserialized<T, CMP>((char*) frame.getData()));
+
+			} catch (exception& e) {
+				cerr << "An exception occurred while fetching next leaf node from frame: " << e.what() << endl;
+				rtrn = NULL;
+			}
+
+			bm->unfixPage(frame, false);
+		}
+
+		return rtrn;
+	}
+
+	uint64_t getNewPageId();
 
 	virtual ~BTreeSegment();
 };
