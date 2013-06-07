@@ -173,10 +173,10 @@ class BTree {
 			(thisLeaf->count) = thisLeaf->keys.size();
 
 			// write changes back to disk
-			if (!seg->writeToFrame(thisLeaf, thisLeaf->pageId)) {
+			if (!seg->writeToFrame<T, CMP>(thisLeaf, thisLeaf->pageId)) {
 				cerr << "Cannot write thisLeaf into frame" << endl;
 			}
-			if (!seg->writeToFrame(neighborLeaf, neighborLeaf->pageId)) {
+			if (!seg->writeToFrame<T, CMP>(neighborLeaf, neighborLeaf->pageId)) {
 				cerr << "Cannot write neighborLeaf into frame" << endl;
 			}
 
@@ -257,7 +257,7 @@ public:
 			(leaf->count)++;
 
 			// write changes back to disk
-			if (!seg->writeToFrame(leaf, leaf->pageId)) {
+			if (!seg->writeToFrame<T, CMP>(leaf, leaf->pageId)) {
 				cerr << "Cannot write tree node into frame" << endl;
 			}
 
@@ -299,7 +299,7 @@ public:
 			(foundInNode.count)--;
 
 			// write changes back to disk
-			if (!seg->writeToFrame(foundInNode, foundInNode->pageId)) {
+			if (!seg->writeToFrame<T, CMP>(&foundInNode, foundInNode.pageId)) {
 				cerr << "Cannot write tree node into frame" << endl;
 			}
 
