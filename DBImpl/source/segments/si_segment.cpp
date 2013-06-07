@@ -49,16 +49,16 @@ void SISegment::flushToDisk() {
 	unordered_map<uint64_t, Segment *>::size_type mappingSize = 0;
 	std::vector<uint64_t>::size_type extentSize = 0;
 
+	// serialize map size
+	mappingSize = segMapping.size();
+	memcpy(temp + offset, &(mappingSize), sizeof(unordered_map<uint64_t, Segment *>::size_type));
+	offset += sizeof(unordered_map<uint64_t, Segment *>::size_type);
+
 	// serialize mapping
 	for (auto it = segMapping.begin(); it != segMapping.end(); ++it) {
 
 		segId = it->first;
 		segment = it->second;
-
-		// serialize map size
-		mappingSize = segMapping.size();
-		memcpy(temp + offset, &(mappingSize), sizeof(unordered_map<uint64_t, Segment *>::size_type));
-		offset += sizeof(unordered_map<uint64_t, Segment *>::size_type);
 
 		// serialize segmendId
 		memcpy(temp + offset, &(segId), sizeof(uint64_t));
@@ -92,6 +92,8 @@ void SISegment::flushToDisk() {
 		}
 	}
 
+	delete temp;
+
 }
 
 /**
@@ -99,8 +101,10 @@ void SISegment::flushToDisk() {
  */
 void SISegment::readFromDisk() {
 
+	int pageSize = bm->getPageSize();
+
 	// prepare size pages
-	char *temp = new char[size * sysconf(_SC_PAGESIZE)];
+	char *temp = new char[size * pageSize];
 	int offset = 0;
 
 	// clear current segment mapping
@@ -111,25 +115,69 @@ void SISegment::readFromDisk() {
 		BufferFrame frame = bm->fixPage(at(i), false);
 
 		// write into temporary data pointer
-		memcpy(temp, (char *)frame.getData() + (i * sysconf(_SC_PAGESIZE)), bm->getPageSize());
+		memcpy(temp + offset, (char *) frame.getData() + offset, pageSize);
+		offset += pageSize;
 	}
 
 	// retrieve segments data
 
-	// deserialize map size
+	offset = 0;
+	// deserialize map size ~ amount of segments the si holds
 	unordered_map<uint64_t, Segment *>::size_type mapSize;
 	memcpy(&mapSize, temp + offset, sizeof(unordered_map<uint64_t, Segment *>::size_type));
 	offset += sizeof(unordered_map<uint64_t, Segment *>::size_type);
 
 	std::vector<uint64_t>::size_type extentSize = 0;
 
+	bool fsiInitialized = false;
 	// TODO: retrieve segment ID, and min max until all segments retrieved
 	while (mapSize > 0) {
+
+		FSISegment *fsi;
 		// serialize segmendId
-		memcpy(temp + offset, &(segId), sizeof(uint64_t));
+		uint64_t segId;
+		memcpy(&segId, temp + offset, sizeof(uint64_t));
 		offset += sizeof(uint64_t);
 
+		// get extents vector length
+		std::vector<uint64_t>::size_type extentSize;
+		memcpy(&extentSize, temp + offset, sizeof(std::vector<uint64_t>::size_type));
+		offset += sizeof(std::vector<uint64_t>::size_type);
+
+		// create extents vector
+		std::vector<uint64_t> extents;
+
+		while (extentSize > 0) {
+
+			// deserialize extents values
+			uint64_t value;
+			memcpy(&value, temp + offset, sizeof(uint64_t));
+			offset += sizeof(uint64_t);
+
+			extents.push_back(value);
+
+			extentSize--;
+		}
+
+		if(!fsiInitialized){
+
+			fsi = new FSISegment(extents, segId, bm->getPagesOnDisk() + 1);
+
+			addToMap(make_pair(segId, (Segment *) fsi));
+
+			fsiInitialized = true;
+		} else{
+			// normal segment
+			Segment *seg;
+			seg = new Segment(extents, segId, fsi, bm);
+
+			addToMap(make_pair(segId, (Segment *) seg));
+		}
+
+		mapSize--;
 	}
+
+	delete temp;
 
 }
 

@@ -24,6 +24,8 @@ struct Node {
 
 template<class T, class CMP>
 struct InnerNode: public Node<T, CMP> {
+	uint64_t nextPageId;
+	InnerNode<T, CMP>* next;
 	vector<T> separators;
 	vector<uint64_t> children;
 };

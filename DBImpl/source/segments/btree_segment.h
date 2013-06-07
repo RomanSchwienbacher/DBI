@@ -82,6 +82,10 @@ class BTreeSegment: public Segment {
 
 				++i;
 			}
+
+			// serialize nextPageId
+			memcpy(rtrn + offset, &(inner->nextPageId), sizeof(uint64_t));
+			offset += sizeof(uint64_t);
 		}
 
 		if (offset > sysconf(_SC_PAGESIZE)) {
@@ -175,6 +179,10 @@ class BTreeSegment: public Segment {
 				inner->separators.insert((inner->separators).begin() + i, separator);
 				inner->children.insert((inner->children).begin() + i, child);
 			}
+
+			// deserialize nextPageid
+			memcpy(&(inner->nextPageId), tnPointer + offset, sizeof(uint64_t));
+			offset += sizeof(uint64_t);
 
 			rtrn = inner;
 		}

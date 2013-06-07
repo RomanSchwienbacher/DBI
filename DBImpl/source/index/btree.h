@@ -127,6 +127,7 @@ class BTree {
 
 			// alternative: calculate keys.capacity() * sizeof(T)
 			// and values.capacity() * sizeof(TID)
+			rtrn -= sizeof(uint64_t); // nextPageId
 			rtrn -= sizeof(LeafNode<T, CMP>*); // next pointer
 			rtrn -= node->count * (sizeof(T) + sizeof(TID)); // current entries
 
@@ -134,6 +135,8 @@ class BTree {
 
 			// alternative: calculate separators.capacity() * sizeof(T)
 			// and children.capacity() * sizeof(uint64_t)
+			rtrn -= sizeof(uint64_t); // next page Id
+			rtrn -= sizeof(InnerNode<T, CMP>*); // next pointer
 			rtrn -= node->count * sizeof(T);
 			rtrn -= (node->count + 1) * sizeof(uint64_t);
 
@@ -242,6 +245,7 @@ class BTree {
 			}
 
 		} else {
+			// node is inner node
 
 			// create neighboring inner node and set it up
 			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(node);
@@ -249,6 +253,8 @@ class BTree {
 			newInnerNode->isLeaf = false;
 			newInnerNode->parentNode = innerNode->parentNode;
 			newInnerNode->pageId = seg->getNewPageId();
+			newInnerNode->next = NULL;
+			innerNode->next = newInnerNode;
 
 			// split children and update their parents
 			// take first half of separators and children and place them left
@@ -491,6 +497,9 @@ public:
 		return rtrn;
 	}
 
+	/**
+	 * returns a dot syntax string representing the current btree
+	 */
 	std::string visualize() {
 		std::stringstream stream1;
 		std::stringstream stream2;
@@ -499,120 +508,142 @@ public:
 		stream1 << "node [shape=record]" << endl;
 
 		long nodeCount = 0;
+		long childNodeCount = 1;
 		long leafCount = 0;
+		long childLeafCount = 0;
 
 		Node<T, CMP>* currentNode;
-		currentNode = rootNode;
 
 		// start at root node
-		if (currentNode->isLeaf) {
-			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(currentNode);
+		currentNode = rootNode;
 
-			// calculate maximum length of key/values
-			LeafNode<T, CMP> emptyLeaf;
-			long vectorSizeMax = calculateFreeNodeSpace(emptyLeaf) / (sizeof(T) + sizeof(TID));
+		bool endReached = false;
 
-			stream1 << "leaf" << leafCount << " [shape=record], label=" << "<count> " << leaf->count << " | <isLeaf> true | ";
+		while (!endReached) {
 
-			// add <key> tags
-			for (long i = 0; i < vectorSizeMax; ++i) {
+			if (currentNode->isLeaf) {
+				LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(currentNode);
 
-				stream1 << "<key" << i << "> ";
-				if (i < leaf->keys.size()) {
-					// existing key value
-					stream1 << leaf->keys.at(i) << " | "; // TODO: check if this always outputs toString()
-				} else {
-					// emtpy key value
-					stream1 << "| ";
+				// calculate maximum length of key/values
+				LeafNode<T, CMP> emptyLeaf;
+				long vectorSizeMax = calculateFreeNodeSpace(emptyLeaf) / (sizeof(T) + sizeof(TID));
+
+				stream1 << "leaf" << leafCount << " [shape=record], label=" << "<count> " << leaf->count << " | <isLeaf> true | ";
+
+				// add <key> tags
+				for (long i = 0; i < vectorSizeMax; ++i) {
+
+					stream1 << "<key" << i << "> ";
+					if (i < leaf->keys.size()) {
+						// existing key value
+						stream1 << leaf->keys.at(i) << " | "; // TODO: check if this always outputs toString()
+					} else {
+						// emtpy key value
+						stream1 << "| ";
+					}
 				}
-			}
 
-			// add <tid> tags
-			for (long i = 0; i < vectorSizeMax; ++i) {
-				stream1 << "<tid" << i << "> ";
-				if (i < leaf->values.size()) {
-					// existing TID TODO: does this give the correct representation?
-					stream1 << leaf->values.at(i) << " | ";
-				} else {
-					// empty value
-					stream1 << "| ";
+				// add <tid> tags
+				for (long i = 0; i < vectorSizeMax; ++i) {
+					stream1 << "<tid" << i << "> ";
+					if (i < leaf->values.size()) {
+						// existing TID TODO: does this give the correct representation?
+						stream1 << leaf->values.at(i) << " | ";
+					} else {
+						// empty value
+						stream1 << "| ";
+					}
 				}
-			}
 
-			// add <next> tag
-			stream1 << "<next>";
-			if (leaf->next != NULL) {
-				stream1 << " *\"];" << endl;
-
-				// add bottom part to stream2
-				stream2 << "leaf" << leafCount << ":next -> leaf" << leafCount + 1 << ":count;" << endl;
-			} else {
-				stream1 << "\"];" << endl;
-			}
-
-			// increment leaf count
-			leafCount++;
-
-		} else {
-			// the current node is an inner node
-			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(currentNode);
-
-			// find out if this inner node has leaf or more inner node children - important for stream2 output
-			Node<T, CMP>* childNode = seg->readFromFrame(innerNode->children.front());
-
-			bool childIsLeaf = childNode->isLeaf;
-
-			// calculate maximum length of key/values
-			InnerNode<T, CMP> emptyInnerNode;
-			long vectorSizeMax = calculateFreeNodeSpace(emptyInnerNode) / (sizeof(T) + sizeof(uint64_t));
-
-			stream1 << "node" << nodeCount << " [shape=record], label=" << "<count> " << innerNode->count << " | <isLeaf> false | ";
-
-			// add <key> tags
-			for (long i = 0; i < vectorSizeMax - 1; ++i) {
-
-				stream1 << "<key" << i << "> ";
-				if (i < innerNode->separators.size()) {
-					// existing key value
-					stream1 << innerNode->separators.at(i) << " | "; // TODO: check if this always outputs toString()
-				} else {
-					// emtpy key value
-					stream1 << "| ";
-				}
-			}
-
-			// add <ptr> tags
-			for (long i = 0; i < vectorSizeMax; ++i) {
-				stream1 << "<ptr" << i << "> ";
-				if (i < innerNode->children.size()) {
-					// existing ptr TODO: does this give the correct representation?
-					stream1 << "*";
+				// add <next> tag
+				stream1 << "<next>";
+				if (leaf->next != NULL) {
+					stream1 << " *\"];" << endl;
 
 					// add bottom part to stream2
-					stream2 << "node" << nodeCount << ":ptr" << i << " -> ";
-					if (childIsLeaf) {
-						// TODO: figure out numbering scheme
-						stream2 << "leaf" << "#" << ":count;" << endl;
-					} else {
-						stream2 << "node" << "#" << ":count;" << endl;
-					}
-
-				}
-				if (i == vectorSizeMax - 1) {
-					// end of TIDs
+					stream2 << "leaf" << leafCount << ":next -> leaf" << leafCount + 1 << ":count;" << endl;
+				} else {
 					stream1 << "\"];" << endl;
-				} else{
-					// more TIDs
-					stream1 << " | ";
 				}
+
+				// increment leaf count
+				leafCount++;
+
+				if (leaf->next == NULL) {
+					endReached = true;
+				} else {
+					// go to next node
+					currentNode = leaf->next;
+				}
+
+			} else {
+				// the current node is an inner node
+				InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(currentNode);
+
+				// find out if this inner node has leaf or more inner node children - important for stream2 output
+				Node<T, CMP>* childNode = seg->readFromFrame(innerNode->children.front());
+
+				bool childIsLeaf = childNode->isLeaf;
+
+				// calculate maximum length of key/values
+				InnerNode<T, CMP> emptyInnerNode;
+				long vectorSizeMax = calculateFreeNodeSpace(emptyInnerNode) / (sizeof(T) + sizeof(uint64_t));
+
+				stream1 << "node" << nodeCount << " [shape=record], label=" << "<count> " << innerNode->count << " | <isLeaf> false | ";
+
+				// add <key> tags
+				for (long i = 0; i < vectorSizeMax - 1; ++i) {
+
+					stream1 << "<key" << i << "> ";
+					if (i < innerNode->separators.size()) {
+						// existing key value
+						stream1 << innerNode->separators.at(i) << " | "; // TODO: check if this always outputs toString()
+					} else {
+						// emtpy key value
+						stream1 << "| ";
+					}
+				}
+
+				// add <ptr> tags
+				for (long i = 0; i < vectorSizeMax; ++i) {
+					stream1 << "<ptr" << i << "> ";
+					if (i < innerNode->children.size()) {
+						// existing ptr TODO: does this give the correct representation?
+						stream1 << "*";
+
+						// add bottom part to stream2
+						stream2 << "node" << nodeCount << ":ptr" << i << " -> ";
+						if (childIsLeaf) {
+							stream2 << "leaf" << childLeafCount++ << ":count;" << endl;
+						} else {
+							stream2 << "node" << childNodeCount++ << ":count;" << endl;
+						}
+
+					}
+					if (i == vectorSizeMax - 1) {
+						// end of TIDs
+						stream1 << "\"];" << endl;
+					} else {
+						// more TIDs
+						stream1 << " | ";
+					}
+				}
+
+				// go to next inner node
+				if(innerNode->next == NULL){
+					// go to first child
+					currentNode = childNode;
+				} else{
+					currentNode = innerNode->next;
+				}
+
+
+				// increment nodeCount
+				nodeCount++;
+
 			}
 
-			// increment nodeCount
-			nodeCount++;
-
 		}
-
-
 
 		stream1 << stream2.str() << "}" << endl;
 
