@@ -151,7 +151,6 @@ class BTree {
 		if (node->isLeaf) {
 
 			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
-			TID tid = value;
 			uint16_t pos = 0;
 			for (T lKey : leaf->keys) {
 				// check if new key is larger
@@ -164,7 +163,7 @@ class BTree {
 
 			// add key and value at correct position
 			(leaf->keys).insert((leaf->keys).begin() + pos, key);
-			(leaf->values).insert((leaf->values).begin() + pos, tid);
+			(leaf->values).insert((leaf->values).begin() + pos, key);
 
 			// increment counter
 			(leaf->count)++;
@@ -242,8 +241,6 @@ class BTree {
 			newInnerNode->isLeaf = false;
 			newInnerNode->parentNode = innerNode->parentNode;
 			newInnerNode->pageId = seg->getNewPageId();
-			innerNode->nextPageId = newInnerNode->pageId;
-			innerNode->next = newInnerNode;
 
 			// split children and update their parents
 			// take first half of separators and children and place them left
