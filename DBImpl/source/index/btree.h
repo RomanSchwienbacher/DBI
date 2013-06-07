@@ -298,6 +298,11 @@ public:
 			// decrement counter
 			(foundInNode.count)--;
 
+			// write changes back to disk
+			if (!seg->writeToFrame(foundInNode, foundInNode->pageId)) {
+				cerr << "Cannot write tree node into frame" << endl;
+			}
+
 		} else {
 			cerr << "Key to delete was not found in tree" << endl;
 		}
@@ -337,7 +342,7 @@ public:
 			// iterate on leaf level through leaf nodes until end or stop is reached
 			do {
 
-				for (int i=0; i < foundInNode.count; i++) {
+				for (int i = 0; i < foundInNode.count; i++) {
 
 					if (!(CMP()(foundInNode.keys.at(i), stop)) && !(CMP()(stop, foundInNode.keys.at(i)))) {
 						stopReached = true;
