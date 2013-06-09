@@ -149,12 +149,12 @@ class BTree {
 	 * Inserts a key and value into a certain node
 	 *
 	 * @param key: the key to be inserted at the correct position
-	 * @param value: the value to be placed at the respective key position
+	 * @param tid: the tid value to be placed at the respective key position in a leaf
+	 * @param childPage: the pageId of the child page to be placed in an inner node
 	 * @param *node: the node in which to place the key/value pair
 	 * @return boolean to indicate success or failure of insert
 	 */
-	template<class V>
-	bool insertKeyValueIntoNode(T key, V value, Node<T, CMP> *node) {
+	bool insertKeyValueIntoNode(T key, TID tid, uint64_t childPage, Node<T, CMP>* node) {
 
 		bool rtrn = true;
 
@@ -173,20 +173,43 @@ class BTree {
 
 			// add key and value at correct position
 			(leaf->keys).insert((leaf->keys).begin() + pos, key);
-			(leaf->values).insert((leaf->values).begin() + pos, key);
+			(leaf->values).insert((leaf->values).begin() + pos, tid);
 
 			// increment counter
 			(leaf->count)++;
 
 			// write changes back to disk
 			if (!seg->writeToFrame<T, CMP>(leaf, leaf->pageId)) {
-				cerr << "Cannot write tree node into frame" << endl;
+				cerr << "Cannot write tree leaf into frame" << endl;
 				rtrn = false;
 			}
 
 		} else {
 			// node is an inner node
 			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(node);
+
+			uint16_t pos = 0;
+			for (T lSep : innerNode->separators) {
+				// check if new separator is larger
+				if ((CMP()(lSep, key))) {
+					++pos;
+				} else {
+					break;
+				}
+			}
+
+			// add key and value at correct position
+			(innerNode->separators).insert((innerNode->separators).begin() + pos, key);
+			(innerNode->children).insert((innerNode->children).begin() + pos, childPage);
+
+			// increment counter
+			(innerNode->count)++;
+
+			// write changes back to disk
+			if (!seg->writeToFrame<T, CMP>(innerNode, innerNode->pageId)) {
+				cerr << "Cannot write tree node into frame" << endl;
+				rtrn = false;
+			}
 
 		}
 
@@ -218,7 +241,6 @@ class BTree {
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
 			neighborLeaf->pageId = seg->getNewPageId();
-			neighborLeaf->nextPageId = NULL;
 			thisLeaf->nextPageId = neighborLeaf->pageId;
 			thisLeaf->next = neighborLeaf;
 
@@ -357,7 +379,7 @@ public:
 
 		if (freeNodeSpace > requiredSpace) {
 
-			insertKeyValueIntoNode(key, tid, leaf);
+			insertKeyValueIntoNode(key, tid, 0ul, leaf);
 
 		} else {
 			// split the node and insert
@@ -366,14 +388,15 @@ public:
 			// insert key and value on proper side
 			if ((CMP()(key, ((leaf->next)->keys).front()))) {
 				// insert into leaf node
-				insertKeyValueIntoNode(key, tid, leaf);
+				insertKeyValueIntoNode(key, tid, 0ul, leaf);
 			} else {
 				// insert into next node
-				insertKeyValueIntoNode(key, tid, leaf->next);
+				insertKeyValueIntoNode(key, tid, 0ul, leaf->next);
 			}
 
 			// insert maximum of left page as separator into parent
-			insertKeyValueIntoNode(leaf->keys.back(), leaf->pageId, leaf->parentNode);
+			TID empty;
+			insertKeyValueIntoNode(leaf->keys.back(), empty, leaf->pageId, leaf->parentNode);
 			if (calculateFreeNodeSpace(leaf->parentNode) < 0) {
 				// parent node overflow
 				splitNode(leaf->parentNode);
@@ -630,13 +653,12 @@ public:
 				}
 
 				// go to next inner node
-				if(innerNode->next == NULL){
+				if (innerNode->next == NULL) {
 					// go to first child
 					currentNode = childNode;
-				} else{
+				} else {
 					currentNode = innerNode->next;
 				}
-
 
 				// increment nodeCount
 				nodeCount++;

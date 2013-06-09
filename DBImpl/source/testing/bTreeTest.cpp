@@ -92,7 +92,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		tid.pageId = i * i;
 		tid.slotId = 0;
 
-		//bTree.insert(getKey<T>(i), tid);
+		bTree.insert(getKey<T>(i), tid);
 	}
 	assert(bTree.size() == n);
 
