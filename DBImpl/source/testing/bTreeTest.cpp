@@ -94,14 +94,25 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 
 		bTree.insert(getKey<T>(i), tid);
 	}
-	assert(bTree.size() == n);
+
+	uint64_t bTreeSize = bTree.size();
+
+	if (bTreeSize != n) {
+		cerr << "damn, bTreeSize " << bTreeSize << " must be == " << n << endl;
+	}
+	assert(bTreeSize == n);
 
 	cout << "Check if they can be retrieved" << endl;
 	for (uint64_t i = 0; i < n; ++i) {
 		TID tid;
+		if (!bTree.lookup(getKey<T>(i), tid)) {
+			cerr << "damn, tid was not found by key" << endl;
+		}
 		assert(bTree.lookup(getKey<T>(i), tid));
 
-		//assert(tid == i * i);
+		if (tid.pageId != i * i) {
+			cerr << "damn, pageId " << tid.pageId << " must be == " << (i * i) << endl;
+		}
 		assert(tid.pageId == i * i);
 	}
 
@@ -116,11 +127,19 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 	for (uint64_t i = 0; i < n; ++i) {
 		TID tid;
 		if ((i % 7) == 0) {
+			if (bTree.lookup(getKey<T>(i), tid)) {
+				cerr << "damn, tid was found by key (should be deleted)" << endl;
+			}
 			assert(!bTree.lookup(getKey<T>(i), tid));
 		} else {
+			if (!bTree.lookup(getKey<T>(i), tid)) {
+				cerr << "damn, tid was not found by key" << endl;
+			}
 			assert(bTree.lookup(getKey<T>(i), tid));
 
-			//assert(tid == i * i);
+			if (tid.pageId != i * i) {
+				cerr << "damn, pageId " << tid.pageId << " must be == " << (i * i) << endl;
+			}
 			assert(tid.pageId == i * i);
 		}
 	}
@@ -130,6 +149,9 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		bTree.erase(getKey<T>(i));
 	}
 
+	if (bTree.size() != 0) {
+		cerr << "damn, bTree is not empty after deletion" << endl;
+	}
 	assert(bTree.size() == 0);
 }
 
