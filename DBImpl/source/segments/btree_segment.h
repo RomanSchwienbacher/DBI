@@ -86,6 +86,10 @@ class BTreeSegment: public Segment {
 			// serialize nextPageId
 			memcpy(rtrn + offset, &(inner->nextPageId), sizeof(uint64_t));
 			offset += sizeof(uint64_t);
+
+			// serialize upper
+			memcpy(rtrn + offset, &(inner->upper), sizeof(uint64_t));
+			offset += sizeof(uint64_t);
 		}
 
 		if (offset > sysconf(_SC_PAGESIZE)) {
@@ -182,6 +186,10 @@ class BTreeSegment: public Segment {
 
 			// deserialize nextPageid
 			memcpy(&(inner->nextPageId), tnPointer + offset, sizeof(uint64_t));
+			offset += sizeof(uint64_t);
+
+			// deserialize upper
+			memcpy(&(inner->upper), tnPointer + offset, sizeof(uint64_t));
 			offset += sizeof(uint64_t);
 
 			rtrn = inner;

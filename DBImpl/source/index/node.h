@@ -28,6 +28,7 @@ struct InnerNode: public Node<T, CMP> {
 	InnerNode<T, CMP>* next;
 	vector<T> separators;
 	vector<uint64_t> children;
+	uint64_t upper;
 };
 
 template<class T, class CMP>

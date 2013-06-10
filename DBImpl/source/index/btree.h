@@ -43,8 +43,8 @@ class BTree {
 			LeafNode<T, CMP>* leaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
 
 			unsigned i = 0;
+
 			for (T lKey : leaf->keys) {
-				// check for equality
 				if (!(CMP()(lKey, key)) && !(CMP()(key, lKey))) {
 					tid = leaf->values.at(i);
 					rtrn = true;
@@ -61,7 +61,7 @@ class BTree {
 
 			unsigned i = 0;
 			for (T iSeparator : inner->separators) {
-				if (!(CMP()(iSeparator, key)) || (i+1) == inner->separators.size()) {
+				if (!(CMP()(iSeparator, key))) {
 
 					// fetch childNode by child-pageId
 					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->children.at(i));
@@ -71,6 +71,14 @@ class BTree {
 					// recursive call
 					rtrn = lookupInternal(key, childNode, tid, tidNode);
 					break;
+				} else if (i >= inner->separators.size()) {
+					// fetch upper childNode
+					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->upper);
+					childNode->parentNode = node;
+					childNode->pageId = inner->children.at(i);
+
+					// recursive call
+					rtrn = lookupInternal(key, childNode, tid, tidNode);
 				}
 				++i;
 			}
@@ -133,7 +141,7 @@ class BTree {
 
 			// alternative: calculate separators.capacity() * sizeof(T)
 			// and children.capacity() * sizeof(uint64_t)
-			rtrn -= sizeof(uint64_t); // next page Id
+			rtrn -= 2 * sizeof(uint64_t); // next page Id + upper
 			rtrn -= sizeof(InnerNode<T, CMP>*); // next pointer
 			rtrn -= node->count * sizeof(T);
 			rtrn -= (node->count + 1) * sizeof(uint64_t);
@@ -249,9 +257,20 @@ class BTree {
 			thisLeaf->nextPageId = neighborLeaf->pageId;
 			thisLeaf->next = neighborLeaf;
 
+			if (neighborLeaf->next == NULL) {
+				// neighborLeaf is most right - update upper
+				InnerNode<T, CMP>* parentInner = reinterpret_cast<InnerNode<T, CMP>*>(neighborLeaf->parentNode);
+				parentInner->upper = thisLeaf->pageId;
+
+				if (!seg->writeToFrame<T, CMP>(parentInner, parentInner->pageId)) {
+					cerr << "Cannot write parentInner into frame" << endl;
+				}
+			}
+
 			// take first half of keys and values and place them left
 			// place the others on the neighborLeaf
 			unsigned half = (thisLeaf->keys).size() / 2;
+			cerr << "SplitNode(): half is " << half << endl;
 			for (unsigned i = half; i < (thisLeaf->keys).size(); ++i) {
 				(neighborLeaf->keys).push_back(thisLeaf->keys.at(i));
 				(neighborLeaf->values).push_back(thisLeaf->values.at(i));
@@ -280,8 +299,18 @@ class BTree {
 			newInnerNode->isLeaf = false;
 			newInnerNode->parentNode = innerNode->parentNode;
 			newInnerNode->pageId = seg->getNewPageId();
-			newInnerNode->next = NULL;
+			newInnerNode->next = innerNode->next;
 			innerNode->next = newInnerNode;
+
+			if (newInnerNode->next == NULL) {
+				// newInnerNode is most right - update upper
+				InnerNode<T, CMP>* parentInner = reinterpret_cast<InnerNode<T, CMP>*>(newInnerNode->parentNode);
+				parentInner->upper = newInnerNode->pageId;
+
+				if (!seg->writeToFrame<T, CMP>(parentInner, parentInner->pageId)) {
+					cerr << "Cannot write parentInner into frame" << endl;
+				}
+			}
 
 			// split children and update their parents
 			// take first half of separators and children and place them left

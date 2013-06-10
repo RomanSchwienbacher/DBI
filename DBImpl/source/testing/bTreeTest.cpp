@@ -91,6 +91,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		tid.slotId = 0;
 
 		bTree.insert(getKey<T>(i), tid);
+
 	}
 
 	uint64_t bTreeSize = bTree.size();
