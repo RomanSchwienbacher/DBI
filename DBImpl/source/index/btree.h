@@ -238,12 +238,14 @@ class BTree {
 
 		if (node->isLeaf) {
 
-			// create neighboring leaf and set next to it
+			// create neighboring leaf, set next to it, set next for neighboring leaf to old next
 			LeafNode<T, CMP>* thisLeaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
 			LeafNode<T, CMP>* neighborLeaf = new LeafNode<T, CMP>();
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
 			neighborLeaf->pageId = seg->getNewPageId();
+			neighborLeaf->nextPageId = thisLeaf->nextPageId;
+			neighborLeaf->next = thisLeaf->next;
 			thisLeaf->nextPageId = neighborLeaf->pageId;
 			thisLeaf->next = neighborLeaf;
 
@@ -386,6 +388,7 @@ public:
 			insertKeyValueIntoNode(key, tid, 0ul, leaf);
 
 		} else {
+
 			// split the node and insert
 			splitNode(leaf);
 
