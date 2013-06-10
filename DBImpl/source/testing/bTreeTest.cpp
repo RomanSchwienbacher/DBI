@@ -91,10 +91,6 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		tid.slotId = 0;
 
 		bTree.insert(getKey<T>(i), tid);
-
-		cout << "Page " << i << " inserted" << endl;
-		uint64_t tempSize = bTree.size();
-		cout << "Current size " << tempSize << endl;
 	}
 
 	uint64_t bTreeSize = bTree.size();
