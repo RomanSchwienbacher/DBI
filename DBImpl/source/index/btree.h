@@ -61,7 +61,7 @@ class BTree {
 
 			unsigned i = 0;
 			for (T iSeparator : inner->separators) {
-				if (!(CMP()(iSeparator, key))) {
+				if (!(CMP()(iSeparator, key)) || (i+1) == inner->separators.size()) {
 
 					// fetch childNode by child-pageId
 					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->children.at(i));
@@ -74,8 +74,6 @@ class BTree {
 				}
 				++i;
 			}
-
-			// go to the upper?
 		}
 
 		return rtrn;
@@ -225,19 +223,24 @@ class BTree {
 
 		// Check if we are at root - create new root
 		if (node->parentNode == NULL) {
-			rootNode = new InnerNode<T, CMP>;
+			rootNode = new InnerNode<T, CMP>();
 			rootNode->count = 0;
 			rootNode->isLeaf = false;
 			rootNode->pageId = seg->getNewPageId();
 			rootNode->parentNode = NULL;
 			node->parentNode = rootNode;
+
+			// write root node to disk
+			if (!seg->writeToFrame<T, CMP>(rootNode, rootNode->pageId)) {
+				cerr << "Cannot write rootNode into frame" << endl;
+			}
 		}
 
 		if (node->isLeaf) {
 
 			// create neighboring leaf and set next to it
 			LeafNode<T, CMP>* thisLeaf = reinterpret_cast<LeafNode<T, CMP>*>(node);
-			LeafNode<T, CMP>* neighborLeaf = new LeafNode<T, CMP>;
+			LeafNode<T, CMP>* neighborLeaf = new LeafNode<T, CMP>();
 			neighborLeaf->isLeaf = true;
 			neighborLeaf->parentNode = thisLeaf->parentNode;
 			neighborLeaf->pageId = seg->getNewPageId();
@@ -271,7 +274,7 @@ class BTree {
 
 			// create neighboring inner node and set it up
 			InnerNode<T, CMP>* innerNode = reinterpret_cast<InnerNode<T, CMP>*>(node);
-			InnerNode<T, CMP>* newInnerNode = new InnerNode<T, CMP>;
+			InnerNode<T, CMP>* newInnerNode = new InnerNode<T, CMP>();
 			newInnerNode->isLeaf = false;
 			newInnerNode->parentNode = innerNode->parentNode;
 			newInnerNode->pageId = seg->getNewPageId();
@@ -335,8 +338,6 @@ class BTree {
 
 public:
 
-	// jede page wird exklusiv geladen
-
 	/**
 	 * Constructor: initialize seg and rootNode
 	 *
@@ -362,6 +363,9 @@ public:
 
 		// because lookupInternal changes tid - this invokes copy constructor
 		TID toInsertTID = tid;
+
+		// refetch rootNode
+		rootNode = seg->readFromFrame<T, CMP>(rootNode->pageId);
 
 		// lookup and change to the node which should be inserted to
 		lookupInternal(key, rootNode, tid, insertNode);
@@ -507,6 +511,9 @@ public:
 	uint64_t size() {
 
 		uint64_t rtrn = 0;
+
+		// refetch rootNode
+		rootNode = seg->readFromFrame<T, CMP>(rootNode->pageId);
 
 		// fetch first leaf node starting at root node
 		LeafNode<T, CMP>* leaf = fetchFirstLeaf(rootNode);

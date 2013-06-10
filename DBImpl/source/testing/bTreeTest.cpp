@@ -83,16 +83,18 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 	BTreeSegment& seg = (BTreeSegment&) (sm.getSegment(spId));
 	BTree<T, CMP> bTree(seg);
 
-	cout << "Insert values" << endl;
+	cout << "Insert " << n << " values" << endl;
 	for (uint64_t i = 0; i < n; ++i) {
-
-		//bTree.insert(getKey<T>(i), static_cast<TID>(i * i));
 
 		TID tid;
 		tid.pageId = i * i;
 		tid.slotId = 0;
 
 		bTree.insert(getKey<T>(i), tid);
+
+		cout << "Page " << i << " inserted" << endl;
+		uint64_t tempSize = bTree.size();
+		cout << "Current size " << tempSize << endl;
 	}
 
 	uint64_t bTreeSize = bTree.size();

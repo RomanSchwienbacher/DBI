@@ -265,6 +265,7 @@ public:
 		try {
 			//deserialize
 			rtrn = getDeserialized<T, CMP>((char*) frame.getData());
+			rtrn->pageId = pageId;
 
 		} catch (exception& e) {
 			cerr << "An exception occurred while reading tree node from frame: " << e.what() << endl;
@@ -296,6 +297,7 @@ public:
 
 				//deserialize leaf
 				rtrn = reinterpret_cast<LeafNode<T, CMP>*>(getDeserialized<T, CMP>((char*) frame.getData()));
+				rtrn->pageId = pageId;
 
 			} catch (exception& e) {
 				cerr << "An exception occurred while fetching next leaf node from frame: " << e.what() << endl;
