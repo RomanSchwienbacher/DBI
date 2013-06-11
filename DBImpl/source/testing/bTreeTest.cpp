@@ -90,7 +90,16 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		tid.pageId = i * i;
 		tid.slotId = 0;
 
+		if (i == 169) {
+			cout << "bullshit level" << endl;
+		}
+
 		bTree.insert(getKey<T>(i), tid);
+
+		uint64_t size = bTree.size();
+
+		cout << "Inserted TID No " << i << endl;
+		cout << "Current tree size: " << size << endl;
 
 	}
 

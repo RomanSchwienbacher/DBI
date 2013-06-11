@@ -71,7 +71,7 @@ class BTree {
 					// recursive call
 					rtrn = lookupInternal(key, childNode, tid, tidNode);
 					break;
-				} else if (i >= inner->separators.size()) {
+				} else if ((i+1) >= inner->separators.size()) {
 					// fetch upper childNode
 					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->upper);
 					childNode->parentNode = node;
@@ -79,6 +79,7 @@ class BTree {
 
 					// recursive call
 					rtrn = lookupInternal(key, childNode, tid, tidNode);
+					break;
 				}
 				++i;
 			}
