@@ -53,7 +53,7 @@ public:
  */
 static int launchSlottedtest(char** argv) {
 
-	const unsigned pageSize = atoi(argv[8]);
+	const unsigned pageSize = atoi(argv[3]);
 
 	// Bookkeeping
 	unordered_map<TID, unsigned, TIDHash, TIDEq> values; // TID -> testData entry
@@ -61,7 +61,7 @@ static int launchSlottedtest(char** argv) {
 
 	// Setting everything up
 	// changed second param to number of frames and not bytes
-	BufferManager bm(argv[4], 25600ul); // bogus arguments
+	BufferManager bm(argv[2], 25600ul); // bogus arguments
 	cout << "Buffer Manager initialized. " << endl;
 	// segment manager takes two uint64_t arguments for Segment Inventory and Free Segment Inventory size
 	SegmentManager sm(1, 1, &bm);
@@ -82,7 +82,6 @@ static int launchSlottedtest(char** argv) {
 		// Check that there is space available for 's'
 		bool full = true;
 		for (unsigned p = 0; p < initialSize; ++p) {
-			// TODO: initialize *usage???
 			if (usage[p] < loadFactor * pageSize) {
 				full = false;
 				break;
@@ -94,10 +93,8 @@ static int launchSlottedtest(char** argv) {
 		// Insert record
 		TID tid = sp.insert(*(new Record(s.size(), s.c_str())));
 
-		// TODO: insert TID into values hashmap????
 		assert(values.find(tid) == values.end()); // TIDs should not be overwritten
 
-				// TODO: find out what this does
 		values[tid] = r;
 
 		/*

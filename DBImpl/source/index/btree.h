@@ -71,11 +71,11 @@ class BTree {
 					// recursive call
 					rtrn = lookupInternal(key, childNode, tid, tidNode);
 					break;
-				} else if ((i+1) >= inner->separators.size()) {
+				} else if ((i + 1) >= inner->separators.size()) {
 					// fetch upper childNode
 					Node<T, CMP>* childNode = seg->readFromFrame<T, CMP>(inner->upper);
 					childNode->parentNode = node;
-					childNode->pageId = inner->children.at(i);
+					childNode->pageId = inner->upper;
 
 					// recursive call
 					rtrn = lookupInternal(key, childNode, tid, tidNode);
@@ -271,7 +271,6 @@ class BTree {
 			// take first half of keys and values and place them left
 			// place the others on the neighborLeaf
 			unsigned half = (thisLeaf->keys).size() / 2;
-			cerr << "SplitNode(): half is " << half << endl;
 			for (unsigned i = half; i < (thisLeaf->keys).size(); ++i) {
 				(neighborLeaf->keys).push_back(thisLeaf->keys.at(i));
 				(neighborLeaf->values).push_back(thisLeaf->values.at(i));
@@ -438,7 +437,6 @@ public:
 				// parent node overflow
 				splitNode(leaf->parentNode);
 			}
-
 		}
 	}
 
@@ -478,8 +476,6 @@ public:
 				cerr << "Cannot write tree node into frame" << endl;
 			}
 
-		} else {
-			cerr << "Key to delete was not found in tree" << endl;
 		}
 	}
 

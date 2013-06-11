@@ -72,15 +72,15 @@ static void* readWrite(void *arg) {
 
 static int launchBuffertest(char** argv) {
 
-	pagesOnDisk = atoi(argv[5]);
-	pagesInRAM = atoi(argv[6]);
-	threadCount = atoi(argv[7]);
+	pagesOnDisk = atoi(argv[3]);
+	pagesInRAM = atoi(argv[4]);
+	threadCount = atoi(argv[5]);
 
 	threadSeed = new unsigned[threadCount];
 	for (unsigned i = 0; i < threadCount; i++)
 		threadSeed[i] = i * 97134;
 
-	bm = new BufferManager(argv[4], pagesInRAM);
+	bm = new BufferManager(argv[2], pagesInRAM);
 
 	pthread_t threads[threadCount];
 	pthread_attr_t pattr;
@@ -119,7 +119,7 @@ static int launchBuffertest(char** argv) {
 
 	// restart buffer manager
 	delete bm;
-	bm = new BufferManager(argv[4], pagesInRAM);
+	bm = new BufferManager(argv[2], pagesInRAM);
 
 	// check counter
 	unsigned totalCountOnDisk = 0;

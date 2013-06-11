@@ -90,17 +90,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 		tid.pageId = i * i;
 		tid.slotId = 0;
 
-		if (i == 169) {
-			cout << "bullshit level" << endl;
-		}
-
 		bTree.insert(getKey<T>(i), tid);
-
-		uint64_t size = bTree.size();
-
-		cout << "Inserted TID No " << i << endl;
-		cout << "Current tree size: " << size << endl;
-
 	}
 
 	uint64_t bTreeSize = bTree.size();
@@ -166,16 +156,16 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 static int launchBTreetest(char** argv) {
 
 	// Get command line argument (amount of tid's managed by tree)
-	const uint64_t n = strtoul(argv[9], NULL, 10);
+	const uint64_t n = strtoul(argv[3], NULL, 10);
 
 	cout << "Test index with 64bit unsigned integers" << endl;
-	bTreeTest<uint64_t, MyCustomUInt64Cmp>(argv[4], n);
+	bTreeTest<uint64_t, MyCustomUInt64Cmp>(argv[2], n);
 
 	cout << "Test index with 20 character strings" << endl;
-	bTreeTest<Char<20>, MyCustomCharCmp<20>>(argv[4], n);
+	bTreeTest<Char<20>, MyCustomCharCmp<20>>(argv[2], n);
 
 	cout << "Test index with compound key" << endl;
-	bTreeTest<IntPair, MyCustomIntPairCmp>(argv[4], n);
+	bTreeTest<IntPair, MyCustomIntPairCmp>(argv[2], n);
 
 	return 0;
 }
