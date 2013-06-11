@@ -260,7 +260,7 @@ class BTree {
 			if (neighborLeaf->next == NULL) {
 				// neighborLeaf is most right - update upper
 				InnerNode<T, CMP>* parentInner = reinterpret_cast<InnerNode<T, CMP>*>(neighborLeaf->parentNode);
-				parentInner->upper = thisLeaf->pageId;
+				parentInner->upper = neighborLeaf->pageId;
 
 				if (!seg->writeToFrame<T, CMP>(parentInner, parentInner->pageId)) {
 					cerr << "Cannot write parentInner into frame" << endl;
