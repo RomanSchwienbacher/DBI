@@ -42,14 +42,6 @@ dbi: $(OBJ)
 
 ./obj/testinglib/%.o: $(SRCLIB)%.cc
 	$(CC) $(DEBUG) $(CFLAGS) $? -o $@
-	
-	
-# assignment 3
-test3: bufman.o segment.o segtest.o
-	$(CC) $(CFLAGS) -o "test3" bufframe.o bufman.o locker.o test3.o gtest-all.o segment.o si_segment.o fsi_segment.o record.o tid.o sp_segment.o segman.o slottedpage.o
-
-segtest.o: ./source/testing/test3/segTest.cpp ./source/testing/test3/test3.cpp ./testinglib/gtest/gtest-all.cc
-	$(CC) $(DEBUG) $(CFLAGS) $?
 
 # Other Targets
 clean:
