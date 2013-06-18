@@ -9,91 +9,102 @@
 #include "../buffer/bufman.h"
 #include "../segments/segman.h"
 #include "../segments/sch_segment.h"
+#include "../../parsinglib/Schema.hpp"
+#include "../../parsinglib/Types.hpp"
 
 using namespace std;
 
 namespace testing {
 
-
 static void schemaTest(const std::string& dbFilename, const std::string& schemaFilename) {
 
-	/*
 	// Set up stuff
 	BufferManager bm(dbFilename, 25600ul); // bogus arguments -> 100 MB
 	SegmentManager sm(1, 1, &bm);
-	uint64_t spId = sm.createSegment(SegmentType::SCHEMA, 10);
-	BTreeSegment& seg = (BTreeSegment&) (sm.getSegment(spId));
-	BTree<T, CMP> bTree(seg);
+	uint64_t spId = sm.createSegment(SegmentType::SCHEMA, 10, schemaFilename);
 
-	cout << "Insert " << n << " values" << endl;
-	for (uint64_t i = 0; i < n; ++i) {
+	SchemaSegment& seg = (SchemaSegment&) (sm.getSegment(spId));
 
-		TID tid;
-		tid.pageId = i * i;
-		tid.slotId = 0;
+	cout << "Check parsed relations" << endl;
 
-		bTree.insert(getKey<T>(i), tid);
-	}
+	// check amount of parsed relations
+	assert(seg.getRelations().size() == 3);
 
-	uint64_t bTreeSize = bTree.size();
+	// iterate over all relations
+	for (Relation r : seg.getRelations()) {
+		if (r.name == "employee") {
 
-	if (bTreeSize != n) {
-		cerr << "damn, bTreeSize " << bTreeSize << " must be == " << n << endl;
-	}
-	assert(bTreeSize == n);
+			cout << "Check employee" << endl;
 
-	cout << "Check if they can be retrieved" << endl;
-	for (uint64_t i = 0; i < n; ++i) {
-		TID tid;
-		if (!bTree.lookup(getKey<T>(i), tid)) {
-			cerr << "damn, tid was not found by key" << endl;
-		}
-		assert(bTree.lookup(getKey<T>(i), tid));
-
-		if (tid.pageId != i * i) {
-			cerr << "damn, pageId " << tid.pageId << " must be == " << (i * i) << endl;
-		}
-		assert(tid.pageId == i * i);
-	}
-
-	cout << "Delete some values" << endl;
-	for (uint64_t i = 0; i < n; ++i) {
-		if ((i % 7) == 0) {
-			bTree.erase(getKey<T>(i));
-		}
-	}
-
-	cout << "Check if the right ones have been deleted" << endl;
-	for (uint64_t i = 0; i < n; ++i) {
-		TID tid;
-		if ((i % 7) == 0) {
-			if (bTree.lookup(getKey<T>(i), tid)) {
-				cerr << "damn, tid was found by key (should be deleted)" << endl;
+			// check indexes
+			assert(seg.getIndexes(r.name).size() == 2);
+			for (BTree index : seg.getIndexes(r.name)) {
+				assert(index.getName() == "id" || index.getName() == "country_id");
 			}
-			assert(!bTree.lookup(getKey<T>(i), tid));
+
+			// check segments
+			assert(seg.getSegments(r.name).size() > 0);
+
+			// check types
+			assert(seg.getAttributeType(r.name, "id") == Types::Tag::Integer);
+			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "country_id") == 2);
+			assert(seg.getAttributeType(r.name, "mgr_id") == Types::Tag::Integer);
+			assert(seg.getAttributeType(r.name, "salery") == Types::Tag::Integer);
+			assert(seg.getAttributeType(r.name, "first_name") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "first_name") == 20);
+			assert(seg.getAttributeType(r.name, "middle") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "middle") == 1);
+			assert(seg.getAttributeType(r.name, "last_name") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "last_name") == 20);
+
+		} else if (r.name == "country") {
+
+			cout << "Check country" << endl;
+
+			// check indexes
+			assert(seg.getIndexes(r.name).size() == 1);
+			for (BTree index : seg.getIndexes(r.name)) {
+				assert(index.getName() == "country_id");
+			}
+
+			// check segments
+			assert(seg.getSegments(r.name).size() > 0);
+
+			// check types
+			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "country_id") == 2);
+			assert(seg.getAttributeType(r.name, "short_name") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "short_name") == 20);
+			assert(seg.getAttributeType(r.name, "long_name") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "long_name") == 50);
+
+		} else if (r.name == "department") {
+
+			cout << "Check department" << endl;
+
+			// check indexes
+			assert(seg.getIndexes(r.name).size() == 1);
+			for (BTree index : seg.getIndexes(r.name)) {
+				assert(index.getName() == "id");
+			}
+
+			// check segments
+			assert(seg.getSegments(r.name).size() > 0);
+
+			// check types
+			assert(seg.getAttributeType(r.name, "id") == Types::Tag::Integer);
+			assert(seg.getAttributeType(r.name, "name") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "name") == 25);
+			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
+			assert(seg.getAttributeLength(r.name, "country_id") == 2);
+
 		} else {
-			if (!bTree.lookup(getKey<T>(i), tid)) {
-				cerr << "damn, tid was not found by key" << endl;
-			}
-			assert(bTree.lookup(getKey<T>(i), tid));
-
-			if (tid.pageId != i * i) {
-				cerr << "damn, pageId " << tid.pageId << " must be == " << (i * i) << endl;
-			}
-			assert(tid.pageId == i * i);
+			cerr << "Parsed unknown relation: " << r.name << endl;
+			assert(false);
 		}
 	}
 
-	cout << "Delete everything" << endl;
-	for (uint64_t i = 0; i < n; ++i) {
-		bTree.erase(getKey<T>(i));
-	}
-
-	if (bTree.size() != 0) {
-		cerr << "damn, bTree is not empty after deletion" << endl;
-	}
-	assert(bTree.size() == 0);
-	*/
 }
 
 static int launchSchematest(char** argv) {

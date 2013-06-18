@@ -15,6 +15,8 @@ SchemaSegment::SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSIS
 
 	std::unique_ptr<Schema> schema = parseSchema(filename);
 
+	// @DAVE: dann machen wir doch ein Segment pro Schema
+
 	// place data of first relation into the schemasegment
 
 
