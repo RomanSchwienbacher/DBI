@@ -23,3 +23,6 @@ dbi 2 <database_file> <page_size_per_slotted_page>
 
 B-Tree-Test:
 dbi 3 <database_file> <no_btree_items>
+
+Schema-Test:
+dbi 4 <test_type> <buf_file> <schema_file>
