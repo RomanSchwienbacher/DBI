@@ -13,11 +13,12 @@
 #include "../../parsinglib/Types.hpp"
 #include "btree_segment.h"
 #include "sp_segment.h"
+#include "segment.h"
 
 class FSISegment;
 class BufferManager;
 
-class SchemaSegment : Segment {
+class SchemaSegment : public Segment {
 
 	// Btree index
 	std::unordered_map<unsigned int, BTreeSegment*> indexMap;
@@ -31,7 +32,7 @@ class SchemaSegment : Segment {
 
 public:
 
-	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager * bm, const std::string &schema);
+	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm, const std::string& schema);
 
 	std::vector<std::string> getAttributeNames();
 	std::vector<Types::Tag> getAttributeTypes();

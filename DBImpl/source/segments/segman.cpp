@@ -10,6 +10,7 @@
 #include "segman.h"
 #include "sp_segment.h"
 #include "btree_segment.h"
+#include "sch_segment.h"
 #include <iostream>
 
 SegmentManager::SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManager* bm) {
@@ -67,8 +68,8 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const st
 
 	} else if (type == SegmentType::SCHEMA) {
 
-		//Segment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, schema);
-		//segmentInventory->addToMap(std::make_pair(currentId++, seg));
+		Segment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, schema);
+		segmentInventory->addToMap(std::make_pair(currentId++, seg));
 	}
 
 	return ret;
