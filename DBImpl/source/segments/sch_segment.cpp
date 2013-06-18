@@ -2,7 +2,7 @@
  * sch_segment.cpp
  *
  *  Created on: Jun 18, 2013
- *      Author: dave
+ *      Author: DRomanAvid
  */
 
 
@@ -10,9 +10,7 @@
 #include "sch_segment.h"
 #include "../../parsinglib/Parser.hpp"
 
-
-
-SchemaSegment::SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager *bm, std::string &filename) :
+SchemaSegment::SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager *bm, const std::string &filename) :
 		Segment(extents, segId, fsi, bm) {
 
 	std::unique_ptr<Schema> schema = parseSchema(filename);
@@ -25,7 +23,8 @@ SchemaSegment::SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSIS
 /**
  * parses a file to set up a schema
  */
-std::unique_ptr<Schema> SchemaSegment::parseSchema(std::string &filename) {
+
+std::unique_ptr<Schema> SchemaSegment::parseSchema(const std::string &filename) {
 
 	Parser p(filename);
 	   try {
@@ -34,5 +33,9 @@ std::unique_ptr<Schema> SchemaSegment::parseSchema(std::string &filename) {
 	   } catch (ParserError& e) {
 	      std::cerr << e.what() << std::endl;
 	   }
+
+}
+
+SchemaSegment::~SchemaSegment() {
 
 }

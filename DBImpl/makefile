@@ -15,6 +15,7 @@ SRCPARSELIB=./parsinglib/
 #Object Files
 OBJ= ./obj/segments/btree_segment.o ./obj/testing/bTreeTest.o ./obj/testing/buffertest.o ./obj/buffer/bufframe.o ./obj/buffer/bufman.o ./obj/segments/fsi_segment.o ./obj/testinglib/gtest-all.o ./obj/parsinglib/Parser.o ./obj/parsinglib/Schema.o ./obj/buffer/locker.o ./obj/testing/mainTest.o ./obj/segments/record.o ./obj/segments/segman.o ./obj/segments/segment.o ./obj/segments/si_segment.o ./obj/segments/slottedpage.o ./obj/sorting/sorter.o ./obj/segments/sp_segment.o ./obj/segments/tid.o ./obj/segments/sch_segment.o
 
+
 # Info
 # $@ is the name of the target
 # $? is the list of dependents more recent than the target

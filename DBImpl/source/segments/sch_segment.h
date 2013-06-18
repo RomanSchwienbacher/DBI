@@ -27,7 +27,7 @@ struct Attribute {
 	bool notNull;
 };
 
-class SchemaSegment: Segment {
+class SchemaSegment: public Segment {
 
 	// Btree index
 	std::unordered_map<unsigned, BTreeSegment*> indexMap;
@@ -41,11 +41,12 @@ class SchemaSegment: Segment {
 	// Primary key
 	Attribute* priKey;
 
-	std::unique_ptr<Schema> parseSchema(std::string &filename);
+	std::unique_ptr<Schema> parseSchema(const std::string &filename);
+
 
 public:
 
-	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager *bm, std::string &schema);
+	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm, const std::string& filename);
 
 	std::vector<std::string> getAttributeNames();
 	std::vector<Types::Tag> getAttributeTypes();
