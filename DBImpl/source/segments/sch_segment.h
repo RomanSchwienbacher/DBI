@@ -53,6 +53,8 @@ public:
 
 	BTreeSegment& getPrimaryIndex();
 
+	void setupIndex(BTreeSegment *index);
+
 	~SchemaSegment();
 
 };

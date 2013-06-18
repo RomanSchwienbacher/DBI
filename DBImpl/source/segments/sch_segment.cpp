@@ -16,6 +16,8 @@ SchemaSegment::SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSIS
 	std::unique_ptr<Schema> schema = parseSchema(filename);
 
 	// place data of first relation into the schemasegment
+
+
 	//schema->relations.at(0).attributes..
 }
 
@@ -26,15 +28,24 @@ SchemaSegment::SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSIS
 
 std::unique_ptr<Schema> SchemaSegment::parseSchema(const std::string &filename) {
 
+	std::unique_ptr<Schema> schema;
+
 	Parser p(filename);
 	   try {
-	      std::unique_ptr<Schema> schema = p.parse();
+	      schema = p.parse();
 	      std::cout << schema->toString() << std::endl;
 	   } catch (ParserError& e) {
 	      std::cerr << e.what() << std::endl;
 	   }
 
+	   return schema;
+
 }
+
+void SchemaSegment::setupIndex(BTreeSegment *index){
+
+}
+
 
 SchemaSegment::~SchemaSegment() {
 

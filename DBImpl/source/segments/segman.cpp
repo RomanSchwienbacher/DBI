@@ -41,7 +41,7 @@ SegmentManager::SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManage
  * @param schema: the filename of the db-schema (for SCHEMA segments only)
  * @return: segmentId of new segment, -1 if not enough free space
  */
-uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const std::string& schema) {
+uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const std::string& filename) {
 
 	int ret;
 
@@ -68,8 +68,15 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const st
 
 	} else if (type == SegmentType::SCHEMA) {
 
-		Segment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, schema);
+		SchemaSegment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, filename);
 		segmentInventory->addToMap(std::make_pair(currentId++, seg));
+
+		// create primary index
+		BTreeSegment* index = new BTreeSegment(freeExtents, currentId, freeSegmentInventory, bm);
+		segmentInventory->addToMap(std::make_pair(currentId++, index));
+
+		// let schema segment initialize index
+		seg->setupIndex(index);
 	}
 
 	return ret;
