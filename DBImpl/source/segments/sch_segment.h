@@ -10,34 +10,50 @@
 
 #include <vector>
 #include <string>
+#include <memory>
+#include "../../parsinglib/Types.hpp"
+#include "segment.h"
 
 class FSISegment;
+class SPSegment;
+class BTreeSegment;
 class BufferManager;
+class Schema;
 
-class SchemaSegment : Segment {
+struct Attribute {
+	std::string name;
+	Types::Tag type;
+	unsigned len;
+	bool notNull;
+};
+
+class SchemaSegment: Segment {
 
 	// Btree index
-	std::unordered_map<unsigned int, BTreeSegment*> indexMap;
+	std::unordered_map<unsigned, BTreeSegment*> indexMap;
 
 	// SPSegment holding relation R
 	SPSegment* relR;
 
 	// attributes
-	std::vector<std::string> attributeNames;
-	std::vector<Types::Tag>;
+	std::vector<Attribute> attributes;
+
+	// Primary key
+	Attribute* priKey;
+
+	std::unique_ptr<Schema> parseSchema(std::string &filename);
 
 public:
 
-	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager * bm, std::string &schema);
+	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager *bm, std::string &schema);
 
 	std::vector<std::string> getAttributeNames();
 	std::vector<Types::Tag> getAttributeTypes();
 
-	BTreeSegment& getIndex();
+	BTreeSegment& getPrimaryIndex();
 
 	~SchemaSegment();
 
 };
-
 
 #endif /* SCH_SEGMENT_H_ */
