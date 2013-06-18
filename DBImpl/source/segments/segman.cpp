@@ -37,10 +37,10 @@ SegmentManager::SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManage
  * creates a new segment
  * @param type: the type of the created segment
  * @param size: the size in pages of the new segment to be created
+ * @param schema: the filename of the db-schema (for SCHEMA segments only)
  * @return: segmentId of new segment, -1 if not enough free space
  */
-
-uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size) {
+uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const std::string& schema) {
 
 	int ret;
 
@@ -64,6 +64,11 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size) {
 
 		Segment* seg = new BTreeSegment(freeExtents, currentId, freeSegmentInventory, bm);
 		segmentInventory->addToMap(std::make_pair(currentId++, seg));
+
+	} else if (type == SegmentType::SCHEMA) {
+
+		//Segment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, schema);
+		//segmentInventory->addToMap(std::make_pair(currentId++, seg));
 	}
 
 	return ret;
@@ -87,7 +92,7 @@ Segment& SegmentManager::getSegment(uint64_t segId) {
 		std::cerr << "** Segment with id: " << segId << " not in map - creating one **" << std::endl;
 		uint64_t oldCurrentId = currentId;
 		currentId = segId;
-		createSegment(SegmentType::SLOTTED_PAGE, 10);
+		createSegment(SegmentType::SLOTTED_PAGE, 10, NULL);
 		currentId = oldCurrentId;
 		return getSegment(segId);
 	}

@@ -79,7 +79,7 @@ static void bTreeTest(const std::string& filename, uint64_t n) {
 	//BufferManager bm("/tmp/db", 10ul * 1024ul * 1024ul); // bogus arguments -> 40 GB?!?!?!
 	BufferManager bm(filename, 25600ul); // bogus arguments -> 100 MB
 	SegmentManager sm(1, 1, &bm);
-	uint64_t spId = sm.createSegment(SegmentType::BTREE, 10);
+	uint64_t spId = sm.createSegment(SegmentType::BTREE, 10, NULL);
 	BTreeSegment& seg = (BTreeSegment&) (sm.getSegment(spId));
 	BTree<T, CMP> bTree(seg);
 

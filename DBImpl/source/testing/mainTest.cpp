@@ -14,6 +14,7 @@
 #include "buffertest.cpp"
 #include "slottedtest.cpp"
 #include "bTreeTest.cpp"
+#include "schemaTest.cpp"
 #include <math.h>
 #include <iostream>
 
@@ -24,7 +25,7 @@ namespace testing {
 
 // Defines which test types can be invoked
 enum class TestType {
-	EXTERNALSORT_TEST, BUFFER_TEST, SLOTTED_TEST, BTREE_TEST
+	EXTERNALSORT_TEST, BUFFER_TEST, SLOTTED_TEST, BTREE_TEST, SCHEMA_TEST
 };
 
 char** g_argv;
@@ -140,27 +141,23 @@ TEST (BTreeTest, CompleteRun) {
 	}
 }
 
+TEST (SchemaTest, CompleteRun) {
+	if (testing::g_type == testing::TestType::SCHEMA_TEST) {
+		cout << "***LAUNCH SCHEMA TEST***" << endl;
+		ASSERT_EQ(testing::launchSchematest(g_argv), 0);
+	}
+}
+
 }
 
 /*
- * launch all tests, possible args
- * /tmp/input.txt
- * /tmp/output.txt
- * 1
- * /tmp/db.txt
- * 512
- * 128
- * 0
- * 20
- * 1000
+ * launches test
  */
 int main(int argc, char **argv) {
 
-	// cerr << "usage of whole test: " << argv[0] << " <sort_inputFile> <sort_outputFile> <sort_memoryBufferInMB> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads> <slot_pageSize> <btree_items>" << endl;
-
 	// check input param
 	if (argc < 2) {
-		cerr << "test type not given: [0=ExternalSort-Test, 1=Buffer-Test, 2=Slotted-Test, 3=BTree-Test] " << argv[0] << endl;
+		cerr << "test type not given: [0=ExternalSort-Test, 1=Buffer-Test, 2=Slotted-Test, 3=BTree-Test, 4=Schema-Test] " << argv[0] << endl;
 		exit(0);
 	}
 
@@ -199,7 +196,7 @@ int main(int argc, char **argv) {
 		testing::g_type = testing::TestType::BUFFER_TEST;
 
 		if (argc < 6) {
-			cerr << "usage of external sort test: " << argv[0] << " <test_type> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads>" << endl;
+			cerr << "usage of buffer test: " << argv[0] << " <test_type> <buf_file> <buf_pagesOnDisk> <buf_pagesInRAM> <buf_threads>" << endl;
 			exit(0);
 		}
 	}
@@ -216,7 +213,7 @@ int main(int argc, char **argv) {
 		testing::g_type = testing::TestType::SLOTTED_TEST;
 
 		if (argc < 4) {
-			cerr << "usage of external sort test: " << argv[0] << " <test_type> <buf_file> <slot_pageSize>" << endl;
+			cerr << "usage of slotted test: " << argv[0] << " <test_type> <buf_file> <slot_pageSize>" << endl;
 			exit(0);
 		}
 	}
@@ -233,7 +230,24 @@ int main(int argc, char **argv) {
 		testing::g_type = testing::TestType::BTREE_TEST;
 
 		if (argc < 4) {
-			cerr << "usage of external sort test: " << argv[0] << " <test_type> <buf_file> <btree_items>" << endl;
+			cerr << "usage of b-tree test: " << argv[0] << " <test_type> <buf_file> <btree_items>" << endl;
+			exit(0);
+		}
+	}
+	/*
+	 * schema test
+	 *
+	 * possible args:
+	 * 4
+	 * /tmp/db.txt
+	 * /tmp/schema.sql
+	 */
+	else if (type == 4) {
+
+		testing::g_type = testing::TestType::SCHEMA_TEST;
+
+		if (argc < 4) {
+			cerr << "usage of schema test: " << argv[0] << " <test_type> <buf_file> <schema_file>" << endl;
 			exit(0);
 		}
 	}

@@ -25,7 +25,7 @@ class SegmentManager {
 public:
 	SegmentManager(uint64_t si_size, uint64_t fsi_size, BufferManager* bm);
 
-	uint64_t createSegment(SegmentType type, uint64_t size);
+	uint64_t createSegment(SegmentType type, uint64_t size, const std::string& schema);
 	Segment& getSegment(uint64_t segId);
 	void dropSegment(uint64_t segId);
 	uint64_t growSegment(uint64_t segId, uint64_t newSize);

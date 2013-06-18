@@ -10,6 +10,9 @@
 
 #include <vector>
 #include <string>
+#include "../../parsinglib/Types.hpp"
+#include "btree_segment.h"
+#include "sp_segment.h"
 
 class FSISegment;
 class BufferManager;
@@ -24,11 +27,11 @@ class SchemaSegment : Segment {
 
 	// attributes
 	std::vector<std::string> attributeNames;
-	std::vector<Types::Tag>;
+	std::vector<Types::Tag> attributeTypes;
 
 public:
 
-	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager * bm, std::string &schema);
+	SchemaSegment(std::vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager * bm, const std::string &schema);
 
 	std::vector<std::string> getAttributeNames();
 	std::vector<Types::Tag> getAttributeTypes();
