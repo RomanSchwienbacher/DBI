@@ -18,11 +18,10 @@ namespace testing {
 
 static void schemaTest(const std::string& dbFilename, const std::string& schemaFilename) {
 
-	/*
 	// Set up stuff
 	BufferManager bm(dbFilename, 25600ul); // bogus arguments -> 100 MB
 	SegmentManager sm(1, 1, &bm);
-	uint64_t spId = sm.createSegment(SegmentType::SCHEMA, 10, sm, schemaFilename);
+	uint64_t spId = sm.createSegment(SegmentType::SCHEMA, 10, schemaFilename);
 
 	SchemaSegment& seg = (SchemaSegment&) (sm.getSegment(spId));
 
@@ -47,17 +46,13 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			assert(seg.getRelationSegments(r.name).size() > 0);
 
 			// check types
-			assert(seg.getAttributeType(r.name, "id") == Types::Tag::Integer);
-			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "country_id") == 2);
-			assert(seg.getAttributeType(r.name, "mgr_id") == Types::Tag::Integer);
-			assert(seg.getAttributeType(r.name, "salery") == Types::Tag::Integer);
-			assert(seg.getAttributeType(r.name, "first_name") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "first_name") == 20);
-			assert(seg.getAttributeType(r.name, "middle") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "middle") == 1);
-			assert(seg.getAttributeType(r.name, "last_name") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "last_name") == 20);
+			assert(seg.getType(r.name, "id") == "Integer");
+			assert(seg.getType(r.name, "country_id") == "Char(2)");
+			assert(seg.getType(r.name, "mgr_id") == "Integer");
+			assert(seg.getType(r.name, "salery") == "Integer");
+			assert(seg.getType(r.name, "first_name") == "Char(20)");
+			assert(seg.getType(r.name, "middle") == "Char(1)");
+			assert(seg.getType(r.name, "last_name") == "Char(20)");
 
 		} else if (r.name == "country") {
 
@@ -73,12 +68,9 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			assert(seg.getRelationSegments(r.name).size() > 0);
 
 			// check types
-			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "country_id") == 2);
-			assert(seg.getAttributeType(r.name, "short_name") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "short_name") == 20);
-			assert(seg.getAttributeType(r.name, "long_name") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "long_name") == 50);
+			assert(seg.getType(r.name, "country_id") == "Char(2)");
+			assert(seg.getType(r.name, "short_name") == "Char(20)");
+			assert(seg.getType(r.name, "long_name") == "Char(50)");
 
 		} else if (r.name == "department") {
 
@@ -94,19 +86,15 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			assert(seg.getRelationSegments(r.name).size() > 0);
 
 			// check types
-			assert(seg.getAttributeType(r.name, "id") == Types::Tag::Integer);
-			assert(seg.getAttributeType(r.name, "name") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "name") == 25);
-			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
-			assert(seg.getAttributeLength(r.name, "country_id") == 2);
+			assert(seg.getType(r.name, "id") == "Integer");
+			assert(seg.getType(r.name, "name") == "Char(25)");
+			assert(seg.getType(r.name, "country_id") == "Char(2)");
 
 		} else {
 			cerr << "Parsed unknown relation: " << r.name << endl;
 			assert(false);
 		}
 	}
-	*/
-
 }
 
 static int launchSchematest(char** argv) {
