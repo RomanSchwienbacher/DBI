@@ -204,7 +204,7 @@ char* SchemaSegment::getAttributePointerByTID(TID tid, const string& r, const st
 				else {
 					if (attr.type == Types::Tag::Integer) {
 						offset += sizeof(int);
-					} else if (attr.type == Types::Tag::Integer) {
+					} else if (attr.type == Types::Tag::Char) {
 						offset += (sizeof(char) * attr.len);
 					}
 				}
