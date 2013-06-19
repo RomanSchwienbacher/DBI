@@ -25,6 +25,9 @@ SchemaSegment::SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegmen
 			setupIndex(r, r.attributes.at(pk));
 		}
 
+		// setup sp segment
+		setupSPSegment(r);
+
 	}
 
 	// place data of first relation into the schemasegment
