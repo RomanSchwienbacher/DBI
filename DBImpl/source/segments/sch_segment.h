@@ -68,7 +68,7 @@ public:
 
 	string getType(const string& r, const string& a);
 
-	char * getAttributePointerByTID(TID tid, const string& r, const string& a);
+	char* getAttributePointerByTID(TID tid, const string& r, const string& a);
 
 	~SchemaSegment();
 

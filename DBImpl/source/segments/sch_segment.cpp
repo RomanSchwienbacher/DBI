@@ -8,6 +8,7 @@
 #include <iostream>
 #include "sch_segment.h"
 #include "../../parsinglib/Parser.hpp"
+#include "record.h"
 
 SchemaSegment::SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegment *fsi, BufferManager *bm, SegmentManager* sm, const string &filename) :
 		Segment(extents, segId, fsi, bm) {
@@ -171,9 +172,49 @@ string SchemaSegment::getType(const string& r, const string& a) {
  * @param r: the relation
  * @param a: the attribute
  */
-char * SchemaSegment::getAttributePointerByTID(TID tid, const string& r, const string& a) {
-	// TODO go on here
-	return NULL;
+char* SchemaSegment::getAttributePointerByTID(TID tid, const string& r, const string& a) {
+
+	char* rtrn = NULL;
+	unsigned offset = 0;
+	bool found = false;
+
+	// fetch relation
+	Schema::Relation rel = getRelation(r);
+
+	Record* rec;
+
+	// iterate over all sp-segments for given relation
+	for (SPSegment* sps : getRelationSegments(r)) {
+
+		// if record was found: process
+		if ((rec = sps->lookup(tid)) != NULL) {
+
+			rtrn = rec->data;
+
+			// iterate over attributes to calculate offset
+			for (Schema::Relation::Attribute attr : rel.attributes) {
+
+				// if attribute was found, add offset to record pointer
+				if (attr.name == a) {
+					rtrn += offset;
+					found = true;
+					break;
+				}
+				// otherwise increase offset
+				else {
+					if (attr.type == Types::Tag::Integer) {
+						offset += sizeof(int);
+					} else if (attr.type == Types::Tag::Integer) {
+						offset += (sizeof(char) * attr.len);
+					}
+				}
+			}
+
+			break;
+		}
+	}
+
+	return found ? rtrn : NULL;
 }
 
 /**
