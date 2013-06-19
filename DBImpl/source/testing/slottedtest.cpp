@@ -66,7 +66,7 @@ static int launchSlottedtest(char** argv) {
 	// segment manager takes two uint64_t arguments for Segment Inventory and Free Segment Inventory size
 	SegmentManager sm(1, 1, &bm);
 	cout << "Segment Manager initialized. " << endl;
-	uint64_t spId = sm.createSegment(SegmentType::SLOTTED_PAGE, totalSize, NULL);
+	uint64_t spId = sm.createSegment(SegmentType::SLOTTED_PAGE, totalSize, "");
 	cout << "Segment created. " << endl;
 	SPSegment& sp = (SPSegment&) (sm.getSegment(spId));
 	Random64 rnd;

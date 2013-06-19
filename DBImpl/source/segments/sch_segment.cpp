@@ -199,7 +199,7 @@ void SchemaSegment::parseSchema(const string& filename) {
 void SchemaSegment::setupIndex(Schema::Relation& r, Schema::Relation::Attribute& a) {
 
 	// create new index
-	uint64_t spId = sm->createSegment(SegmentType::BTREE, 10, NULL);
+	uint64_t spId = sm->createSegment(SegmentType::BTREE, 10, "");
 	BTreeSegment& seg = (BTreeSegment&) (sm->getSegment(spId));
 	seg.setName(a.name);
 
@@ -218,7 +218,7 @@ void SchemaSegment::setupIndex(Schema::Relation& r, Schema::Relation::Attribute&
 void SchemaSegment::setupSPSegment(Schema::Relation& r) {
 
 	// create new sp-segment for relation
-	uint64_t spId = sm->createSegment(SegmentType::SLOTTED_PAGE, 10, NULL);
+	uint64_t spId = sm->createSegment(SegmentType::SLOTTED_PAGE, 10, "");
 	SPSegment& sp = (SPSegment&) (sm->getSegment(spId));
 
 	// add segment to existing entry

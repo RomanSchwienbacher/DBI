@@ -82,7 +82,6 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const st
  * @param segId: id of the segment to be retrieved
  * @return: a reference to the segment
  */
-
 Segment& SegmentManager::getSegment(uint64_t segId) {
 
 	Segment* ret;
@@ -93,7 +92,7 @@ Segment& SegmentManager::getSegment(uint64_t segId) {
 		std::cerr << "** Segment with id: " << segId << " not in map - creating one **" << std::endl;
 		uint64_t oldCurrentId = currentId;
 		currentId = segId;
-		createSegment(SegmentType::SLOTTED_PAGE, 10, NULL);
+		createSegment(SegmentType::SLOTTED_PAGE, 10, "");
 		currentId = oldCurrentId;
 		return getSegment(segId);
 	}
