@@ -36,6 +36,14 @@ uint64_t BTreeSegment::getNewPageId() {
 	return newExtents.front();
 }
 
+string BTreeSegment::getName() {
+	return name;
+}
+
+void BTreeSegment::setName(string name) {
+	BTreeSegment::name = name;
+}
+
 BTreeSegment::~BTreeSegment() {
 
 }

@@ -83,6 +83,7 @@ void SchemaSegment::setupIndex(Schema::Relation r, Schema::Relation::Attribute a
 	// create new index
 	uint64_t spId = sm->createSegment(SegmentType::BTREE, 10, NULL);
 	BTreeSegment& seg = (BTreeSegment&) (sm->getSegment(spId));
+	seg.setName(a.name);
 
 	// add index to existing entry
 	if (indexMap.count(r.name) > 0) {

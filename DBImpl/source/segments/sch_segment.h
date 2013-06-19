@@ -17,6 +17,7 @@
 #include "segment.h"
 #include "segman.h"
 #include "btree_segment.h"
+#include "../index/btree.h"
 #include "sp_segment.h"
 
 using namespace std;

@@ -20,6 +20,8 @@ using namespace std;
 
 class BTreeSegment: public Segment {
 
+	string name;
+
 	/**
 	 * @return the serialized object (isLeaf;LSN;count;([Key;Value;]|[Separator;Child;])*;nextPageId?;)
 	 */
@@ -319,6 +321,10 @@ public:
 	}
 
 	uint64_t getNewPageId();
+
+	string getName();
+
+	void setName(string name);
 
 	virtual ~BTreeSegment();
 };

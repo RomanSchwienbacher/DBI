@@ -11,6 +11,8 @@
 #ifndef BTREE_H_
 #define BTREE_H_
 
+#include <sstream>
+#include <string>
 #include <iterator>
 #include <vector>
 #include <inttypes.h>
@@ -23,7 +25,6 @@ class BTree {
 
 	BTreeSegment* seg;
 	Node<T, CMP>* rootNode;
-	std::string name;
 
 	/**
 	 * Searches tid by key recursively through b+tree
@@ -707,14 +708,6 @@ public:
 		stream1 << stream2.str() << "}" << endl;
 
 		return stream1.str();
-	}
-
-	std::string getName() {
-		return name;
-	}
-
-	void setName(std::string name) {
-		BTree::name = name;
 	}
 
 	virtual ~BTree() {

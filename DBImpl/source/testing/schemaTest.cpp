@@ -39,8 +39,8 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 
 			// check indexes
 			assert(seg.getRelationIndexes(r.name).size() == 2);
-			for (BTree index : seg.getRelationIndexes(r.name)) {
-				assert(index.getName() == "id" || index.getName() == "country_id");
+			for (BTreeSegment* index : seg.getRelationIndexes(r.name)) {
+				assert(index->getName() == "id" || index->getName() == "country_id");
 			}
 
 			// check segments
@@ -65,8 +65,8 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 
 			// check indexes
 			assert(seg.getRelationIndexes(r.name).size() == 1);
-			for (BTree index : seg.getRelationIndexes(r.name)) {
-				assert(index.getName() == "country_id");
+			for (BTreeSegment* index : seg.getRelationIndexes(r.name)) {
+				assert(index->getName() == "country_id");
 			}
 
 			// check segments
@@ -86,8 +86,8 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 
 			// check indexes
 			assert(seg.getRelationIndexes(r.name).size() == 1);
-			for (BTree index : seg.getRelationIndexes(r.name)) {
-				assert(index.getName() == "id");
+			for (BTreeSegment* index : seg.getRelationIndexes(r.name)) {
+				assert(index->getName() == "id");
 			}
 
 			// check segments
