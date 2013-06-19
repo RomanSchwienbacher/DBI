@@ -160,6 +160,18 @@ string SchemaSegment::getType(const string& r, const string& a) {
 }
 
 /**
+ * Returns the pointer of a given attribute by tid
+ *
+ * @param tid: the tuple-identifier
+ * @param r: the relation
+ * @param a: the attribute
+ */
+char * SchemaSegment::getAttributePointerByTID(TID tid, const string& r, const string& a) {
+	// TODO go on here
+	return NULL;
+}
+
+/**
  * Parses a file to set up a schema
  *
  * @param filename: the filename

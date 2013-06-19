@@ -19,6 +19,7 @@
 #include "btree_segment.h"
 #include "../index/btree.h"
 #include "sp_segment.h"
+#include "../segments/tid.h"
 
 using namespace std;
 
@@ -77,6 +78,8 @@ public:
 	vector<SPSegment*> getRelationSegments(const string& r);
 
 	string getType(const string& r, const string& a);
+
+	char * getAttributePointerByTID(TID tid, const string& r, const string& a);
 
 	/*
 	vector<string> getAttributeNames();
