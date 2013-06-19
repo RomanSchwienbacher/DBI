@@ -22,7 +22,7 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 	// Set up stuff
 	BufferManager bm(dbFilename, 25600ul); // bogus arguments -> 100 MB
 	SegmentManager sm(1, 1, &bm);
-	uint64_t spId = sm.createSegment(SegmentType::SCHEMA, 10, schemaFilename);
+	uint64_t spId = sm.createSegment(SegmentType::SCHEMA, 10, sm, schemaFilename);
 
 	SchemaSegment& seg = (SchemaSegment&) (sm.getSegment(spId));
 
@@ -32,7 +32,7 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 	assert(seg.getRelations().size() == 3);
 
 	// iterate over all relations
-	for (Relation r : seg.getRelations()) {
+	for (Schema::Relation r : seg.getRelations()) {
 		if (r.name == "employee") {
 
 			cout << "Check employee" << endl;

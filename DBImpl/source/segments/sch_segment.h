@@ -13,7 +13,9 @@
 #include <string>
 #include <memory>
 #include "../../parsinglib/Types.hpp"
+#include "../../parsinglib/Schema.hpp"
 #include "segment.h"
+#include "segman.h"
 #include "btree_segment.h"
 #include "sp_segment.h"
 
@@ -24,13 +26,6 @@ class SPSegment;
 class BTreeSegment;
 class BufferManager;
 class Schema;
-
-struct Attribute {
-	string name;
-	Types::Tag type;
-	unsigned len;
-	bool notNull;
-};
 
 class SchemaSegment: public Segment {
 
@@ -48,6 +43,9 @@ class SchemaSegment: public Segment {
 	Attribute* priKey;
 	*/
 
+	// The segment manager
+	SegmentManager* sm;
+
 	// The global schema
 	unique_ptr<Schema> schema;
 
@@ -59,15 +57,15 @@ class SchemaSegment: public Segment {
 
 	void parseSchema(const string &filename);
 
+	void setupIndex(Schema::Relation r, Schema::Relation::Attribute a);
+
 public:
 
-	SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm, const string& filename);
+	SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm, SegmentManager* sm, const string& filename);
 
 	vector<Schema::Relation> getRelations();
 
 	vector<BTreeSegment*> getRelationIndexes(const string& r);
-
-	void setupIndex(BTreeSegment *index);
 
 	/*
 	vector<string> getAttributeNames();
@@ -75,7 +73,6 @@ public:
 
 	BTreeSegment& getPrimaryIndex();
 	*/
-
 
 	~SchemaSegment();
 

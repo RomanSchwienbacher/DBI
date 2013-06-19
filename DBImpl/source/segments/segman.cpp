@@ -68,15 +68,8 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const st
 
 	} else if (type == SegmentType::SCHEMA) {
 
-		SchemaSegment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, filename);
+		SchemaSegment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, this, filename);
 		segmentInventory->addToMap(std::make_pair(currentId++, seg));
-
-		// create primary index
-		BTreeSegment* index = new BTreeSegment(freeExtents, currentId, freeSegmentInventory, bm);
-		segmentInventory->addToMap(std::make_pair(currentId++, index));
-
-		// let schema segment initialize index
-		seg->setupIndex(index);
 	}
 
 	return ret;
