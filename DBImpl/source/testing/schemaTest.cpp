@@ -44,7 +44,7 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			}
 
 			// check segments
-			assert(seg.getSegments(r.name).size() > 0);
+			assert(seg.getRelationSegments(r.name).size() > 0);
 
 			// check types
 			assert(seg.getAttributeType(r.name, "id") == Types::Tag::Integer);
@@ -70,7 +70,7 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			}
 
 			// check segments
-			assert(seg.getSegments(r.name).size() > 0);
+			assert(seg.getRelationSegments(r.name).size() > 0);
 
 			// check types
 			assert(seg.getAttributeType(r.name, "country_id") == Types::Tag::Char);
@@ -91,7 +91,7 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			}
 
 			// check segments
-			assert(seg.getSegments(r.name).size() > 0);
+			assert(seg.getRelationSegments(r.name).size() > 0);
 
 			// check types
 			assert(seg.getAttributeType(r.name, "id") == Types::Tag::Integer);

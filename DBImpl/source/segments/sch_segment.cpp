@@ -24,6 +24,7 @@ SchemaSegment::SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegmen
 		for (unsigned pk : r.primaryKey) {
 			setupIndex(r, r.attributes.at(pk));
 		}
+
 	}
 
 	// place data of first relation into the schemasegment
@@ -39,6 +40,61 @@ vector<Schema::Relation> SchemaSegment::getRelations() {
 }
 
 /**
+ * Returns relation instance by relation name
+ *
+ * @param r: the relation
+ *
+ */
+Schema::Relation SchemaSegment::getRelation(const string& r) {
+
+	Schema::Relation rtrn("");
+	bool found = false;
+
+	for (Schema::Relation rel : getRelations()) {
+		if (rel.name == r) {
+			rtrn = rel;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		cerr << "cannot find relation " << r << endl;
+	}
+
+	return rtrn;
+}
+
+/**
+ * Returns attribute instance by relation and attribute name
+ *
+ * @param r: the relation
+ * @param r: the attribute
+ *
+ */
+Schema::Relation::Attribute SchemaSegment::getAttribute(const string& r, const string& a) {
+
+	Schema::Relation::Attribute rtrn = Schema::Relation::Attribute();
+	bool found = false;
+
+	Schema::Relation rel = getRelation(r);
+
+	for (Schema::Relation::Attribute attr : rel.attributes) {
+		if (attr.name == a) {
+			rtrn = attr;
+			found = true;
+			break;
+		}
+	}
+
+	if (!found) {
+		cerr << "cannot find attribute " << a << " in relation" << r << endl;
+	}
+
+	return rtrn;
+}
+
+/**
  * Returns the indexes of a given relation r
  *
  * @param r: the relation
@@ -51,6 +107,53 @@ vector<BTreeSegment*> SchemaSegment::getRelationIndexes(const string& r) {
 		rtrn = indexMap.at(r);
 	} catch (out_of_range& oor) {
 		cerr << "No index for relation " << r << " found: " << oor.what() << endl;
+	}
+
+	return rtrn;
+}
+
+/**
+ * Returns the sp-segments of a given relation r
+ *
+ * @param r: the relation
+ */
+vector<SPSegment*> SchemaSegment::getRelationSegments(const string& r) {
+
+	vector<SPSegment*> rtrn(0);
+
+	try {
+		rtrn = spsMap.at(r);
+	} catch (out_of_range& oor) {
+		cerr << "No segments for relation " << r << " found: " << oor.what() << endl;
+	}
+
+	return rtrn;
+}
+
+/**
+ * Returns the type of a given attribute
+ *
+ * @param r: the relation
+ * @param a: the attribute
+ */
+string SchemaSegment::getType(const string& r, const string& a) {
+
+	const Schema::Relation::Attribute attr = getAttribute(r, a);
+
+	string rtrn = "";
+
+	Types::Tag type = attr.type;
+	switch (type) {
+	case Types::Tag::Integer: {
+		rtrn = "Integer";
+		break;
+	}
+	case Types::Tag::Char: {
+		std::stringstream ss;
+		ss << "Char(" << attr.len << ")";
+		rtrn = ss.str();
+		break;
+	}
 	}
 
 	return rtrn;
@@ -78,7 +181,7 @@ void SchemaSegment::parseSchema(const string& filename) {
  * @param r: the relation
  * @param a: the attribute
  */
-void SchemaSegment::setupIndex(Schema::Relation r, Schema::Relation::Attribute a) {
+void SchemaSegment::setupIndex(Schema::Relation& r, Schema::Relation::Attribute& a) {
 
 	// create new index
 	uint64_t spId = sm->createSegment(SegmentType::BTREE, 10, NULL);
@@ -95,6 +198,25 @@ void SchemaSegment::setupIndex(Schema::Relation r, Schema::Relation::Attribute a
 		v->push_back(&seg);
 		indexMap.insert(make_pair(r.name, *v));
 	}
+}
+
+void SchemaSegment::setupSPSegment(Schema::Relation& r) {
+
+	// create new sp-segment for relation
+	uint64_t spId = sm->createSegment(SegmentType::SLOTTED_PAGE, 10, NULL);
+	SPSegment& sp = (SPSegment&) (sm->getSegment(spId));
+
+	// add segment to existing entry
+	if (spsMap.count(r.name) > 0) {
+		spsMap.at(r.name).push_back(&sp);
+	}
+	// or create new one
+	else {
+		vector<SPSegment*>* v = new vector<SPSegment*>();
+		v->push_back(&sp);
+		spsMap.insert(make_pair(r.name, *v));
+	}
+
 }
 
 SchemaSegment::~SchemaSegment() {

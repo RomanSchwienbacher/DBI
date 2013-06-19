@@ -58,7 +58,9 @@ class SchemaSegment: public Segment {
 
 	void parseSchema(const string &filename);
 
-	void setupIndex(Schema::Relation r, Schema::Relation::Attribute a);
+	void setupIndex(Schema::Relation& r, Schema::Relation::Attribute& a);
+
+	void setupSPSegment(Schema::Relation& r);
 
 public:
 
@@ -66,7 +68,15 @@ public:
 
 	vector<Schema::Relation> getRelations();
 
+	Schema::Relation getRelation(const string& r);
+
+	Schema::Relation::Attribute getAttribute(const string& r, const string& a);
+
 	vector<BTreeSegment*> getRelationIndexes(const string& r);
+
+	vector<SPSegment*> getRelationSegments(const string& r);
+
+	string getType(const string& r, const string& a);
 
 	/*
 	vector<string> getAttributeNames();
