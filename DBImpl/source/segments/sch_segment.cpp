@@ -16,6 +16,12 @@ SchemaSegment::SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegmen
 
 	// parse schema by given filename
 	parseSchema(filename);
+}
+
+/**
+ * performs schema setup (indexes, slotted-pages)
+ */
+void SchemaSegment::setupSchema() {
 
 	// iterate over all parsed relations
 	for (Schema::Relation r : getRelations()) {
@@ -29,10 +35,6 @@ SchemaSegment::SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegmen
 		setupSPSegment(r);
 
 	}
-
-	// place data of first relation into the schemasegment
-
-	//schema->relations.at(0).attributes..
 }
 
 /**

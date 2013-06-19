@@ -31,6 +31,7 @@ class Schema;
 
 class SchemaSegment: public Segment {
 
+
 	// The segment manager
 	SegmentManager* sm;
 
@@ -52,6 +53,8 @@ class SchemaSegment: public Segment {
 public:
 
 	SchemaSegment(vector<uint64_t> extents, uint64_t segId, FSISegment * fsi, BufferManager * bm, SegmentManager* sm, const string& filename);
+
+	void setupSchema();
 
 	vector<Schema::Relation> getRelations();
 

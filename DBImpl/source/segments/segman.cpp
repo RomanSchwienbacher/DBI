@@ -70,6 +70,7 @@ uint64_t SegmentManager::createSegment(SegmentType type, uint64_t size, const st
 
 		SchemaSegment* seg = new SchemaSegment(freeExtents, currentId, freeSegmentInventory, bm, this, filename);
 		segmentInventory->addToMap(std::make_pair(currentId++, seg));
+		seg->setupSchema();
 	}
 
 	return ret;
