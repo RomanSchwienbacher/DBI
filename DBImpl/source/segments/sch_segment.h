@@ -31,20 +31,6 @@ class Schema;
 
 class SchemaSegment: public Segment {
 
-	/*
-	// Btree index
-	unordered_map<unsigned, BTreeSegment*> indexMap;
-
-	// SPSegment holding relation R
-	SPSegment* relR;
-
-	// attributes
-	vector<Attribute> attributes;
-
-	// Primary key
-	Attribute* priKey;
-	*/
-
 	// The segment manager
 	SegmentManager* sm;
 
@@ -80,13 +66,6 @@ public:
 	string getType(const string& r, const string& a);
 
 	char * getAttributePointerByTID(TID tid, const string& r, const string& a);
-
-	/*
-	vector<string> getAttributeNames();
-	vector<Types::Tag> getAttributeTypes();
-
-	BTreeSegment& getPrimaryIndex();
-	*/
 
 	~SchemaSegment();
 
