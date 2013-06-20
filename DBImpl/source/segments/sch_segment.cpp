@@ -206,6 +206,9 @@ char* SchemaSegment::getAttributePointerByTID(TID tid, const string& r, const st
 						offset += sizeof(int);
 					} else if (attr.type == Types::Tag::Char) {
 						offset += (sizeof(char) * attr.len);
+					} else {
+						cerr << "Given type is not supported" << endl;
+						throw;
 					}
 				}
 			}
@@ -241,10 +244,27 @@ void SchemaSegment::parseSchema(const string& filename) {
  */
 void SchemaSegment::setupIndex(Schema::Relation& r, Schema::Relation::Attribute& a) {
 
-	// create new index
+	// create new index segment
 	uint64_t spId = sm->createSegment(SegmentType::BTREE, 10, "");
 	BTreeSegment& seg = (BTreeSegment&) (sm->getSegment(spId));
 	seg.setName(a.name);
+
+	/*
+	// create new btree
+	if (a.type == Types::Tag::Integer) {
+
+		BTree<Integer, IntegerCmp>* integerIndex = new BTree<Integer, IntegerCmp>(seg);
+
+	} else if (a.type == Types::Tag::Char) {
+
+		// does not work: BTree<Char<a.len>, CharCmp<a.len>>* charIndex = new BTree<Char<a.len>, CharCmp<a.len>>(seg);
+		BTree<Char<20>, CharCmp<20>>* charIndex = new BTree<Char<20>, CharCmp<20>>(seg);
+
+	} else {
+		cerr << "Given type is not supported" << endl;
+		throw;
+	}
+	*/
 
 	// add index to existing entry
 	if (indexMap.count(r.name) > 0) {

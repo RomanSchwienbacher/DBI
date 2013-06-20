@@ -45,14 +45,14 @@ std::string Char<len>::toString() {
    return std::string(data, data+len);
 }
 
-struct MyCustomIntegerCmp {
+struct IntegerCmp {
 	bool operator()(Integer a, Integer b) const {
 		return a < b;
 	}
 };
 
-template<unsigned len>
-struct MyCustomCharCmp {
+template <unsigned len>
+struct CharCmp {
 	bool operator()(const Char<len>& a, const Char<len>& b) const {
 		return memcmp(a.data, b.data, len) < 0;
 	}
