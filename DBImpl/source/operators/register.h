@@ -13,8 +13,6 @@
 #include <algorithm>
 #include "../../parsinglib/Types.hpp"
 
-template<class T>
-
 class Register {
 
 	// data pointer
@@ -41,6 +39,9 @@ public:
 		// set dataType of register
 		dataType = Types::Tag::Char;
 
+		charLen = 0;
+		data = NULL;
+
 		// set to value
 		setChar(val);
 
@@ -62,10 +63,10 @@ public:
 			if (reg1.charLen != reg2.charLen) {
 				int len = std::min(reg1.charLen, reg2.charLen);
 				int result = memcmp(reg1.data, reg2.data, len);
-				if(result != 0){
+				if (result != 0) {
 					ret = result < 0;
 				}
-			} else{
+			} else {
 				ret = memcmp(reg1.data, reg2.data, reg1.charLen) < 0;
 			}
 
@@ -94,9 +95,11 @@ public:
 
 		}
 		// if one is integer and the other Char -> stay false
+
+		return ret;
 	}
 
-// Getters
+	// Getters
 	int getInteger() const;
 
 	template<unsigned len>
@@ -115,7 +118,7 @@ public:
 
 	unsigned getCharLength() const;
 
-// Setters
+	// Setters
 	void setInteger(int val);
 
 	template<unsigned len>
@@ -137,7 +140,7 @@ public:
 		}
 	}
 
-// Destructor
+	// Destructor
 	~Register();
 
 };
