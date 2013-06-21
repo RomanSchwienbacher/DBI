@@ -369,6 +369,20 @@ SlottedPage* SPSegment::readFromFrame(uint64_t pageId) {
 	return rtrn;
 }
 
+/**
+ * returns the page-iterator start
+ */
+map<uint64_t, SlottedPage*>::iterator SPSegment::getPageIteratorStart() {
+	return spMap.begin();
+}
+
+/**
+ * returns the page-iterator end
+ */
+map<uint64_t, SlottedPage*>::iterator SPSegment::getPageIteratorEnd() {
+	return spMap.end();
+}
+
 SPSegment::~SPSegment() {
 	// delete slotted pages
 	for (auto it = spMap.begin(); it != spMap.end(); ++it) {

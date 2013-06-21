@@ -9,6 +9,7 @@
 #define SP_SEGMENT_H_
 
 #include <map>
+#include <iterator>
 #include "segment.h"
 #include "tid.h"
 #include "record.h"
@@ -36,6 +37,9 @@ public:
 	bool writeToFrame(SlottedPage* sp, uint64_t pageId);
 
 	SlottedPage* readFromFrame(uint64_t pageId);
+
+	map<uint64_t, SlottedPage*>::iterator getPageIteratorStart();
+	map<uint64_t, SlottedPage*>::iterator getPageIteratorEnd();
 
 	virtual ~SPSegment();
 };
