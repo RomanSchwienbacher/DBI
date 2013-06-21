@@ -12,7 +12,7 @@
 #include <iostream>
 #include "../../parsinglib/Types.hpp"
 
-
+template<class T>
 class Register{
     
     // data pointer

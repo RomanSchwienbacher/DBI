@@ -12,9 +12,9 @@
  * Constructs a Register with size bytes
  */
 Register::Register(uint64_t size){
-    
+
     data = new char[size];
-    
+
     isNew = false;
 }
 
@@ -22,15 +22,15 @@ Register::Register(uint64_t size){
  * Constructs a Register containing an integer val
  */
 Register::Register(int val){
-    
+
     // set dataType of register
     dataType = Types::Tag::Integer;
-    
+
     // set to value
     setInteger(val);
-    
+
     isNew = false;
-    
+
 }
 
 /**
