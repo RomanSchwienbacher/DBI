@@ -710,6 +710,13 @@ public:
 		return stream1.str();
 	}
 
+	/**
+	 * returns current btree-segment
+	 */
+	BTreeSegment* getSegment() {
+		return seg;
+	}
+
 	virtual ~BTree() {
 		delete rootNode;
 	}

@@ -22,14 +22,14 @@ struct MyCustomUInt64Cmp {
 };
 
 template<unsigned len>
-struct Char {
+struct Character {
 	char data[len];
 };
 
-// Comparator functor for char
+// Comparator functor for character
 template<unsigned len>
-struct MyCustomCharCmp {
-	bool operator()(const Char<len>& a, const Char<len>& b) const {
+struct MyCustomCharacterCmp {
+	bool operator()(const Character<len>& a, const Character<len>& b) const {
 		return memcmp(a.data, b.data, len) < 0;
 	}
 };
@@ -58,12 +58,12 @@ const uint64_t& getKey(const uint64_t& i) {
 }
 
 template<>
-const Char<20>& getKey(const uint64_t& i) {
+const Character<20>& getKey(const uint64_t& i) {
 	std::stringstream ss;
 	ss << i;
 	std::string s(ss.str());
 	char20.push_back(std::string(20 - s.size(), '0') + s);
-	return *reinterpret_cast<const Char<20>*>(char20.back().data());
+	return *reinterpret_cast<const Character<20>*>(char20.back().data());
 }
 
 template<>
@@ -162,7 +162,7 @@ static int launchBTreetest(char** argv) {
 	bTreeTest<uint64_t, MyCustomUInt64Cmp>(argv[2], n);
 
 	cout << "Test index with 20 character strings" << endl;
-	bTreeTest<Char<20>, MyCustomCharCmp<20>>(argv[2], n);
+	bTreeTest<Character<20>, MyCustomCharacterCmp<20>>(argv[2], n);
 
 	cout << "Test index with compound key" << endl;
 	bTreeTest<IntPair, MyCustomIntPairCmp>(argv[2], n);

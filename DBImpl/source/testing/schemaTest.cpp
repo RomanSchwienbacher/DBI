@@ -37,9 +37,15 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			cout << "Check employee" << endl;
 
 			// check indexes
-			assert(seg.getRelationIndexes(r.name).size() == 2);
-			for (BTreeSegment* index : seg.getRelationIndexes(r.name)) {
-				assert(index->getName() == "id" || index->getName() == "country_id");
+			assert(seg.getRelationIndexCount(r.name) == 2);
+			for (string type : seg.getRelationIndexTypes(r.name)) {
+				assert(type == "Integer" || type == "Char(2)");
+			}
+			for (BTree<Integer, IntegerCmp>* index : seg.getRelationIntIndexes(r.name)) {
+				assert(index->getSegment()->getName() == "id");
+			}
+			for (BTree<Char<2>, CharCmp<2>>* index : seg.getRelationChar2Indexes(r.name)) {
+				assert(index->getSegment()->getName() == "country_id");
 			}
 
 			// check segments
@@ -59,9 +65,12 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			cout << "Check country" << endl;
 
 			// check indexes
-			assert(seg.getRelationIndexes(r.name).size() == 1);
-			for (BTreeSegment* index : seg.getRelationIndexes(r.name)) {
-				assert(index->getName() == "country_id");
+			assert(seg.getRelationIndexCount(r.name) == 1);
+			for (string type : seg.getRelationIndexTypes(r.name)) {
+				assert(type == "Char(2)");
+			}
+			for (BTree<Char<2>, CharCmp<2>>* index : seg.getRelationChar2Indexes(r.name)) {
+				assert(index->getSegment()->getName() == "country_id");
 			}
 
 			// check segments
@@ -77,9 +86,12 @@ static void schemaTest(const std::string& dbFilename, const std::string& schemaF
 			cout << "Check department" << endl;
 
 			// check indexes
-			assert(seg.getRelationIndexes(r.name).size() == 1);
-			for (BTreeSegment* index : seg.getRelationIndexes(r.name)) {
-				assert(index->getName() == "id");
+			assert(seg.getRelationIndexCount(r.name) == 1);
+			for (string type : seg.getRelationIndexTypes(r.name)) {
+				assert(type == "Integer");
+			}
+			for (BTree<Integer, IntegerCmp>* index : seg.getRelationIntIndexes(r.name)) {
+				assert(index->getSegment()->getName() == "id");
 			}
 
 			// check segments

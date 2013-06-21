@@ -31,15 +31,29 @@ class Schema;
 
 class SchemaSegment: public Segment {
 
-
 	// The segment manager
 	SegmentManager* sm;
 
 	// The global schema
 	unique_ptr<Schema> schema;
 
-	// Contains indexes for each relation
-	map<string, vector<BTreeSegment*>> indexMap;
+	// Contains integer indexes for each relation
+	map<string, vector<BTree<Integer, IntegerCmp>*>> intIndexMap;
+
+	// Contains char(1) indexes for each relation
+	map<string, vector<BTree<Char<1>, CharCmp<1>>*>> char1IndexMap;
+
+	// Contains char(2) indexes for each relation
+	map<string, vector<BTree<Char<2>, CharCmp<2>>*>> char2IndexMap;
+
+	// Contains char(20) indexes for each relation
+	map<string, vector<BTree<Char<20>, CharCmp<20>>*>> char20IndexMap;
+
+	// Contains char(25) indexes for each relation
+	map<string, vector<BTree<Char<25>, CharCmp<25>>*>> char25IndexMap;
+
+	// Contains char(50) indexes for each relation
+	map<string, vector<BTree<Char<50>, CharCmp<50>>*>> char50IndexMap;
 
 	// Contains sp-segments for each relation
 	map<string, vector<SPSegment*>> spsMap;
@@ -62,7 +76,14 @@ public:
 
 	Schema::Relation::Attribute getAttribute(const string& r, const string& a);
 
-	vector<BTreeSegment*> getRelationIndexes(const string& r);
+	vector<string> getRelationIndexTypes(const string& r);
+	unsigned getRelationIndexCount(const string& r);
+	vector<BTree<Integer, IntegerCmp>*> getRelationIntIndexes(const string& r);
+	vector<BTree<Char<1>, CharCmp<1>>*> getRelationChar1Indexes(const string& r);
+	vector<BTree<Char<2>, CharCmp<2>>*> getRelationChar2Indexes(const string& r);
+	vector<BTree<Char<20>, CharCmp<20>>*> getRelationChar20Indexes(const string& r);
+	vector<BTree<Char<25>, CharCmp<25>>*> getRelationChar25Indexes(const string& r);
+	vector<BTree<Char<50>, CharCmp<50>>*> getRelationChar50Indexes(const string& r);
 
 	vector<SPSegment*> getRelationSegments(const string& r);
 
