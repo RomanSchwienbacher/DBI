@@ -188,6 +188,21 @@ vector<Register*> Scan::getOutput() {
 	return registerEntries;
 }
 
+/**
+ * Closes current operator by resetting class-variables
+ */
+void Scan::close() {
+	r = "";
+	blockSize = 0;
+	registerEntries.clear();
+	spSegs.clear();
+	segmentIter = segmentIterEnd;
+	pageIter = pageIterEnd;
+	slotIter = slotIterEnd;
+	pageIterInitialized = false;
+	slotIterInitialized = false;
+}
+
 Scan::~Scan() {
 	for (Register* reg : registerEntries) {
 		delete reg;
