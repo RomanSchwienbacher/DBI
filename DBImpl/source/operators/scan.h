@@ -12,7 +12,9 @@
 #include "../segments/sch_segment.h"
 #include "../segments/sp_segment.h"
 #include "../segments/slottedpage.h"
+#include "../segments/tid.h"
 #include "../../parsinglib/Schema.hpp"
+#include "../../parsinglib/Types.hpp"
 #include <vector>
 #include <string>
 #include <iterator>
@@ -21,22 +23,30 @@ using namespace std;
 
 class Scan {
 
+	SchemaSegment* schemaSeg;
+	vector<SPSegment*> spSegs;
+
+	// relation name
+	string r;
+
 	// block size of register entries
+	vector<Register*> registerEntries;
 	unsigned blockSize;
 
-	vector<Register*> registerEntries;
+	vector<SPSegment*>::iterator segmentIter;
+	vector<SPSegment*>::iterator segmentIterEnd;
 
+	// controls whether pageIter gets set or not
+	bool pageIterInitialized;
 	map<uint64_t, SlottedPage*>::iterator pageIter;
 	map<uint64_t, SlottedPage*>::iterator pageIterEnd;
 
 	// controls whether slotIter gets set or not
 	bool slotIterInitialized;
-
 	map<uint16_t, Record*>::iterator slotIter;
 	map<uint16_t, Record*>::iterator slotIterEnd;
 
-	SchemaSegment* schemaSeg;
-	vector<SPSegment*> spSegs;
+	void produceRegisterEntries(TID tid);
 
 public:
 

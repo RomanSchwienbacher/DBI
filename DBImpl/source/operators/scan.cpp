@@ -8,11 +8,14 @@
  */
 
 #include <iostream>
+#include <string.h>
 #include "scan.h"
 
 Scan::Scan(SchemaSegment& schemaSeg) {
 	Scan::schemaSeg = &schemaSeg;
 	blockSize = 0;
+	pageIterInitialized = false;
+	slotIterInitialized = false;
 }
 
 /**
@@ -22,16 +25,16 @@ Scan::Scan(SchemaSegment& schemaSeg) {
  */
 void Scan::open(const string &r) {
 
+	Scan::r = r;
+
 	// get relation segments for r
 	spSegs = schemaSeg->getRelationSegments(r);
 
 	if (!spSegs.empty()) {
 
-		// set page iterator range by first segment
-		pageIter = spSegs.at(0)->getPageIteratorStart();
-		pageIterEnd = spSegs.at(0)->getPageIteratorEnd();
-
-		slotIterInitialized = false;
+		// set segment iterator
+		segmentIter = spSegs.begin();
+		segmentIterEnd = spSegs.end();
 
 		// set block size
 		Schema::Relation rel = schemaSeg->getRelation(r);
@@ -50,42 +53,132 @@ bool Scan::next() {
 
 	SlottedPage* sp;
 	Record* rec;
+	TID tid;
 
-	// iterate over pages
-	while (pageIter != pageIterEnd) {
+	// iterate over segments
+	while (segmentIter != segmentIterEnd) {
 
-		// fetch slottedPage and slot iterator range
-		sp = pageIter->second;
-
-		if (!slotIterInitialized) {
-			slotIter = sp->getRecordsMap().begin();
-			slotIterEnd = sp->getRecordsMap().end();
-			slotIterInitialized = true;
+		if (!pageIterInitialized) {
+			// set page iterator range by first segment
+			pageIter = (*segmentIter)->getPageIteratorStart();
+			pageIterEnd = (*segmentIter)->getPageIteratorEnd();
+			pageIterInitialized = true;
 		}
 
 		// iterate over pages
-		while (slotIter != slotIterEnd) {
+		while (pageIter != pageIterEnd) {
 
-			// fetch record
-			rec = slotIter->second;
+			// fetch slottedPage and slot iterator range
+			sp = pageIter->second;
 
-			// check if record is data record and not a redirection
-			if (rec->isDataRecord()) {
-
-				// TODO write registerEntries
-				++slotIter;
-				return true;
+			if (!slotIterInitialized) {
+				slotIter = sp->getRecordsMap().begin();
+				slotIterEnd = sp->getRecordsMap().end();
+				slotIterInitialized = true;
 			}
 
-			++slotIter;
-		}
+			// iterate over pages
+			while (slotIter != slotIterEnd) {
 
-		// slotIter must be set
-		slotIterInitialized = false;
-		++pageIter;
+				// generate tid
+				tid.pageId = pageIter->first;
+				tid.slotId = slotIter->first;
+
+				// fetch record
+				rec = slotIter->second;
+
+				// check if record is data record and not a redirection
+				if (rec->isDataRecord()) {
+
+					// produce register entries of current record identified by tid
+					produceRegisterEntries(tid);
+
+					++slotIter;
+					return true;
+				}
+
+				++slotIter;
+			}
+
+			// slotIter must be set (new page next iteration)
+			slotIterInitialized = false;
+			++pageIter;
+		}
+		// pageIter must be set (new segment next iteration)
+		pageIterInitialized = false;
+		++segmentIter;
 	}
 
 	return false;
+}
+
+/**
+ * produces register entries by given tid
+ */
+void Scan::produceRegisterEntries(TID tid) {
+
+	// generate register-entries for record
+	Schema::Relation rel = schemaSeg->getRelation(r);
+	for (Schema::Relation::Attribute attr : rel.attributes) {
+
+		if (attr.type == Types::Tag::Integer) {
+
+			// read intVal by tid, record and attribute
+			int intVal = 0;
+			memcpy(&intVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(int));
+
+			// create register
+			Register* reg = new Register(intVal);
+
+			// push to register entries
+			registerEntries.push_back(reg);
+
+		} else if (attr.type == Types::Tag::Char) {
+
+			if (attr.len == 1) {
+				// read char-val by tid, record and attribute
+				Char<1> charVal;
+				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<1> ));
+
+				// create register
+				Register* reg = new Register(charVal);
+
+				// push to register entries
+				registerEntries.push_back(reg);
+
+			}
+			else if (attr.len == 2) {
+				Char<2> charVal;
+				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<2> ));
+				Register* reg = new Register(charVal);
+				registerEntries.push_back(reg);
+			}
+			else if (attr.len == 20) {
+				Char<20> charVal;
+				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<20> ));
+				Register* reg = new Register(charVal);
+				registerEntries.push_back(reg);
+			}
+			else if (attr.len == 25) {
+				Char<25> charVal;
+				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<25> ));
+				Register* reg = new Register(charVal);
+				registerEntries.push_back(reg);
+			}
+			else if (attr.len == 50) {
+				Char<50> charVal;
+				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<50> ));
+				Register* reg = new Register(charVal);
+				registerEntries.push_back(reg);
+			}
+			else {
+				cerr << "Character length " << attr.len << " is not supported" << endl;
+			}
+
+		} else {
+			cerr << "Attribute type is not supported" << endl;
+		}
+	}
 }
 
 /**
@@ -96,5 +189,8 @@ vector<Register*> Scan::getOutput() {
 }
 
 Scan::~Scan() {
+	for (Register* reg : registerEntries) {
+		delete reg;
+	}
 }
 
