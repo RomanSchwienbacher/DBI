@@ -15,6 +15,7 @@
 #include "slottedtest.cpp"
 #include "bTreeTest.cpp"
 #include "schemaTest.cpp"
+#include "operatorTest.cpp"
 #include <math.h>
 #include <iostream>
 
@@ -25,7 +26,7 @@ namespace testing {
 
 // Defines which test types can be invoked
 enum class TestType {
-	EXTERNALSORT_TEST, BUFFER_TEST, SLOTTED_TEST, BTREE_TEST, SCHEMA_TEST
+	EXTERNALSORT_TEST, BUFFER_TEST, SLOTTED_TEST, BTREE_TEST, SCHEMA_TEST, OPERATOR_TEST
 };
 
 char** g_argv;
@@ -148,6 +149,13 @@ TEST (SchemaTest, CompleteRun) {
 	}
 }
 
+TEST (OperatorTest, CompleteRun) {
+	if (testing::g_type == testing::TestType::OPERATOR_TEST) {
+		cout << "***LAUNCH OPERATOR TEST***" << endl;
+		ASSERT_EQ(testing::launchOperatorTest(g_argv), 0);
+	}
+}
+
 }
 
 /*
@@ -250,6 +258,12 @@ int main(int argc, char **argv) {
 			cerr << "usage of schema test: " << argv[0] << " <test_type> <buf_file> <schema_file>" << endl;
 			exit(0);
 		}
+	}
+
+	else if (type == 5) {
+
+		testing::g_type = testing::TestType::OPERATOR_TEST;
+
 	}
 
 	::testing::InitGoogleTest(&argc, argv);
