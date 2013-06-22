@@ -9,6 +9,7 @@
 #define SCAN_H_
 
 #include "register.h"
+#include "operator.h"
 #include "../segments/sch_segment.h"
 #include "../segments/sp_segment.h"
 #include "../segments/slottedpage.h"
@@ -21,9 +22,8 @@
 
 using namespace std;
 
-class Scan {
+class Scan: public Operator {
 
-	SchemaSegment* schemaSeg;
 	vector<SPSegment*> spSegs;
 
 	// relation name

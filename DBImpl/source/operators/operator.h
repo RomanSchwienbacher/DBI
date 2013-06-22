@@ -11,24 +11,26 @@
 
 #include <vector>
 #include "register.h"
+#include "../segments/sch_segment.h"
 
 using namespace std;
 
-class Operator{
+class Operator {
+
+	SchemaSegment* schemaSeg;
+	OperatorType type;
     
 public:
-	Operator();
-	
-	void open();
-	
-	bool next();
-    
-	vector<Register*> getOutput();
-	
-	void close();
-    
+
+	Operator(SchemaSegment& schemaSeg, OperatorType type);
+
+	SchemaSegment* getSchemaSeg();
+	OperatorType getType();
+
     ~Operator();
 };
 
+// Defines which operator types exist
+enum class OperatorType {SCAN, PRINT};
 
 #endif

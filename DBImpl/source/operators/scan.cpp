@@ -11,8 +11,7 @@
 #include <string.h>
 #include "scan.h"
 
-Scan::Scan(SchemaSegment& schemaSeg) {
-	Scan::schemaSeg = &schemaSeg;
+Scan::Scan(SchemaSegment& schemaSeg) : Operator(schemaSeg, OperatorType::SCAN) {
 	blockSize = 0;
 	pageIterInitialized = false;
 	slotIterInitialized = false;
@@ -28,7 +27,7 @@ void Scan::open(const string &r) {
 	Scan::r = r;
 
 	// get relation segments for r
-	spSegs = schemaSeg->getRelationSegments(r);
+	spSegs = getSchemaSeg()->getRelationSegments(r);
 
 	if (!spSegs.empty()) {
 
@@ -37,7 +36,7 @@ void Scan::open(const string &r) {
 		segmentIterEnd = spSegs.end();
 
 		// set block size
-		Schema::Relation rel = schemaSeg->getRelation(r);
+		Schema::Relation rel = getSchemaSeg()->getRelation(r);
 		blockSize = rel.attributes.size();
 
 	} else {
@@ -118,14 +117,14 @@ bool Scan::next() {
 void Scan::produceRegisterEntries(TID tid) {
 
 	// generate register-entries for record
-	Schema::Relation rel = schemaSeg->getRelation(r);
+	Schema::Relation rel = getSchemaSeg()->getRelation(r);
 	for (Schema::Relation::Attribute attr : rel.attributes) {
 
 		if (attr.type == Types::Tag::Integer) {
 
 			// read intVal by tid, record and attribute
 			int intVal = 0;
-			memcpy(&intVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(int));
+			memcpy(&intVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(int));
 
 			// create register
 			Register* reg = new Register(intVal);
@@ -138,7 +137,7 @@ void Scan::produceRegisterEntries(TID tid) {
 			if (attr.len == 1) {
 				// read char-val by tid, record and attribute
 				Char<1> charVal;
-				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<1> ));
+				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<1> ));
 
 				// create register
 				Register* reg = new Register(charVal);
@@ -149,25 +148,25 @@ void Scan::produceRegisterEntries(TID tid) {
 			}
 			else if (attr.len == 2) {
 				Char<2> charVal;
-				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<2> ));
+				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<2> ));
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
 			}
 			else if (attr.len == 20) {
 				Char<20> charVal;
-				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<20> ));
+				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<20> ));
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
 			}
 			else if (attr.len == 25) {
 				Char<25> charVal;
-				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<25> ));
+				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<25> ));
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
 			}
 			else if (attr.len == 50) {
 				Char<50> charVal;
-				memcpy(&charVal, schemaSeg->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<50> ));
+				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<50> ));
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
 			}
