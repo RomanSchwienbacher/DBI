@@ -15,6 +15,9 @@
 
 using namespace std;
 
+// Defines which operator types exist
+enum class OperatorType {SCAN, PRINT};
+
 class Operator {
 
 	SchemaSegment* schemaSeg;
@@ -29,8 +32,5 @@ public:
 
     ~Operator();
 };
-
-// Defines which operator types exist
-enum class OperatorType {SCAN, PRINT};
 
 #endif

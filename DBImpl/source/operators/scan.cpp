@@ -11,7 +11,8 @@
 #include <string.h>
 #include "scan.h"
 
-Scan::Scan(SchemaSegment& schemaSeg) : Operator(schemaSeg, OperatorType::SCAN) {
+Scan::Scan(SchemaSegment& schemaSeg) :
+		Operator(schemaSeg, OperatorType::SCAN) {
 	blockSize = 0;
 	pageIterInitialized = false;
 	slotIterInitialized = false;
@@ -135,9 +136,13 @@ void Scan::produceRegisterEntries(TID tid) {
 		} else if (attr.type == Types::Tag::Char) {
 
 			if (attr.len == 1) {
-				// read char-val by tid, record and attribute
+				// read string-val by tid, record and attribute
+				string strVal;
+				memcpy(&strVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), attr.len);
+
+				// initialize charVal
 				Char<1> charVal;
-				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<1> ));
+				charVal.loadString(strVal);
 
 				// create register
 				Register* reg = new Register(charVal);
@@ -145,32 +150,43 @@ void Scan::produceRegisterEntries(TID tid) {
 				// push to register entries
 				registerEntries.push_back(reg);
 
-			}
-			else if (attr.len == 2) {
+			} else if (attr.len == 2) {
+
+				string strVal;
+				memcpy(&strVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), attr.len);
 				Char<2> charVal;
-				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<2> ));
+				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
-			}
-			else if (attr.len == 20) {
+
+			} else if (attr.len == 20) {
+
+				string strVal;
+				memcpy(&strVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), attr.len);
 				Char<20> charVal;
-				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<20> ));
+				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
-			}
-			else if (attr.len == 25) {
+
+			} else if (attr.len == 25) {
+
+				string strVal;
+				memcpy(&strVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), attr.len);
 				Char<25> charVal;
-				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<25> ));
+				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
-			}
-			else if (attr.len == 50) {
+
+			} else if (attr.len == 50) {
+
+				string strVal;
+				memcpy(&strVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), attr.len);
 				Char<50> charVal;
-				memcpy(&charVal, getSchemaSeg()->getAttributePointerByTID(tid, rel.name, attr.name), sizeof(Char<50> ));
+				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
 				registerEntries.push_back(reg);
-			}
-			else {
+
+			} else {
 				cerr << "Character length " << attr.len << " is not supported" << endl;
 			}
 
@@ -200,6 +216,14 @@ void Scan::close() {
 	slotIter = slotIterEnd;
 	pageIterInitialized = false;
 	slotIterInitialized = false;
+}
+
+string Scan::getRelationName() {
+	return r;
+}
+
+unsigned Scan::getBlocksize() {
+	return blockSize;
 }
 
 Scan::~Scan() {

@@ -60,6 +60,10 @@ public:
 
 	void close();
 
+	string getRelationName();
+
+	unsigned getBlocksize();
+
 	virtual ~Scan();
 
 };
