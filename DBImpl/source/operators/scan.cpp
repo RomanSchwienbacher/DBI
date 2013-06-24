@@ -129,6 +129,7 @@ void Scan::produceRegisterEntries(TID tid) {
 
 			// create register
 			Register* reg = new Register(intVal);
+			reg->setAttrName(attr.name);
 
 			// push to register entries
 			registerEntries.push_back(reg);
@@ -146,6 +147,7 @@ void Scan::produceRegisterEntries(TID tid) {
 
 				// create register
 				Register* reg = new Register(charVal);
+				reg->setAttrName(attr.name);
 
 				// push to register entries
 				registerEntries.push_back(reg);
@@ -157,6 +159,7 @@ void Scan::produceRegisterEntries(TID tid) {
 				Char<2> charVal;
 				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
+				reg->setAttrName(attr.name);
 				registerEntries.push_back(reg);
 
 			} else if (attr.len == 20) {
@@ -166,6 +169,7 @@ void Scan::produceRegisterEntries(TID tid) {
 				Char<20> charVal;
 				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
+				reg->setAttrName(attr.name);
 				registerEntries.push_back(reg);
 
 			} else if (attr.len == 25) {
@@ -175,6 +179,7 @@ void Scan::produceRegisterEntries(TID tid) {
 				Char<25> charVal;
 				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
+				reg->setAttrName(attr.name);
 				registerEntries.push_back(reg);
 
 			} else if (attr.len == 50) {
@@ -184,6 +189,7 @@ void Scan::produceRegisterEntries(TID tid) {
 				Char<50> charVal;
 				charVal.loadString(strVal);
 				Register* reg = new Register(charVal);
+				reg->setAttrName(attr.name);
 				registerEntries.push_back(reg);
 
 			} else {

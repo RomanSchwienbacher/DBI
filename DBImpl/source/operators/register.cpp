@@ -14,7 +14,7 @@
 Register::Register(uint64_t size){
 
     data = new char[size];
-
+    attrName = "";
     isNew = false;
 }
 
@@ -91,6 +91,14 @@ unsigned Register::getCharLength() const{
     }
     
     return ret;
+}
+
+string Register::getAttrName() {
+	return attrName;
+}
+
+void Register::setAttrName(string attrName){
+	Register::attrName = attrName;
 }
 
 

@@ -12,6 +12,9 @@
 #include <iostream>
 #include <algorithm>
 #include "../../parsinglib/Types.hpp"
+#include <string>
+
+using namespace std;
 
 class Register {
 
@@ -20,6 +23,8 @@ class Register {
 
 	// data type vector
 	Types::Tag dataType;
+
+	string attrName;
 
 	// char length - if char stored
 	unsigned charLen;
@@ -118,6 +123,8 @@ public:
 
 	unsigned getCharLength() const;
 
+	string getAttrName();
+
 	// Setters
 	void setInteger(int val);
 
@@ -139,6 +146,8 @@ public:
 			memcpy(data, val.data, charLen);
 		}
 	}
+
+	void setAttrName(string attrName);
 
 	// Destructor
 	~Register();

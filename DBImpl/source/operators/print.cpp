@@ -42,16 +42,10 @@ void Print::open(Operator* inputOperator, const string& outputFile) {
  */
 bool Print::next() {
 
-	bool rtrn = false;
+	bool rtrn = inputOperator->next();
 
-	if (inputOperator->getType() == OperatorType::SCAN) {
-
-		Scan* scanOperator = reinterpret_cast<Scan*>(inputOperator);
-		rtrn = scanOperator->next();
-
-		if (rtrn) {
-			writeOutputToStream();
-		}
+	if (rtrn) {
+		writeOutputToStream();
 	}
 
 	return rtrn;
@@ -94,20 +88,16 @@ void Print::writeOutputToStream() {
 				if (reg->getCharLength() == 1) {
 					Char<1> val = reg->getChar<1>();
 					output << val.toString() << "\t|\t";
-				}
-				else if (reg->getCharLength() == 2) {
+				} else if (reg->getCharLength() == 2) {
 					Char<2> val = reg->getChar<2>();
 					output << val.toString() << "\t|\t";
-				}
-				else if (reg->getCharLength() == 20) {
+				} else if (reg->getCharLength() == 20) {
 					Char<20> val = reg->getChar<20>();
 					output << val.toString() << "\t|\t";
-				}
-				else if (reg->getCharLength() == 25) {
+				} else if (reg->getCharLength() == 25) {
 					Char<25> val = reg->getChar<25>();
 					output << val.toString() << "\t|\t";
-				}
-				else if (reg->getCharLength() == 50) {
+				} else if (reg->getCharLength() == 50) {
 					Char<50> val = reg->getChar<50>();
 					output << val.toString() << "\t|\t";
 				}
@@ -121,6 +111,55 @@ void Print::writeOutputToStream() {
 
 		// write string-stream to outputStream
 		outputStream << output.str();
+
+	} else if (inputOperator->getType() == OperatorType::PROJECT) {
+
+		Project* projectOperator = reinterpret_cast<Project*>(inputOperator);
+
+		stringstream output;
+
+		// write output header
+		for (string attr : projectOperator->getAttributes()) {
+			output << attr << "\t|\t";
+		}
+		output << endl;
+
+		// write output content
+		unsigned i = 0;
+		for (Register* reg : getOutput()) {
+
+			if (reg->getType() == Types::Tag::Integer) {
+
+				output << reg->getInteger() << "\t|\t";
+
+			} else if (reg->getType() == Types::Tag::Char) {
+
+				if (reg->getCharLength() == 1) {
+					Char<1> val = reg->getChar<1>();
+					output << val.toString() << "\t|\t";
+				} else if (reg->getCharLength() == 2) {
+					Char<2> val = reg->getChar<2>();
+					output << val.toString() << "\t|\t";
+				} else if (reg->getCharLength() == 20) {
+					Char<20> val = reg->getChar<20>();
+					output << val.toString() << "\t|\t";
+				} else if (reg->getCharLength() == 25) {
+					Char<25> val = reg->getChar<25>();
+					output << val.toString() << "\t|\t";
+				} else if (reg->getCharLength() == 50) {
+					Char<50> val = reg->getChar<50>();
+					output << val.toString() << "\t|\t";
+				}
+			}
+
+			// check if next iteration handles new tuple, if yes: make new line
+			if ((++i % projectOperator->getBlocksize()) == 0) {
+				output << endl;
+			}
+		}
+
+		// write string-stream to outputStream
+		outputStream << output.str();
 	}
 }
 
@@ -128,19 +167,13 @@ void Print::writeOutputToStream() {
  * Reads output by input operator
  */
 vector<Register*> Print::getOutput() {
-
-	vector<Register*> rtrn(0);
-
-	if (inputOperator->getType() == OperatorType::SCAN) {
-
-		Scan* scanOperator = reinterpret_cast<Scan*>(inputOperator);
-		rtrn = scanOperator->getOutput();
-	}
-
-	return rtrn;
+	return inputOperator->getOutput();
 }
 
 void Print::close() {
+
+	inputOperator->close();
+
 	inputOperator = NULL;
 	outputFile = "";
 	outputStream.close();

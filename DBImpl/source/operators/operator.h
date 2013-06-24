@@ -16,13 +16,15 @@
 using namespace std;
 
 // Defines which operator types exist
-enum class OperatorType {SCAN, PRINT};
+enum class OperatorType {
+	SCAN, PRINT, PROJECT
+};
 
 class Operator {
 
 	SchemaSegment* schemaSeg;
 	OperatorType type;
-    
+
 public:
 
 	Operator(SchemaSegment& schemaSeg, OperatorType type);
@@ -30,7 +32,13 @@ public:
 	SchemaSegment* getSchemaSeg();
 	OperatorType getType();
 
-    ~Operator();
+	virtual bool next();
+
+	virtual vector<Register*> getOutput();
+
+	virtual void close();
+
+	virtual ~Operator();
 };
 
 #endif

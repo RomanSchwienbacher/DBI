@@ -28,6 +28,17 @@ OperatorType Operator::getType() {
 	return type;
 }
 
+bool Operator::next() {
+	return false;
+}
+
+vector<Register*> Operator::getOutput() {
+	return vector<Register*>(0);
+}
+
+void Operator::close() {
+}
+
 Operator::~Operator() {
 }
 

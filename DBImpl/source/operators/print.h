@@ -14,6 +14,7 @@
 #include "../../parsinglib/Schema.hpp"
 #include "../../parsinglib/Types.hpp"
 #include "scan.h"
+#include "project.h"
 #include <vector>
 #include <string>
 
