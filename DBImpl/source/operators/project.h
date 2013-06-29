@@ -2,7 +2,7 @@
  * project.h
  *
  *  Created on: Jun 24, 2013
- *      Author: roman
+ *      Author: DRomanAvid
  */
 
 #ifndef PROJECT_H_

@@ -17,7 +17,7 @@ using namespace std;
 
 // Defines which operator types exist
 enum class OperatorType {
-	SCAN, PRINT, PROJECT
+	SCAN, PRINT, PROJECT, SELECT
 };
 
 class Operator {
@@ -35,6 +35,10 @@ public:
 	virtual bool next();
 
 	virtual vector<Register*> getOutput();
+
+	virtual vector<string> getAttributes();
+
+	virtual unsigned getBlocksize();
 
 	virtual void close();
 

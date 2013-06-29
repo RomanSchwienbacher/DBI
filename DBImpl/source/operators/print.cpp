@@ -60,107 +60,51 @@ void Print::writeOutputToStream() {
 	outputStream.close();
 	outputStream.open(outputFile, ios_base::binary | ios::trunc);
 
-	if (inputOperator->getType() == OperatorType::SCAN) {
+	stringstream output;
 
-		Scan* scanOperator = reinterpret_cast<Scan*>(inputOperator);
-
-		stringstream output;
-
-		// fetch relation
-		Schema::Relation rel = getSchemaSeg()->getRelation(scanOperator->getRelationName());
-
-		// write output header
-		for (Schema::Relation::Attribute attr : rel.attributes) {
-			output << attr.name << "\t|\t";
-		}
-		output << endl;
-
-		// write output content
-		unsigned i = 0;
-		for (Register* reg : getOutput()) {
-
-			if (reg->getType() == Types::Tag::Integer) {
-
-				output << reg->getInteger() << "\t|\t";
-
-			} else if (reg->getType() == Types::Tag::Char) {
-
-				if (reg->getCharLength() == 1) {
-					Char<1> val = reg->getChar<1>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 2) {
-					Char<2> val = reg->getChar<2>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 20) {
-					Char<20> val = reg->getChar<20>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 25) {
-					Char<25> val = reg->getChar<25>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 50) {
-					Char<50> val = reg->getChar<50>();
-					output << val.toString() << "\t|\t";
-				}
-			}
-
-			// check if next iteration handles new tuple, if yes: make new line
-			if ((++i % scanOperator->getBlocksize()) == 0) {
-				output << endl;
-			}
-		}
-
-		// write string-stream to outputStream
-		outputStream << output.str();
-
-	} else if (inputOperator->getType() == OperatorType::PROJECT) {
-
-		Project* projectOperator = reinterpret_cast<Project*>(inputOperator);
-
-		stringstream output;
-
-		// write output header
-		for (string attr : projectOperator->getAttributes()) {
-			output << attr << "\t|\t";
-		}
-		output << endl;
-
-		// write output content
-		unsigned i = 0;
-		for (Register* reg : getOutput()) {
-
-			if (reg->getType() == Types::Tag::Integer) {
-
-				output << reg->getInteger() << "\t|\t";
-
-			} else if (reg->getType() == Types::Tag::Char) {
-
-				if (reg->getCharLength() == 1) {
-					Char<1> val = reg->getChar<1>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 2) {
-					Char<2> val = reg->getChar<2>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 20) {
-					Char<20> val = reg->getChar<20>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 25) {
-					Char<25> val = reg->getChar<25>();
-					output << val.toString() << "\t|\t";
-				} else if (reg->getCharLength() == 50) {
-					Char<50> val = reg->getChar<50>();
-					output << val.toString() << "\t|\t";
-				}
-			}
-
-			// check if next iteration handles new tuple, if yes: make new line
-			if ((++i % projectOperator->getBlocksize()) == 0) {
-				output << endl;
-			}
-		}
-
-		// write string-stream to outputStream
-		outputStream << output.str();
+	// write output header
+	for (string attr : inputOperator->getAttributes()) {
+		output << attr << "\t|\t";
 	}
+	output << endl;
+
+	// write output content
+	unsigned i = 0;
+	for (Register* reg : getOutput()) {
+
+		if (reg->getType() == Types::Tag::Integer) {
+
+			output << reg->getInteger() << "\t|\t";
+
+		} else if (reg->getType() == Types::Tag::Char) {
+
+			if (reg->getCharLength() == 1) {
+				Char<1> val = reg->getChar<1>();
+				output << val.toString() << "\t|\t";
+			} else if (reg->getCharLength() == 2) {
+				Char<2> val = reg->getChar<2>();
+				output << val.toString() << "\t|\t";
+			} else if (reg->getCharLength() == 20) {
+				Char<20> val = reg->getChar<20>();
+				output << val.toString() << "\t|\t";
+			} else if (reg->getCharLength() == 25) {
+				Char<25> val = reg->getChar<25>();
+				output << val.toString() << "\t|\t";
+			} else if (reg->getCharLength() == 50) {
+				Char<50> val = reg->getChar<50>();
+				output << val.toString() << "\t|\t";
+			}
+		}
+
+		// check if next iteration handles new tuple, if yes: make new line
+		if ((++i % inputOperator->getBlocksize()) == 0) {
+			output << endl;
+		}
+	}
+
+	// write string-stream to outputStream
+	outputStream << output.str();
+
 }
 
 /**

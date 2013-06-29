@@ -36,6 +36,14 @@ vector<Register*> Operator::getOutput() {
 	return vector<Register*>(0);
 }
 
+vector<string> Operator::getAttributes() {
+	return vector<string>(0);
+}
+
+unsigned Operator::getBlocksize() {
+	return 0;
+}
+
 void Operator::close() {
 }
 

@@ -64,6 +64,8 @@ public:
 
 	unsigned getBlocksize();
 
+	vector<string> getAttributes();
+
 	virtual ~Scan();
 
 };

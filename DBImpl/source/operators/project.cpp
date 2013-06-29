@@ -4,7 +4,7 @@
  *	Operator class which projects to a subset of the input stream
  *
  *  Created on: Jun 24, 2013
- *      Author: roman
+ *      Author: DRomanAvid
  */
 
 #include <iostream>

@@ -209,6 +209,17 @@ vector<Register*> Scan::getOutput() {
 	return registerEntries;
 }
 
+vector<string> Scan::getAttributes() {
+	vector<string>* rtrn = new vector<string>();
+	Schema::Relation rel = getSchemaSeg()->getRelation(r);
+
+	for (Schema::Relation::Attribute attr : rel.attributes) {
+		rtrn->push_back(attr.name);
+	}
+
+	return *rtrn;
+}
+
 /**
  * Closes current operator by resetting class-variables
  */

@@ -15,6 +15,7 @@
 #include "../../parsinglib/Types.hpp"
 #include "scan.h"
 #include "project.h"
+#include "select.h"
 #include <vector>
 #include <string>
 
