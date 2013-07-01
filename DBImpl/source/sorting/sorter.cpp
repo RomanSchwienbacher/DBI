@@ -29,14 +29,17 @@ namespace sorting {
  * calculates amount of chunks, creates chunks and sorts them internal
  *
  * @param fdInput the file descriptor of the input file
- * @param size amount of 64 bit unsigned integer values
- * @param memSize bytes of main memory
+ * @param amount of registers to be sorted
+ * @param memSize bytes of main memory available for sorting
+ * @param dataType is the type of data to be sorted
+ * @param charLen is the length of char in a Char Register
+ * @param blockSize is the size of one register block
  * @return amount of generated and sorted chunks
  */
-int Sorter::createAndSortChunks(int fdInput, uint64_t size, uint64_t memSize) {
+int Sorter::createAndSortChunks(int fdInput, uint64_t size, uint64_t memSize, Types::Tag dataType, unsigned charLen, int blockSize) {
 
 	// calculate needed chunks
-	int chunks = (int) ceil((double) (size * 8) / memSize);
+	int chunks = (int) ceil((double) (size * blockSize) / memSize);
 
 	// iterate over chunks
 	for (int i = 0; i < chunks; ++i) {
@@ -52,11 +55,10 @@ int Sorter::createAndSortChunks(int fdInput, uint64_t size, uint64_t memSize) {
 			return -1;
 		}
 
-		// cast char buffer into uint64_t buffer
-		uint64_t* uintBufferPointer = (uint64_t*) charBufferPointer;
+		// cast char buffer into register buffer
+		Register* castBufferPointer = (Register*) charBufferPointer;
 
-		// perform chunk sort
-		sort(uintBufferPointer, uintBufferPointer + (readBytes / 8));
+		sort(castBufferPointer, castBufferPointer + (readBytes / blockSize));
 
 		// create filename
 		char tmpFileName[128];
@@ -71,7 +73,7 @@ int Sorter::createAndSortChunks(int fdInput, uint64_t size, uint64_t memSize) {
 		}
 
 		// write content
-		if (write(tmpFdOutput, uintBufferPointer, readBytes) < 0) {
+		if (write(tmpFdOutput, castBufferPointer, readBytes) < 0) {
 			cerr << "cannot write file " << strerror(errno) << endl;
 			return -1;
 		}
@@ -94,9 +96,10 @@ int Sorter::createAndSortChunks(int fdInput, uint64_t size, uint64_t memSize) {
  * @param memSize the amount of memory used for merging
  * @param size maximum amount of values to be sorted
  * @param fdOutput file descriptor for output of merged values
+ * @param blockSize is the size of one Register
  */
 
-int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutput) {
+int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutput, int blockSize) {
 
 	// calculate page size (in bytes)
 	const int pageSize = sysconf(_SC_PAGESIZE);
@@ -116,13 +119,13 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 	}
 
 	// allocate memory to load chunks into
-	uint64_t *memPtr = (uint64_t *) operator new(memSize);
+	Register *memPtr = (Register *) operator new(memSize);
 
 	/*
 	 * partition memory - need one partition pointer per partition
 	 * also initialize partition offsets
 	 * */
-	uint64_t *partPtr[chunks];
+	Register *partPtr[chunks];
 	uint partOffset[chunks];
 	partPtr[0] = memPtr;
 	partOffset[0] = 0;
@@ -166,7 +169,7 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 	uint valuesRead[chunks];
 	for (int i = 0; i < chunks; ++i) {
 		bytesRead[i] = read(chunkFd[i], partPtr[i], pagesPerPart * pageSize);
-		valuesRead[i] = bytesRead[i] / sizeof(uint64_t);
+		valuesRead[i] = bytesRead[i] / blockSize;
 	}
 
 	/*
@@ -174,7 +177,7 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 	 * initialize the chunk with the smallest value to the first chunk
 	 * number of finished chunks is zero at the beginning
 	 */
-	uint64_t *smallestValuePtr = memPtr;
+	Register *smallestValuePtr = memPtr;
 	uint chunkWithSmallest = 0;
 	int finishedChunks = 0;
 
@@ -199,7 +202,7 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 		 * After going through all partitions write out the smallest value
 		 */
 
-		if (write(fdOutput, smallestValuePtr, sizeof(uint64_t)) < 0) {
+		if (write(fdOutput, smallestValuePtr, blockSize) < 0) {
 			cerr << "Error writing output file: " << strerror(errno) << endl;
 			return -1;
 		}
@@ -240,7 +243,7 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 				++finishedChunks;
 			} else {
 				cout << bytesRead[chunkWithSmallest] << " bytes read from chunk: " << chunkWithSmallest << endl;
-				valuesRead[chunkWithSmallest] = bytesRead[chunkWithSmallest] / sizeof(uint64_t);
+				valuesRead[chunkWithSmallest] = bytesRead[chunkWithSmallest] / blockSize;
 
 			}
 
@@ -261,7 +264,7 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 	for (int i = 0; i < chunks; i++) {
 
 		char * buffer = new char[filenames[i].length()];
-		strcpy(buffer,filenames[i].c_str());
+		strcpy(buffer, filenames[i].c_str());
 
 		if (remove(buffer) != 0) {
 			cerr << "Error deleting tmp chunk file " << filenames[i] << endl;
@@ -275,14 +278,16 @@ int Sorter::mergeChunks(int chunks, uint64_t memSize, uint64_t size, int fdOutpu
 }
 
 /*
- * sorts 64 bit unsigned integer values stored in the file given by the fdInput file descriptor
+ * sorts register values stored in the file given by the fdInput file descriptor
  *
  * @param fdInput the file descriptor of the input file
- * @param size amount of 64 bit unsigned integer values
+ * @param size amount of registers to sort
  * @param fdOutput the file descriptor of the output file
- * @param memSize bytes of main memory
+ * @param memSize bytes of main memory to be used in sorting
+ * @param dataType is the type of data to be sorted (int, char)
+ * @param charLen is the length of the char to be sorted
  */
-void Sorter::externalSort(int fdInput, uint64_t size, int fdOutput, uint64_t memSize) {
+void Sorter::externalSort(int fdInput, uint64_t size, int fdOutput, uint64_t memSize, Types::Tag dataType, unsigned charLen) {
 
 	try {
 
@@ -298,18 +303,47 @@ void Sorter::externalSort(int fdInput, uint64_t size, int fdOutput, uint64_t mem
 			throw invalid_argument("Cannot open output file");
 		}
 
-		if (memSize == 0 || memSize % 8 != 0) {
-			throw invalid_argument("Memory size cannot be 0 and must be a multiple of 8");
+		// calculate size needed one data register
+		int blockSize = 0;
+		if (dataType == Types::Tag::Integer) {
+			Register intReg(1);
+			blockSize = sizeof(intReg);
+		} else if (charLen == 2) {
+			// if not integer, then DataType is char
+			Char<2> empty;
+			Register charReg(empty);
+			blockSize = sizeof(charReg);
+		} else if (charLen == 20) {
+			Char<20> empty;
+			Register charReg(empty);
+			blockSize = sizeof(charReg);
+		} else if (charLen == 25) {
+			Char<25> empty;
+			Register charReg(empty);
+			blockSize = sizeof(charReg);
+		} else if (charLen == 50) {
+			Char<50> empty;
+			Register charReg(empty);
+			blockSize = sizeof(charReg);
+		} else {
+			throw invalid_argument("Unsupported Type/Length used for sorting.");
+		}
+
+		if (memSize == 0 || memSize % blockSize != 0) {
+			//throw invalid_argument("Memory size cannot be 0 and must be a multiple of 8");
+
+			// adjust the memSize down to the next rounded size
+			memSize = memSize - (memSize % blockSize);
 		}
 
 		// calculate amount of chunks, create chunks and sort them internal
-		int chunks = createAndSortChunks(fdInput, size, memSize);
+		int chunks = createAndSortChunks(fdInput, size, memSize, dataType, charLen, blockSize);
 
 		if (chunks >= 0) {
 			cout << "Amount of generated chunks: " << chunks << endl;
 
 			// combine chunks by mergeing them in the correct order
-			mergeChunks(chunks, memSize, size, fdOutput);
+			mergeChunks(chunks, memSize, size, fdOutput, blockSize);
 
 		} else {
 			cerr << "Error while creating and sorting chunks" << endl;
@@ -324,35 +358,3 @@ void Sorter::externalSort(int fdInput, uint64_t size, int fdOutput, uint64_t mem
 }
 
 }
-
-/*
- int main(int argc, char** argv) {
-
- if(argc != 3){
-
- cerr << "Usage: sort <input file> <output file> <memory size>" << endl;
- return -1;
- }
-
- int fdInput;
-
- if((fdInput = open(argv[0], O_RDONLY)) < 0){
- cerr << "cannot open file '" << argv[0] << "': " << strerror(errno) << endl;
-
- }
-
- int fdOutput;
-
- if((fdOutput = open(argv[1], O_CREAT | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR)) < 0){
- cerr << "cannot open file '" << argv[1] << "': " << strerror(errno) << endl;
-
- }
-
- uint64_t memSize = atol(argv[2]);
-
- sorting::externalSort(fdInput, 20, fdOutput, memSize);
-
- return 0;
- }
- */
-
