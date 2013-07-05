@@ -123,6 +123,8 @@ public:
 
 	unsigned getCharLength() const;
 
+	char* getCharData();
+
 	string getAttrName();
 
 	// Setters

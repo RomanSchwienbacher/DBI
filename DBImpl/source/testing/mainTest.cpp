@@ -17,7 +17,6 @@
 #include "schemaTest.cpp"
 #include "operatorTest.cpp"
 #include <math.h>
-#include <iostream>
 
 using namespace std;
 using namespace sorting;
@@ -69,7 +68,7 @@ TEST (ExternalSortTest, CompleteRun) {
 
 		// call sorting
 		Sorter sorter;
-		//sorter.externalSort(fdInput, inputSize, fdOutput, memorySize);
+		sorter.externalSort(fdInput, inputSize, fdOutput, memorySize);
 
 		// reopen output pointer
 		fdOutput = open("/tmp/output.txt", O_RDONLY);

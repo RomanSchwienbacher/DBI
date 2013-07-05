@@ -93,6 +93,23 @@ unsigned Register::getCharLength() const{
     return ret;
 }
 
+/**
+ * returns char data of stored Char
+ * @return: char pointer to Char.data
+ */
+
+char* Register::getCharData(){
+
+	char *ret;
+	*ret = 0;
+
+	if (dataType == Types::Tag::Char){
+		ret = data;
+	}
+
+	return ret;
+}
+
 string Register::getAttrName() {
 	return attrName;
 }

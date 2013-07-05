@@ -20,15 +20,36 @@
 class Sort: public Operator {
 
 	Operator* inputOperator;
-	vector<string> sortAttributes;
+	string sortAttribute;
+
+	// filestream and Sorter for external sorting
+	std::fstream fileStream;
 
 	// register entries
 	vector<Register*> registerEntries;
 
+	// type of attribute being sorted
+	Types::Tag type;
+
+	// number of data items to be sorted
+	unsigned sortedSize;
+
+	// cache size in pages to prefetch
+	unsigned prefetchPages;
+
+	// current value offset
+	unsigned currentOffset;
+
+	// current data offset
+	unsigned dataOffset;
+
+	// fetches more data
+	void fetchMoreData();
+
 public:
 	Sort(SchemaSegment& schemaSeg);
 
-	void open(Operator* inputOperator, vector<string> sortAttributes);
+	void open(Operator* inputOperator, string sortAttribute);
 
 	bool next();
 
