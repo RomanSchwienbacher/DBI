@@ -16,6 +16,7 @@
 #include "bTreeTest.cpp"
 #include "schemaTest.cpp"
 #include "operatorTest.cpp"
+#include "planTest.cpp"
 #include <math.h>
 
 using namespace std;
@@ -25,7 +26,7 @@ namespace testing {
 
 // Defines which test types can be invoked
 enum class TestType {
-	EXTERNALSORT_TEST, BUFFER_TEST, SLOTTED_TEST, BTREE_TEST, SCHEMA_TEST, OPERATOR_TEST
+	EXTERNALSORT_TEST, BUFFER_TEST, SLOTTED_TEST, BTREE_TEST, SCHEMA_TEST, OPERATOR_TEST, PLAN_TEST
 };
 
 char** g_argv;
@@ -155,6 +156,13 @@ TEST (OperatorTest, CompleteRun) {
 	}
 }
 
+TEST (PlanTest, CompleteRun) {
+	if (testing::g_type == testing::TestType::PLAN_TEST) {
+		cout << "***LAUNCH PLAN TEST***" << endl;
+		ASSERT_EQ(testing::launchPlantest(g_argv), 0);
+	}
+}
+
 }
 
 /*
@@ -263,6 +271,25 @@ int main(int argc, char **argv) {
 
 		testing::g_type = testing::TestType::OPERATOR_TEST;
 
+	}
+
+	/*
+	 * schema test
+	 *
+	 * possible args:
+	 * 6
+	 * /tmp/db.txt
+	 * /tmp/schema.sql
+	 * /tmp/sample.plan
+	 */
+	else if (type == 6) {
+
+		testing::g_type = testing::TestType::PLAN_TEST;
+
+		if (argc < 5) {
+			cerr << "usage of plan test: " << argv[0] << " <test_type> <buf_file> <schema_file> <sample_plan_file>" << endl;
+			exit(0);
+		}
 	}
 
 	::testing::InitGoogleTest(&argc, argv);
