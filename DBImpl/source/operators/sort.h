@@ -28,6 +28,8 @@ class Sort: public Operator {
 	// register entries
 	vector<Register*> registerEntries;
 
+	vector<string> attributes;
+
 	// type of attribute being sorted
 	Types::Tag type;
 

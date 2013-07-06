@@ -17,7 +17,7 @@ using namespace std;
 
 // Defines which operator types exist
 enum class OperatorType {
-	SCAN, PRINT, PROJECT, SELECT, SORT
+	SCAN, PRINT, PROJECT, SELECT, SORT, MERGE_JOIN
 };
 
 class Operator {

@@ -40,37 +40,39 @@ void Select::open(Operator* inputOperator, vector<string> predAttributes, vector
  */
 bool Select::next() {
 
-	bool rtrn = inputOperator->next();
-
 	// first clear all current register entries
 	registerEntries.clear();
 
-	// represents a record
-	vector<Register*> currentRecordRegisters;
+	while (inputOperator->next()) {
 
-	// then push registers which correspond to the attributes to register entries
-	unsigned i = 0;
-	for (Register* reg : inputOperator->getOutput()) {
+		// represents a record
+		vector<Register*> currentRecordRegisters;
 
-		currentRecordRegisters.push_back(reg);
+		// then push registers which correspond to the attributes to register entries
+		unsigned i = 0;
+		for (Register* reg : inputOperator->getOutput()) {
 
-		// if one record is achieved, check given predicates
-		if ((++i % inputOperator->getBlocksize()) == 0) {
+			currentRecordRegisters.push_back(reg);
 
-			// in case of all predicates match, add currentRecordRegisters to registerEntries
-			if (checkPredicatesForRecord(currentRecordRegisters)) {
+			// if one record is achieved, check given predicates
+			if ((++i % inputOperator->getBlocksize()) == 0) {
 
-				for (Register* okReg : currentRecordRegisters) {
-					registerEntries.push_back(okReg);
+				// in case of all predicates match, add currentRecordRegisters to registerEntries
+				if (checkPredicatesForRecord(currentRecordRegisters)) {
+
+					for (Register* okReg : currentRecordRegisters) {
+						registerEntries.push_back(okReg);
+						return true;
+					}
 				}
-			}
 
-			// clear tmp record registers
-			currentRecordRegisters.clear();
+				// clear tmp record registers
+				currentRecordRegisters.clear();
+			}
 		}
 	}
 
-	return rtrn;
+	return false;
 }
 
 /**

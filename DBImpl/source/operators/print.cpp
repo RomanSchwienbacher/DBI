@@ -56,10 +56,6 @@ bool Print::next() {
  */
 void Print::writeOutputToStream() {
 
-	// remove content of ouptputstream by reopening it
-	outputStream.close();
-	outputStream.open(outputFile, ios_base::binary | ios::trunc);
-
 	stringstream output;
 
 	// write output header

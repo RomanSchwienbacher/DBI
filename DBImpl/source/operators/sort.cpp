@@ -37,6 +37,9 @@ void Sort::open(Operator* inputOperator, string sortAttribute) {
 	Sort::inputOperator == inputOperator;
 	Sort::sortAttribute == sortAttribute;
 
+	attributes = *(new vector<string>());
+	attributes.push_back(sortAttribute);
+
 	// open file to use for external sort
 	fileStream.open("/tmp/extSort_db_cache", fstream::out | fstream::trunc);
 
@@ -156,13 +159,14 @@ void Sort::close() {
 
 	inputOperator = NULL;
 	registerEntries.clear();
+	attributes.clear();
 }
 
 vector<string> Sort::getAttributes() {
-	return inputOperator->getAttributes();
+	return attributes;
 }
 
 unsigned Sort::getBlocksize() {
-	return inputOperator->getBlocksize();
+	return attributes.size();
 }
 

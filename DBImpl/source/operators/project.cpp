@@ -40,19 +40,20 @@ void Project::open(Operator* inputOperator, vector<string> attributes) {
  */
 bool Project::next() {
 
-	bool rtrn = inputOperator->next();
-
 	// first clear all current register entries
 	registerEntries.clear();
 
-	// then push registers which correspond to the attributes to register entries
-	for (Register* reg : inputOperator->getOutput()) {
-		if (find(attributes.begin(), attributes.end(), reg->getAttrName()) != attributes.end()) {
-			registerEntries.push_back(reg);
+	while (inputOperator->next()) {
+		// then push registers which correspond to the attributes to register entries
+		for (Register* reg : inputOperator->getOutput()) {
+			if (find(attributes.begin(), attributes.end(), reg->getAttrName()) != attributes.end()) {
+				registerEntries.push_back(reg);
+				return true;
+			}
 		}
 	}
 
-	return rtrn;
+	return false;
 }
 
 /**

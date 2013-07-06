@@ -14,7 +14,7 @@ SRCLIB=./testinglib/gtest/
 SRCPARSELIB=./parsinglib/
 
 #Object Files
-OBJ= ./obj/operators/register.o ./obj/operators/operator.o ./obj/operators/scan.o ./obj/operators/print.o ./obj/operators/project.o ./obj/operators/select.o ./obj/operators/sort.o ./obj/segments/btree_segment.o ./obj/testing/bTreeTest.o ./obj/testing/buffertest.o ./obj/testing/operatorTest.o ./obj/buffer/bufframe.o ./obj/buffer/bufman.o ./obj/segments/fsi_segment.o ./obj/testinglib/gtest-all.o ./obj/parsinglib/Parser.o ./obj/parsinglib/Schema.o ./obj/buffer/locker.o ./obj/testing/mainTest.o ./obj/segments/record.o ./obj/segments/segman.o ./obj/segments/segment.o ./obj/segments/si_segment.o ./obj/segments/slottedpage.o ./obj/sorting/sorter.o ./obj/segments/sp_segment.o ./obj/segments/tid.o ./obj/segments/sch_segment.o
+OBJ= ./obj/operators/register.o ./obj/operators/operator.o ./obj/operators/scan.o ./obj/operators/print.o ./obj/operators/project.o ./obj/operators/select.o ./obj/operators/sort.o ./obj/operators/mergeJoin.o ./obj/segments/btree_segment.o ./obj/testing/bTreeTest.o ./obj/testing/buffertest.o ./obj/testing/operatorTest.o ./obj/buffer/bufframe.o ./obj/buffer/bufman.o ./obj/segments/fsi_segment.o ./obj/testinglib/gtest-all.o ./obj/parsinglib/Parser.o ./obj/parsinglib/Schema.o ./obj/buffer/locker.o ./obj/testing/mainTest.o ./obj/segments/record.o ./obj/segments/segman.o ./obj/segments/segment.o ./obj/segments/si_segment.o ./obj/segments/slottedpage.o ./obj/sorting/sorter.o ./obj/segments/sp_segment.o ./obj/segments/tid.o ./obj/segments/sch_segment.o
 
 
 # Info
